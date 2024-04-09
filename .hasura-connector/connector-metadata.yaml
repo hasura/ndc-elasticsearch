@@ -1,0 +1,18 @@
+packagingDefinition:
+  type: ManagedDockerBuild
+supportedEnvironmentVariables: []
+commands: {}
+dockerComposeWatch: 
+  # Rebuild the container if root files or dependencies are changed
+  - path: go.mod
+    action: rebuild
+  - path: go.sum
+    action: rebuild
+  - path: main.go
+    action: rebuild
+  - path: connector.go
+    action: rebuild
+  - path: connector.generated.go
+    action: rebuild
+  - path: schema.generated.json
+    action: rebuild

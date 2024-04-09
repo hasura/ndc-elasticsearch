@@ -1,0 +1,3 @@
+.hasura-connector/
+.codegen/
+*.hml
