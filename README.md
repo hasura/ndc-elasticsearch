@@ -1,4 +1,4 @@
-# ndc-elasticsearch Connector
+# Hasura Elasticsearch Connector
 
 ## Get started
 This guide will help you perform the setup of this connector in local
