@@ -1,6 +1,7 @@
 package elasticsearch
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -52,7 +53,49 @@ func (e *Client) Ping() error {
 	return nil
 }
 
-func (e *Client) Search() {}
+func (e *Client) Search(ctx context.Context, index string, body map[string]interface{}) (map[string]interface{}, error) {
+
+	es := e.client
+
+	var buf bytes.Buffer
+
+	if err := json.NewEncoder(&buf).Encode(body); err != nil {
+		return nil, err
+	}
+
+	res, err := es.Search(
+		es.Search.WithContext(ctx),
+		es.Search.WithIndex(index),
+		es.Search.WithBody(&buf),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	if res.IsError() {
+		var e map[string]interface{}
+		if err := json.NewDecoder(res.Body).Decode(&e); err != nil {
+			return nil, fmt.Errorf("error parsing the response body: %s", err)
+		} else {
+			// Print the response status and error information.
+			errMsg := fmt.Sprintf("[%s] %s: %s",
+				res.Status(),
+				e["error"].(map[string]interface{})["type"],
+				e["error"].(map[string]interface{})["reason"],
+			)
+			return nil, errors.New(errMsg)
+		}
+	}
+
+	var result map[string]interface{}
+	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("error parsing the response body: %s", err)
+	}
+
+	return result, nil
+}
 
 // GetIndices Returns comma seperated list of indices that does not start with `.` character
 func (e *Client) GetIndices() ([]string, error) {

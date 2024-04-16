@@ -43,8 +43,9 @@ func (c *Connector) TryInitState(ctx context.Context, configuration *types.Confi
 		return nil, err
 	}
 	return &types.State{
-		TelemetryState: metrics,
-		Client:         client,
+		TelemetryState:         metrics,
+		Client:                 client,
+		UnsupportedQueryFields: map[string]string{},
 	}, nil
 }
 
@@ -59,7 +60,7 @@ func (c *Connector) HealthCheck(ctx context.Context, configuration *types.Config
 // GetCapabilities get the connector's capabilities.
 func (c *Connector) GetCapabilities(configuration *types.Configuration) schema.CapabilitiesResponseMarshaler {
 	return &schema.CapabilitiesResponse{
-		Version: "0.1.1",
+		Version: "0.1.2",
 		Capabilities: schema.Capabilities{
 			Query: schema.QueryCapabilities{
 				Variables: schema.LeafCapability{},
