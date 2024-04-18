@@ -137,14 +137,7 @@ var objectTypeMap = map[string]schema.ObjectType{
 		Fields: schema.ObjectTypeFields{},
 	},
 	"histogram": {
-		Fields: schema.ObjectTypeFields{
-			"values": {
-				Type: schema.NewArrayType(schema.NewNamedType("integer")).Encode(),
-			},
-			"counts": {
-				Type: schema.NewArrayType(schema.NewNamedType("integer")).Encode(),
-			},
-		},
+		Fields: schema.ObjectTypeFields{},
 	},
 	"aggregate_metric_double": {
 		Fields: schema.ObjectTypeFields{},
@@ -191,19 +184,20 @@ var objectTypeMap = map[string]schema.ObjectType{
 }
 
 var comparisonOperatorDefinition = func(dataType string) map[string]schema.ComparisonOperatorDefinition {
-	return map[string]schema.ComparisonOperatorDefinition{
-		"match":               schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"match_phrase":        schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"match_phrase_prefix": schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"match_bool":          schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"term":                schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"exists":              schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"prefix":              schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"wildcard":            schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"regexp":              schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"fuzzy":               schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"terms":               schema.NewComparisonOperatorCustom(schema.NewArrayType(schema.NewNamedType(dataType))).Encode(),
+	var comparisonOperators = map[string]schema.ComparisonOperatorDefinition{
+		"match":             schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
+		"match_phrase":      schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
+		"match_bool_prefix": schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
+		"term":              schema.NewComparisonOperatorEqual().Encode(),
+		"prefix":            schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
+		"wildcard":          schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
+		"regexp":            schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
+		"terms":             schema.NewComparisonOperatorCustom(schema.NewArrayType(schema.NewNamedType(dataType))).Encode(),
 	}
+	if dataType == "text" {
+		comparisonOperators["match_phrase_prefix"] = schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode()
+	}
+	return comparisonOperators
 }
 
 var unsupportedSortDataTypes = []string{

@@ -127,6 +127,11 @@ func prepareNDCSchema(ndcSchema *schema.SchemaResponse, index string, fields []m
 		}
 	}
 
+	collectionFields["_id"] = schema.ObjectField{
+		Type: schema.NewNamedType("text").Encode(),
+	}
+	ndcSchema.ScalarTypes["text"] = scalarTypeMap["text"]
+
 	ndcSchema.ObjectTypes[index] = schema.ObjectType{
 		Fields: collectionFields,
 	}

@@ -7,16 +7,7 @@ func prepareFilterQuery(expression schema.Expression) (map[string]interface{}, e
 	switch expr := expression.Interface().(type) {
 	case *schema.ExpressionBinaryComparisonOperator:
 		switch expr.Operator {
-		case "match", "match_phrase", "match_phrase_prefix", "match_bool", "term", "exists", "prefix", "wildcard", "regexp", "fuzzy":
-			value, err := evalElasticComparisonValue(expr.Value)
-			if err != nil {
-				return nil, err
-			}
-			filter[expr.Operator] = map[string]interface{}{
-				expr.Column.Name: value.(string),
-			}
-			return filter, nil
-		case "terms":
+		case "match", "match_phrase", "match_phrase_prefix", "match_bool_prefix", "term", "prefix", "wildcard", "regexp", "terms":
 			value, err := evalElasticComparisonValue(expr.Value)
 			if err != nil {
 				return nil, err
@@ -31,8 +22,12 @@ func prepareFilterQuery(expression schema.Expression) (map[string]interface{}, e
 			})
 		}
 	case *schema.ExpressionAnd:
+		expressionAnd, err := expr.Expressions[0].AsAnd()
+		if err != nil {
+			return nil, err
+		}
 		queries := make([]map[string]interface{}, 0)
-		for _, expr := range expr.Expressions {
+		for _, expr := range expressionAnd.Expressions {
 			res, err := prepareFilterQuery(expr)
 			if err != nil {
 				return nil, err
@@ -44,8 +39,12 @@ func prepareFilterQuery(expression schema.Expression) (map[string]interface{}, e
 		}
 		return filter, nil
 	case *schema.ExpressionOr:
+		expressionAnd, err := expr.Expressions[0].AsAnd()
+		if err != nil {
+			return nil, err
+		}
 		queries := make([]map[string]interface{}, 0)
-		for _, expr := range expr.Expressions {
+		for _, expr := range expressionAnd.Expressions {
 			res, err := prepareFilterQuery(expr)
 			if err != nil {
 				return nil, err
@@ -57,12 +56,21 @@ func prepareFilterQuery(expression schema.Expression) (map[string]interface{}, e
 		}
 		return filter, nil
 	case *schema.ExpressionNot:
-		res, err := prepareFilterQuery(expr.Expression)
+		expressionAnd, err := expr.Expression.AsAnd()
 		if err != nil {
 			return nil, err
 		}
+		queries := make([]map[string]interface{}, 0)
+		for _, expr := range expressionAnd.Expressions {
+			res, err := prepareFilterQuery(expr)
+			if err != nil {
+				return nil, err
+			}
+			queries = append(queries, res)
+		}
+
 		filter["bool"] = map[string]interface{}{
-			"must_not": res,
+			"must_not": queries,
 		}
 		return filter, nil
 	default:

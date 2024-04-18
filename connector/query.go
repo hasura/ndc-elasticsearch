@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"maps"
 
 	"github.com/hasura/ndc-elasticsearch/types"
 	"github.com/hasura/ndc-sdk-go/schema"
@@ -47,24 +46,27 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 	}
 
 	sanitizer := ctx.Value("sanitizer").(*Sanitizer)
-	sanitizer.defaultFieldValues = make(map[string]interface{}, 0)
 
 	// Select the fields
 	if request.Query.Fields != nil {
 		sanitizer.isFields = true
 		fields := make([]string, 0)
-		for field := range request.Query.Fields {
-			if _, ok := state.UnsupportedQueryFields[field]; ok {
-				return nil, schema.BadRequestError("field is not queryable", map[string]interface{}{
-					"value": field,
-				})
-			}
-			fields = append(fields, field)
-			sanitizer.defaultFieldValues[field] = nil
-			if field == "_id" {
-				sanitizer.isIDSelected = true
+		selectFields := make(map[string]string)
+		for fieldName, fieldData := range request.Query.Fields {
+			if columnName, ok := fieldData["column"].(string); ok {
+				if _, ok := state.UnsupportedQueryFields[columnName]; ok {
+					return nil, schema.BadRequestError("field is not queryable", map[string]interface{}{
+						"value": columnName,
+					})
+				}
+				fields = append(fields, columnName)
+				selectFields[fieldName] = columnName
+				if columnName == "_id" {
+					sanitizer.isIDSelected = true
+				}
 			}
 		}
+		sanitizer.selectFields = selectFields
 		query["_source"] = fields
 	}
 
@@ -100,12 +102,23 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 
 	// Filter
 	if request.Query.Predicate != nil {
-		filter, err := prepareFilterQuery(request.Query.Predicate)
-		if err != nil {
-			return nil, err
-		}
-		if len(filter) != 0 {
-			query["query"] = filter
+		expressionAnd, err := request.Query.Predicate.AsAnd()
+		if err == nil {
+			filter, err := prepareFilterQuery(expressionAnd.Expressions[0])
+			if err != nil {
+				return nil, err
+			}
+			if len(filter) != 0 {
+				query["query"] = filter
+			}
+		} else {
+			filter, err := prepareFilterQuery(request.Query.Predicate)
+			if err != nil {
+				return nil, err
+			}
+			if len(filter) != 0 {
+				query["query"] = filter
+			}
 		}
 	}
 
@@ -123,14 +136,16 @@ func prepareResponse(ctx context.Context, res map[string]interface{}) *schema.Ro
 	documents := make([]map[string]interface{}, len(hits))
 	for i, hit := range hits {
 		doc := hit.(map[string]interface{})
+		row := make(map[string]interface{}, len(sanitizer.selectFields))
 		source := doc["_source"].(map[string]interface{})
 		if sanitizer.isIDSelected {
 			source["_id"] = doc["_id"].(string)
 		}
-		maps.Copy(sanitizer.defaultFieldValues, source)
-		documents[i] = sanitizer.defaultFieldValues
+		for fieldName, columnName := range sanitizer.selectFields {
+			row[fieldName] = source[columnName]
+		}
+		documents[i] = row
 	}
-
 	rowSet := &schema.RowSet{
 		Aggregates: schema.RowSetAggregates{},
 	}
@@ -164,9 +179,9 @@ func prepareResponse(ctx context.Context, res map[string]interface{}) *schema.Ro
 }
 
 type Sanitizer struct {
-	isFields           bool
-	startAggregates    string
-	columnCount        []string
-	isIDSelected       bool
-	defaultFieldValues map[string]interface{}
+	isFields        bool
+	startAggregates string
+	columnCount     []string
+	isIDSelected    bool
+	selectFields    map[string]string
 }
