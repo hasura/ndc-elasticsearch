@@ -62,10 +62,7 @@ func (c *Connector) GetCapabilities(configuration *types.Configuration) schema.C
 	return &schema.CapabilitiesResponse{
 		Version: "0.1.2",
 		Capabilities: schema.Capabilities{
-			Query: schema.QueryCapabilities{
-				Variables: schema.LeafCapability{},
-			},
-			Mutation: schema.MutationCapabilities{},
+			Query: schema.QueryCapabilities{},
 		},
 	}
 }

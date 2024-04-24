@@ -21,8 +21,8 @@ func (c *Connector) Query(ctx context.Context, configuration *types.Configuratio
 }
 
 func executeQuery(ctx context.Context, state *types.State, request *schema.QueryRequest) (*schema.RowSet, error) {
-	// Set the sanitizer in ctx
-	ctx = context.WithValue(ctx, "sanitizer", &Sanitizer{})
+	// Set the postProcessor in ctx
+	ctx = context.WithValue(ctx, "postProcessor", &types.PostProcessor{})
 
 	body, err := prepareElasticsearchQuery(ctx, request, state)
 	if err != nil {
@@ -45,28 +45,28 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 		},
 	}
 
-	sanitizer := ctx.Value("sanitizer").(*Sanitizer)
+	postProcessor := ctx.Value("postProcessor").(*types.PostProcessor)
 
 	// Select the fields
 	if request.Query.Fields != nil {
-		sanitizer.isFields = true
+		postProcessor.IsFields = true
 		fields := make([]string, 0)
 		selectFields := make(map[string]string)
 		for fieldName, fieldData := range request.Query.Fields {
 			if columnName, ok := fieldData["column"].(string); ok {
 				if _, ok := state.UnsupportedQueryFields[columnName]; ok {
-					return nil, schema.BadRequestError("field is not queryable", map[string]interface{}{
+					return nil, schema.BadRequestError("query selection not supported on this field", map[string]interface{}{
 						"value": columnName,
 					})
 				}
 				fields = append(fields, columnName)
 				selectFields[fieldName] = columnName
 				if columnName == "_id" {
-					sanitizer.isIDSelected = true
+					postProcessor.IsIDSelected = true
 				}
 			}
 		}
-		sanitizer.selectFields = selectFields
+		postProcessor.SelectedFields = selectFields
 		query["_source"] = fields
 	}
 
@@ -102,23 +102,12 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 
 	// Filter
 	if request.Query.Predicate != nil {
-		expressionAnd, err := request.Query.Predicate.AsAnd()
-		if err == nil {
-			filter, err := prepareFilterQuery(expressionAnd.Expressions[0])
-			if err != nil {
-				return nil, err
-			}
-			if len(filter) != 0 {
-				query["query"] = filter
-			}
-		} else {
-			filter, err := prepareFilterQuery(request.Query.Predicate)
-			if err != nil {
-				return nil, err
-			}
-			if len(filter) != 0 {
-				query["query"] = filter
-			}
+		filter, err := prepareFilterQuery(request.Query.Predicate)
+		if err != nil {
+			return nil, err
+		}
+		if len(filter) != 0 {
+			query["query"] = filter
 		}
 	}
 
@@ -130,39 +119,39 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 }
 
 func prepareResponse(ctx context.Context, res map[string]interface{}) *schema.RowSet {
-	sanitizer := ctx.Value("sanitizer").(*Sanitizer)
+	postProcessor := ctx.Value("postProcessor").(*types.PostProcessor)
 	total := res["hits"].(map[string]interface{})["total"].(map[string]interface{})["value"].(float64)
 	hits := res["hits"].(map[string]interface{})["hits"].([]interface{})
 	documents := make([]map[string]interface{}, len(hits))
 	for i, hit := range hits {
 		doc := hit.(map[string]interface{})
-		row := make(map[string]interface{}, len(sanitizer.selectFields))
+		document := make(map[string]interface{}, len(postProcessor.SelectedFields))
 		source := doc["_source"].(map[string]interface{})
-		if sanitizer.isIDSelected {
+		if postProcessor.IsIDSelected {
 			source["_id"] = doc["_id"].(string)
 		}
-		for fieldName, columnName := range sanitizer.selectFields {
-			row[fieldName] = source[columnName]
+		for fieldName, columnName := range postProcessor.SelectedFields {
+			document[fieldName] = source[columnName]
 		}
-		documents[i] = row
+		documents[i] = document
 	}
 	rowSet := &schema.RowSet{
 		Aggregates: schema.RowSetAggregates{},
 	}
-	if sanitizer.isFields {
+	if postProcessor.IsFields {
 		rowSet.Rows = documents
 	}
 
-	if sanitizer.startAggregates != "" {
+	if postProcessor.StarAggregates != "" {
 		rowSet.Aggregates = schema.RowSetAggregates{
-			sanitizer.startAggregates: int(total),
+			postProcessor.StarAggregates: int(total),
 		}
 	}
 
 	// Add aggregates
-	fmt.Println("Column count: ", sanitizer.columnCount)
-	if len(sanitizer.columnCount) != 0 {
-		for _, column := range sanitizer.columnCount {
+	fmt.Println("Column count: ", postProcessor.ColumnCount)
+	if len(postProcessor.ColumnCount) != 0 {
+		for _, column := range postProcessor.ColumnCount {
 			if aggregation, ok := res["aggregations"].(map[string]interface{}); ok {
 				if record, ok := aggregation[column].(map[string]interface{}); ok {
 					rowSet.Aggregates[column] = record["value"]
@@ -176,12 +165,4 @@ func prepareResponse(ctx context.Context, res map[string]interface{}) *schema.Ro
 	fmt.Println(string(queryJSON))
 
 	return rowSet
-}
-
-type Sanitizer struct {
-	isFields        bool
-	startAggregates string
-	columnCount     []string
-	isIDSelected    bool
-	selectFields    map[string]string
 }

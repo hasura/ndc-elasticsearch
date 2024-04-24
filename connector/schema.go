@@ -57,16 +57,16 @@ func getScalarTypesAndObjects(data map[string]interface{}, state *types.State) (
 			if !ok {
 				continue
 			}
-			if fieldType, ok := fieldMap["type"].(string); ok && fieldType != "nested" {
+			if fieldType, ok := fieldMap["type"].(string); ok && fieldType != "nested" && fieldType != "object" && fieldType != "flattened" {
 				fields = append(fields, map[string]interface{}{
 					"name": fieldName,
 					"type": fieldType,
 				})
 
 				for _, unsupportedSortDataType := range unsupportedSortDataTypes {
-					fd, ok := fieldMap["fielddata"].(bool)
+					fieldData, ok := fieldMap["fielddata"].(bool)
 					if ok {
-						if fieldType == unsupportedSortDataType && !fd {
+						if fieldType == unsupportedSortDataType && !fieldData {
 							state.UnsupportedSortFields = append(state.UnsupportedSortFields, fieldName)
 						}
 					} else {
@@ -87,6 +87,19 @@ func getScalarTypesAndObjects(data map[string]interface{}, state *types.State) (
 							}
 							state.UnsupportedQueryFields[name] = fieldName
 							fields = append(fields, subField)
+
+							for _, unsupportedSortDataType := range unsupportedSortDataTypes {
+								fieldData, ok := subFieldMap["fielddata"].(bool)
+								if ok {
+									if subFieldType == unsupportedSortDataType && !fieldData {
+										state.UnsupportedSortFields = append(state.UnsupportedSortFields, name)
+									}
+								} else {
+									if subFieldType == unsupportedSortDataType {
+										state.UnsupportedSortFields = append(state.UnsupportedSortFields, name)
+									}
+								}
+							}
 						}
 					}
 				}
@@ -97,6 +110,7 @@ func getScalarTypesAndObjects(data map[string]interface{}, state *types.State) (
 					"type": fieldName,
 				})
 
+				state.UnsupportedSortFields = append(state.UnsupportedSortFields, fieldName)
 				flds, objs := getScalarTypesAndObjects(fieldMap, state)
 				objects = append(objects, map[string]interface{}{
 					"name":   fieldName,
@@ -128,9 +142,9 @@ func prepareNDCSchema(ndcSchema *schema.SchemaResponse, index string, fields []m
 	}
 
 	collectionFields["_id"] = schema.ObjectField{
-		Type: schema.NewNamedType("text").Encode(),
+		Type: schema.NewNamedType("_id").Encode(),
 	}
-	ndcSchema.ScalarTypes["text"] = scalarTypeMap["text"]
+	ndcSchema.ScalarTypes["_id"] = scalarTypeMap["_id"]
 
 	ndcSchema.ObjectTypes[index] = schema.ObjectType{
 		Fields: collectionFields,

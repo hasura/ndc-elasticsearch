@@ -5,42 +5,47 @@ import "github.com/hasura/ndc-sdk-go/schema"
 var scalarTypeMap = map[string]schema.ScalarType{
 	"integer": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("integer"),
+		ComparisonOperators: getComparisonOperatorDefinition("integer"),
 		Representation:      schema.NewTypeRepresentationInteger().Encode(),
 	},
 	"long": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("long"),
+		ComparisonOperators: getComparisonOperatorDefinition("long"),
 		Representation:      schema.NewTypeRepresentationInteger().Encode(),
 	},
 	"text": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("text"),
+		ComparisonOperators: getComparisonOperatorDefinition("text"),
+		Representation:      schema.NewTypeRepresentationString().Encode(),
+	},
+	"_id": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: getComparisonOperatorDefinition("_id"),
 		Representation:      schema.NewTypeRepresentationString().Encode(),
 	},
 	"keyword": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("keyword"),
+		ComparisonOperators: getComparisonOperatorDefinition("keyword"),
 		Representation:      schema.NewTypeRepresentationString().Encode(),
 	},
 	"date": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("date"),
+		ComparisonOperators: getComparisonOperatorDefinition("date"),
 		Representation:      schema.NewTypeRepresentationString().Encode(),
 	},
 	"half_float": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("half_float"),
+		ComparisonOperators: getComparisonOperatorDefinition("half_float"),
 		Representation:      schema.NewTypeRepresentationNumber().Encode(),
 	},
 	"byte": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("byte"),
+		ComparisonOperators: getComparisonOperatorDefinition("byte"),
 		Representation:      schema.NewTypeRepresentationInteger().Encode(),
 	},
 	"boolean": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("boolean"),
+		ComparisonOperators: getComparisonOperatorDefinition("boolean"),
 		Representation:      schema.NewTypeRepresentationBoolean().Encode(),
 	},
 	"binary": {
@@ -50,72 +55,72 @@ var scalarTypeMap = map[string]schema.ScalarType{
 	},
 	"constant_keyword": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("constant_keyword"),
+		ComparisonOperators: getComparisonOperatorDefinition("constant_keyword"),
 		Representation:      schema.NewTypeRepresentationString().Encode(),
 	},
 	"wildcard": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("wildcard"),
+		ComparisonOperators: getComparisonOperatorDefinition("wildcard"),
 		Representation:      schema.NewTypeRepresentationString().Encode(),
 	},
 	"short": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("short"),
+		ComparisonOperators: getComparisonOperatorDefinition("short"),
 		Representation:      schema.NewTypeRepresentationInteger().Encode(),
 	},
 	"unsigned_long": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("unsigned_long"),
+		ComparisonOperators: getComparisonOperatorDefinition("unsigned_long"),
 		Representation:      schema.NewTypeRepresentationInteger().Encode(),
 	},
 	"float": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("float"),
+		ComparisonOperators: getComparisonOperatorDefinition("float"),
 		Representation:      schema.NewTypeRepresentationNumber().Encode(),
 	},
 	"double": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("double"),
+		ComparisonOperators: getComparisonOperatorDefinition("double"),
 		Representation:      schema.NewTypeRepresentationNumber().Encode(),
 	},
 	"scaled_float": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("scaled_float"),
+		ComparisonOperators: getComparisonOperatorDefinition("scaled_float"),
 		Representation:      schema.NewTypeRepresentationNumber().Encode(),
 	},
 	"match_only_text": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("match_only_text"),
+		ComparisonOperators: getComparisonOperatorDefinition("match_only_text"),
 		Representation:      schema.NewTypeRepresentationString().Encode(),
 	},
 	"date_nanos": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("date_nanos"),
+		ComparisonOperators: getComparisonOperatorDefinition("date_nanos"),
 		Representation:      schema.NewTypeRepresentationString().Encode(),
 	},
 	"ip": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("ip"),
+		ComparisonOperators: getComparisonOperatorDefinition("ip"),
 		Representation:      schema.NewTypeRepresentationString().Encode(),
 	},
 	"version": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("version"),
+		ComparisonOperators: getComparisonOperatorDefinition("version"),
 		Representation:      schema.NewTypeRepresentationString().Encode(),
 	},
 	"completion": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("completion"),
+		ComparisonOperators: getComparisonOperatorDefinition("completion"),
 		Representation:      schema.NewTypeRepresentationString().Encode(),
 	},
 	"search_as_you_type": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("search_as_you_type"),
+		ComparisonOperators: getComparisonOperatorDefinition("search_as_you_type"),
 		Representation:      schema.NewTypeRepresentationString().Encode(),
 	},
 	"token_count": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
-		ComparisonOperators: comparisonOperatorDefinition("token_count"),
+		ComparisonOperators: getComparisonOperatorDefinition("token_count"),
 		Representation:      schema.NewTypeRepresentationInteger().Encode(),
 	},
 }
@@ -137,7 +142,10 @@ var objectTypeMap = map[string]schema.ObjectType{
 		Fields: schema.ObjectTypeFields{},
 	},
 	"histogram": {
-		Fields: schema.ObjectTypeFields{},
+		Fields: schema.ObjectTypeFields{
+			"values": schema.ObjectField{Type: schema.NewNamedType("float").Encode()},
+			"counts": schema.ObjectField{Type: schema.NewNamedType("integer").Encode()},
+		},
 	},
 	"aggregate_metric_double": {
 		Fields: schema.ObjectTypeFields{},
@@ -178,24 +186,26 @@ var objectTypeMap = map[string]schema.ObjectType{
 	"alias": {
 		Fields: schema.ObjectTypeFields{},
 	},
-	"flattened": {
-		Fields: schema.ObjectTypeFields{},
-	},
 }
 
-var comparisonOperatorDefinition = func(dataType string) map[string]schema.ComparisonOperatorDefinition {
+func getComparisonOperatorDefinition(dataType string) map[string]schema.ComparisonOperatorDefinition {
 	var comparisonOperators = map[string]schema.ComparisonOperatorDefinition{
-		"match":             schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"match_phrase":      schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"match_bool_prefix": schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"term":              schema.NewComparisonOperatorEqual().Encode(),
-		"prefix":            schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"wildcard":          schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"regexp":            schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"terms":             schema.NewComparisonOperatorCustom(schema.NewArrayType(schema.NewNamedType(dataType))).Encode(),
+		"match":        schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
+		"match_phrase": schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
+		"term":         schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
+		"terms":        schema.NewComparisonOperatorCustom(schema.NewArrayType(schema.NewNamedType(dataType))).Encode(),
 	}
 	if dataType == "text" {
 		comparisonOperators["match_phrase_prefix"] = schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode()
+	}
+	if dataType == "text" || dataType == "keyword" || dataType == "wildcard" {
+		comparisonOperators["wildcard"] = schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode()
+		comparisonOperators["regexp"] = schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode()
+		comparisonOperators["prefix"] = schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode()
+		comparisonOperators["match_bool_prefix"] = schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode()
+	}
+	if dataType == "_id" {
+		comparisonOperators["term"] = schema.NewComparisonOperatorEqual().Encode()
 	}
 	return comparisonOperators
 }
@@ -219,4 +229,5 @@ var unsupportedSortDataTypes = []string{
 	"alias",
 	"join",
 	"range",
+	"_id",
 }

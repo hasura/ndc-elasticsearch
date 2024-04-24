@@ -15,3 +15,12 @@ type State struct {
 
 // Configuration contains required settings for the connector.
 type Configuration map[string]interface{}
+
+// PostProcessor is used to post process the query response.
+type PostProcessor struct {
+	IsFields       bool
+	StarAggregates string
+	ColumnCount    []string
+	IsIDSelected   bool
+	SelectedFields map[string]string
+}

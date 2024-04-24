@@ -12,7 +12,7 @@ func prepareSortQuery(orderBy *schema.OrderBy, state *types.State) ([]map[string
 		// check if the target field is orderable or not
 		for _, unsupportedSortField := range state.UnsupportedSortFields {
 			if element.Target["name"].(string) == unsupportedSortField {
-				return nil, schema.BadRequestError("field is not orderable", map[string]interface{}{
+				return nil, schema.BadRequestError("sorting not supported on this field", map[string]interface{}{
 					"value": element.Target["name"].(string),
 				})
 			}
