@@ -10,6 +10,7 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"github.com/hasura/ndc-sdk-go/connector"
 )
 
 type Client struct {
@@ -54,7 +55,7 @@ func (e *Client) Ping() error {
 }
 
 func (e *Client) Search(ctx context.Context, index string, body map[string]interface{}) (map[string]interface{}, error) {
-
+	logger := connector.GetLogger(ctx)
 	es := e.client
 
 	var buf bytes.Buffer
@@ -80,11 +81,13 @@ func (e *Client) Search(ctx context.Context, index string, body map[string]inter
 			return nil, fmt.Errorf("error parsing the response body: %s", err)
 		} else {
 			// Print the response status and error information.
+			root_cause, _ :=  e["error"].(map[string]interface{})["root_cause"].([]interface {})[0].(map[string]interface{})
 			errMsg := fmt.Sprintf("[%s] %s: %s",
 				res.Status(),
-				e["error"].(map[string]interface{})["type"],
-				e["error"].(map[string]interface{})["reason"],
+				root_cause["type"],
+				root_cause["reason"],
 			)
+			logger.DebugContext(ctx, "Response Details", "response", e)
 			return nil, errors.New(errMsg)
 		}
 	}

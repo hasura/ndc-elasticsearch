@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hasura/ndc-sdk-go/connector"
 	"github.com/hasura/ndc-elasticsearch/types"
 	"github.com/hasura/ndc-sdk-go/schema"
 )
@@ -23,12 +24,14 @@ func (c *Connector) Query(ctx context.Context, configuration *types.Configuratio
 func executeQuery(ctx context.Context, state *types.State, request *schema.QueryRequest) (*schema.RowSet, error) {
 	// Set the postProcessor in ctx
 	ctx = context.WithValue(ctx, "postProcessor", &types.PostProcessor{})
-
+	logger := connector.GetLogger(ctx)
 	body, err := prepareElasticsearchQuery(ctx, request, state)
 	if err != nil {
 		return nil, err
 	}
 
+	logger.DebugContext(ctx, "Elasticsearch Query", "dsl_query", body)
+	
 	res, err := state.Client.Search(ctx, request.Collection, body)
 	if err != nil {
 		return nil, err

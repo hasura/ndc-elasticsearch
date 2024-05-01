@@ -25,7 +25,7 @@ func (cli *CLI) Execute(ctx context.Context, command string) error {
 		if err != nil {
 			return err
 		}
-		logger.Info("Configuration Updated Successfully.")
+		logger.InfoContext(ctx, "Configuration Updated Successfully.")
 		return nil
 	case "validate":
 		return nil
