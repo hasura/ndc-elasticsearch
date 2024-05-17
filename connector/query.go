@@ -5,40 +5,97 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/hasura/ndc-sdk-go/connector"
 	"github.com/hasura/ndc-elasticsearch/types"
+	"github.com/hasura/ndc-sdk-go/connector"
 	"github.com/hasura/ndc-sdk-go/schema"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func (c *Connector) Query(ctx context.Context, configuration *types.Configuration, state *types.State, request *schema.QueryRequest) (schema.QueryResponse, error) {
-	rowSet, err := executeQuery(ctx, state, request)
+	span := trace.SpanFromContext(ctx)
+	response, err := executeQuery(ctx, state, request, span)
 	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
-	rowSets := []schema.RowSet{
-		*rowSet,
-	}
-	return rowSets, nil
+	return response, nil
 }
 
-func executeQuery(ctx context.Context, state *types.State, request *schema.QueryRequest) (*schema.RowSet, error) {
+func executeQuery(ctx context.Context, state *types.State, request *schema.QueryRequest, span trace.Span) (schema.QueryResponse, error) {
 	// Set the postProcessor in ctx
 	ctx = context.WithValue(ctx, "postProcessor", &types.PostProcessor{})
 	logger := connector.GetLogger(ctx)
-	body, err := prepareElasticsearchQuery(ctx, request, state)
+	rowSets := make([]schema.RowSet, 0)
+
+	prepareContext, prepareSpan := state.Tracer.Start(ctx, "prepare_elasticsearch_query")
+	defer prepareSpan.End()
+	body, err := prepareElasticsearchQuery(prepareContext, request, state)
 	if err != nil {
+		prepareSpan.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
+	prepareSpan.End()
 
-	logger.DebugContext(ctx, "Elasticsearch Query", "dsl_query", body)
-	
-	res, err := state.Client.Search(ctx, request.Collection, body)
-	if err != nil {
-		return nil, err
+	if request.Variables == nil || len(request.Variables) == 0 {
+		searchContext, searchSpan := state.Tracer.Start(ctx, "database_request")
+		defer searchSpan.End()
+		queryJson, _ := json.Marshal(body)
+		setDatabaseAttribute(span, state, request.Collection, string(queryJson))
+		addSpanEvent(searchSpan, logger, "search_elasticsearch", map[string]any{
+			"elasticsearch_request": body,
+		})
+
+		res, err := state.Client.Search(searchContext, request.Collection, body)
+		if err != nil {
+			searchSpan.SetStatus(codes.Error, err.Error())
+			return nil, err
+		}
+		searchSpan.End()
+
+		responseContext, responseSpan := state.Tracer.Start(ctx, "prepare_ndc_response")
+		defer responseSpan.End()
+		addSpanEvent(responseSpan, logger, "prepare_ndc_response", map[string]any{
+			"elasticsearch_response": res,
+		})
+		result := prepareResponse(responseContext, res)
+		rowSets = append(rowSets, *result)
+		responseSpan.End()
+	} else {
+		variableContext, variableSpan := state.Tracer.Start(ctx, "prepare_query_with_variables")
+		defer variableSpan.End()
+		addSpanEvent(variableSpan, logger, "prepare_query_with_variables", map[string]any{
+			"variables": request.Variables,
+		})
+		variableQuery, err := executeQueryWithVariables(variableContext, state, request.Variables, body)
+		if err != nil {
+			variableSpan.SetStatus(codes.Error, err.Error())
+			return nil, err
+		}
+		variableSpan.End()
+
+		searchContext, searchSpan := state.Tracer.Start(ctx, "database_request")
+		defer searchSpan.End()
+		queryJson, _ := json.Marshal(variableQuery)
+		setDatabaseAttribute(span, state, request.Collection, string(queryJson))
+		addSpanEvent(searchSpan, logger, "search_elasticsearch", map[string]any{
+			"elasticsearch_request": variableQuery,
+		})
+		res, err := state.Client.Search(searchContext, request.Collection, variableQuery)
+		if err != nil {
+			searchSpan.SetStatus(codes.Error, err.Error())
+			return nil, err
+		}
+		searchSpan.End()
+
+		responseContext, responseSpan := state.Tracer.Start(ctx, "prepare_ndc_response")
+		defer responseSpan.End()
+		addSpanEvent(responseSpan, logger, "prepare_ndc_response", map[string]any{
+			"elasticsearch_response": res,
+		})
+		rowSets = prepareResponseWithVariables(responseContext, res)
 	}
-
-	result := prepareResponse(ctx, res)
-	return result, nil
+	return rowSets, nil
 }
 
 func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest, state *types.State) (map[string]interface{}, error) {
@@ -49,7 +106,9 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 	}
 
 	postProcessor := ctx.Value("postProcessor").(*types.PostProcessor)
+	span := trace.SpanFromContext(ctx)
 
+	span.AddEvent("prepare_select_query")
 	// Select the fields
 	if request.Query.Fields != nil {
 		postProcessor.IsFields = true
@@ -73,6 +132,7 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 		query["_source"] = fields
 	}
 
+	span.AddEvent("prepare_paginate_query")
 	// Set the limit
 	if request.Query.Limit != nil {
 		query["size"] = *request.Query.Limit
@@ -83,6 +143,7 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 		query["from"] = *request.Query.Offset
 	}
 
+	span.AddEvent("prepare_sort_query")
 	// Order by
 	if request.Query.OrderBy != nil && len(request.Query.OrderBy.Elements) != 0 {
 		sort, err := prepareSortQuery(request.Query.OrderBy, state)
@@ -92,9 +153,10 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 		query["sort"] = sort
 	}
 
+	span.AddEvent("prepare_aggregate_query")
 	// Aggregations
 	if request.Query.Aggregates != nil {
-		aggs, err := prepareAggregateQuery(ctx, request.Query.Aggregates)
+		aggs, err := prepareAggregateQuery(ctx, request.Query.Aggregates, state)
 		if err != nil {
 			return nil, err
 		}
@@ -103,6 +165,7 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 		}
 	}
 
+	span.AddEvent("prepare_filter_query")
 	// Filter
 	if request.Query.Predicate != nil {
 		filter, err := prepareFilterQuery(request.Query.Predicate)
@@ -119,53 +182,4 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 	fmt.Println(string(queryJSON))
 
 	return query, nil
-}
-
-func prepareResponse(ctx context.Context, res map[string]interface{}) *schema.RowSet {
-	postProcessor := ctx.Value("postProcessor").(*types.PostProcessor)
-	total := res["hits"].(map[string]interface{})["total"].(map[string]interface{})["value"].(float64)
-	hits := res["hits"].(map[string]interface{})["hits"].([]interface{})
-	documents := make([]map[string]interface{}, len(hits))
-	for i, hit := range hits {
-		doc := hit.(map[string]interface{})
-		document := make(map[string]interface{}, len(postProcessor.SelectedFields))
-		source := doc["_source"].(map[string]interface{})
-		if postProcessor.IsIDSelected {
-			source["_id"] = doc["_id"].(string)
-		}
-		for fieldName, columnName := range postProcessor.SelectedFields {
-			document[fieldName] = source[columnName]
-		}
-		documents[i] = document
-	}
-	rowSet := &schema.RowSet{
-		Aggregates: schema.RowSetAggregates{},
-	}
-	if postProcessor.IsFields {
-		rowSet.Rows = documents
-	}
-
-	if postProcessor.StarAggregates != "" {
-		rowSet.Aggregates = schema.RowSetAggregates{
-			postProcessor.StarAggregates: int(total),
-		}
-	}
-
-	// Add aggregates
-	fmt.Println("Column count: ", postProcessor.ColumnCount)
-	if len(postProcessor.ColumnCount) != 0 {
-		for _, column := range postProcessor.ColumnCount {
-			if aggregation, ok := res["aggregations"].(map[string]interface{}); ok {
-				if record, ok := aggregation[column].(map[string]interface{}); ok {
-					rowSet.Aggregates[column] = record["value"]
-				}
-			}
-		}
-	}
-
-	// Pretty print res
-	queryJSON, _ := json.MarshalIndent(res["aggregations"], "", "  ")
-	fmt.Println(string(queryJSON))
-
-	return rowSet
 }

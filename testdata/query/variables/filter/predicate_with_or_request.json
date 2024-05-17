@@ -1,0 +1,54 @@
+{
+    "collection": "kibana_sample_data_ecommerce",
+    "query": {
+        "fields": {
+            "customer_first_name": {
+                "type": "column",
+                "column": "customer_first_name"
+            },
+            "customer_gender": {
+                "type": "column",
+                "column": "customer_gender"
+            }
+        },
+        "predicate": {
+            "type": "or",
+            "expressions": [
+                {
+                    "type": "binary_comparison_operator",
+                    "column": {
+                        "type": "column",
+                        "name": "customer_first_name",
+                        "path": []
+                    },
+                    "operator": "term",
+                    "value": {
+                        "type": "variable",
+                        "name": "$customer_first_name"
+                    }
+                },
+                {
+                    "type": "binary_comparison_operator",
+                    "column": {
+                        "type": "column",
+                        "name": "day_of_week",
+                        "path": []
+                    },
+                    "operator": "match",
+                    "value": {
+                        "type": "variable",
+                        "name": "$day_of_week"
+                    }
+                }
+            ]
+        }
+    },
+    "arguments": {},
+    "collection_relationships": {},
+    "variables": [
+        {
+            "$customer_first_name": "Eddie",
+            "$day_of_week": "Monday"
+        }
+    ]
+}

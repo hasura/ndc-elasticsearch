@@ -1,0 +1,14 @@
+[
+    {
+        "rows": [
+            {
+                "customer_first_name": "Mary",
+                "customer_gender": "FEMALE"
+            },
+            {
+                "customer_first_name": "Gwen",
+                "customer_gender": "FEMALE"
+            }
+        ]
+    }
+]

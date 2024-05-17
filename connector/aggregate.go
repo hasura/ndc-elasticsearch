@@ -7,30 +7,54 @@ import (
 	"github.com/hasura/ndc-sdk-go/schema"
 )
 
-func prepareAggregateQuery(ctx context.Context, aggregates schema.QueryAggregates) (map[string]interface{}, error) {
+func prepareAggregateQuery(ctx context.Context, aggregates schema.QueryAggregates, state *types.State) (map[string]interface{}, error) {
 	postProcessor := ctx.Value("postProcessor").(*types.PostProcessor)
 	aggs := make(map[string]interface{})
 	for name, aggregate := range aggregates {
-		switch aggregate["type"] {
-		case schema.AggregateTypeStarCount:
+		aggregatColumn, ok := aggregate["column"].(string)
+		if ok {
+			if _, ok := state.UnsupportedAggregateFields[aggregatColumn]; ok {
+				return nil, schema.BadRequestError("aggregation not supported on this field", map[string]any{
+					"value": aggregatColumn,
+				})
+			}
+		}
+		switch agg := aggregate.Interface().(type) {
+		case *schema.AggregateStarCount:
 			postProcessor.StarAggregates = name
-		case schema.AggregateTypeColumnCount:
-			agg, err := aggregate.AsColumnCount()
-			if err != nil {
-				return nil, err
-			}
-			function := "value_count"
+		case *schema.AggregateColumnCount:
 			if agg.Distinct {
-				function = "cardinality"
+				aggs[name] = map[string]interface{}{
+					"cardinality": map[string]interface{}{
+						"field": agg.Column,
+					},
+				}
+			} else {
+				aggs[name] = map[string]interface{}{
+					"filter": map[string]interface{}{
+						"exists": map[string]interface{}{
+							"field": agg.Column,
+						},
+					},
+				}
 			}
-			postProcessor.ColumnCount = append(postProcessor.ColumnCount, name)
-			aggs[name] = map[string]interface{}{
-				function: map[string]interface{}{
-					"field": agg.Column,
-				},
+			postProcessor.ColumnAggregate = append(postProcessor.ColumnAggregate, name)
+		case *schema.AggregateSingleColumn:
+			postProcessor.ColumnAggregate = append(postProcessor.ColumnAggregate, name)
+			switch agg.Function {
+			case "sum", "min", "max", "avg", "value_count", "cardinality", "stats", "string_stats":
+				aggs[name] = map[string]interface{}{
+					agg.Function: map[string]interface{}{
+						"field": agg.Column,
+					},
+				}
+			default:
+				return nil, schema.BadRequestError("invalid aggregate function", map[string]any{
+					"value": agg.Function,
+				})
 			}
 		default:
-			return nil, schema.UnprocessableContentError("invalid aggregate field", map[string]interface{}{
+			return nil, schema.BadRequestError("invalid aggregate field", map[string]any{
 				"value": aggregate["type"],
 			})
 		}

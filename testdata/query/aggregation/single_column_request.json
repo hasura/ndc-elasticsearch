@@ -1,0 +1,34 @@
+{
+    "collection": "kibana_sample_data_ecommerce",
+    "query": {
+        "fields": {
+            "customer_first_name": {
+                "type": "column",
+                "column": "customer_first_name"
+            },
+            "customer_gender": {
+                "type": "column",
+                "column": "customer_gender"
+            }
+        },
+        "aggregates": {
+            "orders_total": {
+                "type": "single_column",
+                "function": "sum",
+                "column": "total_quantity"
+            },
+            "total_orders_stats": {
+                "type": "single_column",
+                "function": "stats",
+                "column": "total_quantity"
+            },
+            "customer_first_name_stats": {
+                "type": "single_column",
+                "function": "string_stats",
+                "column": "customer_first_name.keyword"
+            }
+        }
+    },
+    "arguments": {},
+    "collection_relationships": {}
+}

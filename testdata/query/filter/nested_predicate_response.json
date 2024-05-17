@@ -1,0 +1,46 @@
+[
+  {
+    "rows": [
+      {
+        "customer_first_name": "Abd",
+        "customer_gender": "MALE"
+      },
+      {
+        "customer_first_name": "Sultan Al",
+        "customer_gender": "MALE"
+      },
+      {
+        "customer_first_name": "Tariq",
+        "customer_gender": "MALE"
+      },
+      {
+        "customer_first_name": "Abd",
+        "customer_gender": "MALE"
+      },
+      {
+        "customer_first_name": "Jackson",
+        "customer_gender": "MALE"
+      },
+      {
+        "customer_first_name": "Tariq",
+        "customer_gender": "MALE"
+      },
+      {
+        "customer_first_name": "Sultan Al",
+        "customer_gender": "MALE"
+      },
+      {
+        "customer_first_name": "Sultan Al",
+        "customer_gender": "MALE"
+      },
+      {
+        "customer_first_name": "Abd",
+        "customer_gender": "MALE"
+      },
+      {
+        "customer_first_name": "Abd",
+        "customer_gender": "MALE"
+      }
+    ]
+  }
+]

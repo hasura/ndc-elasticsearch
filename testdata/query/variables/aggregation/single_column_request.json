@@ -1,0 +1,59 @@
+{
+    "collection": "kibana_sample_data_ecommerce",
+    "arguments": {},
+    "query": {
+        "fields": {
+            "category": {
+                "type": "column",
+                "column": "category"
+            },
+            "currency": {
+                "type": "column",
+                "column": "currency"
+            },
+            "customer_first_name": {
+                "type": "column",
+                "column": "customer_first_name"
+            }
+        },
+        "predicate": {
+            "type": "binary_comparison_operator",
+            "column": {
+                "type": "column",
+                "name": "category",
+                "path": []
+            },
+            "operator": "match",
+            "value": {
+                "type": "variable",
+                "name": "$category"
+            }
+        },
+        "aggregates": {
+            "orders_total": {
+                "type": "single_column",
+                "function": "sum",
+                "column": "total_quantity"
+            },
+            "total_orders_stats": {
+                "type": "single_column",
+                "function": "stats",
+                "column": "total_quantity"
+            },
+            "customer_first_name_stats": {
+                "type": "single_column",
+                "function": "string_stats",
+                "column": "customer_first_name.keyword"
+            }
+        }
+    },
+    "collection_relationships": {},
+    "variables": [
+        {
+            "$category": "Men's"
+        },
+        {
+            "$category": "Women's"
+        }
+    ]
+}

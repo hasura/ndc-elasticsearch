@@ -1,0 +1,209 @@
+[
+    {
+        "aggregates": {
+            "customer_first_name_stats": {
+                "avg_length": 5.8238095238095235,
+                "count": 2310,
+                "entropy": 4.817614351274099,
+                "max_length": 14,
+                "min_length": 3
+            },
+            "orders_total": 5052,
+            "total_orders_stats": {
+                "avg": 2.187012987012987,
+                "count": 2310,
+                "max": 8,
+                "min": 1,
+                "sum": 5052
+            }
+        },
+        "rows": [
+            {
+                "category": [
+                    "Men's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Eddie"
+            },
+            {
+                "category": [
+                    "Men's Clothing",
+                    "Men's Accessories"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Eddie"
+            },
+            {
+                "category": [
+                    "Men's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Oliver"
+            },
+            {
+                "category": [
+                    "Men's Clothing",
+                    "Men's Accessories",
+                    "Men's Shoes"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Abd"
+            },
+            {
+                "category": [
+                    "Men's Accessories",
+                    "Men's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Eddie"
+            },
+            {
+                "category": [
+                    "Men's Accessories",
+                    "Men's Clothing",
+                    "Men's Shoes"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Sultan Al"
+            },
+            {
+                "category": [
+                    "Men's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Eddie"
+            },
+            {
+                "category": [
+                    "Men's Clothing",
+                    "Men's Shoes",
+                    "Women's Accessories"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Sultan Al"
+            },
+            {
+                "category": [
+                    "Men's Shoes",
+                    "Men's Clothing",
+                    "Women's Accessories",
+                    "Men's Accessories"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Sultan Al"
+            },
+            {
+                "category": [
+                    "Men's Clothing",
+                    "Men's Shoes"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "George"
+            }
+        ]
+    },
+    {
+        "aggregates": {
+            "customer_first_name_stats": {
+                "avg_length": 6.48661800486618,
+                "count": 2466,
+                "entropy": 4.384968033308218,
+                "max_length": 14,
+                "min_length": 3
+            },
+            "orders_total": 5291,
+            "total_orders_stats": {
+                "avg": 2.1455798864557987,
+                "count": 2466,
+                "max": 4,
+                "min": 1,
+                "sum": 5291
+            }
+        },
+        "rows": [
+            {
+                "category": [
+                    "Women's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Mary"
+            },
+            {
+                "category": [
+                    "Women's Shoes",
+                    "Women's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Gwen"
+            },
+            {
+                "category": [
+                    "Women's Shoes",
+                    "Women's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Diane"
+            },
+            {
+                "category": [
+                    "Women's Shoes",
+                    "Women's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Diane"
+            },
+            {
+                "category": [
+                    "Women's Accessories",
+                    "Women's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Wilhemina St."
+            },
+            {
+                "category": [
+                    "Women's Shoes",
+                    "Women's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Rabbia Al"
+            },
+            {
+                "category": [
+                    "Women's Accessories",
+                    "Women's Clothing",
+                    "Women's Shoes"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Rabbia Al"
+            },
+            {
+                "category": [
+                    "Men's Clothing",
+                    "Men's Shoes",
+                    "Women's Accessories"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Sultan Al"
+            },
+            {
+                "category": [
+                    "Men's Shoes",
+                    "Men's Clothing",
+                    "Women's Accessories",
+                    "Men's Accessories"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Sultan Al"
+            },
+            {
+                "category": [
+                    "Women's Clothing",
+                    "Women's Accessories"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Brigitte"
+            }
+        ]
+    }
+]

@@ -1,0 +1,37 @@
+{
+    "collection": "kibana_sample_data_ecommerce",
+    "arguments": {},
+    "query": {
+        "fields": {
+            "customer_first_name": {
+                "type": "column",
+                "column": "customer_first_name"
+            },
+            "customer_last_name": {
+                "type": "column",
+                "column": "customer_last_name"
+            }
+        },
+        "order_by": {
+            "elements": [
+                {
+                    "target": {
+                        "type": "column",
+                        "name": "customer_first_name.keyword",
+                        "path": []
+                    },
+                    "order_direction": "asc"
+                },
+                {
+                    "target": {
+                        "type": "column",
+                        "name": "customer_last_name.keyword",
+                        "path": []
+                    },
+                    "order_direction": "desc"
+                }
+            ]
+        }
+    },
+    "collection_relationships": {}
+}

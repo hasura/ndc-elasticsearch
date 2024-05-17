@@ -42,10 +42,18 @@ func (c *Connector) TryInitState(ctx context.Context, configuration *types.Confi
 	if err != nil {
 		return nil, err
 	}
+	result, err := client.GetInfo(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	return &types.State{
-		TelemetryState:         metrics,
-		Client:                 client,
-		UnsupportedQueryFields: map[string]string{},
+		TelemetryState:             metrics,
+		Client:                     client,
+		UnsupportedQueryFields:     map[string]string{},
+		UnsupportedSortFields:      map[string]bool{},
+		UnsupportedAggregateFields: map[string]bool{},
+		ElasticsearchInfo:          result.(map[string]interface{}),
 	}, nil
 }
 
@@ -62,7 +70,10 @@ func (c *Connector) GetCapabilities(configuration *types.Configuration) schema.C
 	return &schema.CapabilitiesResponse{
 		Version: "0.1.2",
 		Capabilities: schema.Capabilities{
-			Query: schema.QueryCapabilities{},
+			Query: schema.QueryCapabilities{
+				Variables:  schema.LeafCapability{},
+				Aggregates: schema.LeafCapability{},
+			},
 		},
 	}
 }

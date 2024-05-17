@@ -1,0 +1,33 @@
+{
+    "collection": "kibana_sample_data_ecommerce",
+    "query": {
+        "fields": {
+            "customer_first_name": {
+                "type": "column",
+                "column": "customer_first_name"
+            },
+            "customer_gender": {
+                "type": "column",
+                "column": "customer_gender"
+            }
+        },
+        "predicate": {
+            "type": "binary_comparison_operator",
+            "column": {
+                "type": "column",
+                "name": "customer_first_name.keyword",
+                "path": []
+            },
+            "operator": "terms",
+            "value": {
+                "type": "scalar",
+                "value": [
+                    "Eddie",
+                    "Mary"
+                ]
+            }
+        }
+    },
+    "arguments": {},
+    "collection_relationships": {}
+}

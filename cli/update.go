@@ -1,24 +1,26 @@
 package cli
 
 import (
+	"context"
 	"encoding/json"
 	"os"
+	"path/filepath"
 
 	"github.com/hasura/ndc-elasticsearch/elasticsearch"
 )
 
-func updateConfiguration() error {
+func updateConfiguration(ctx context.Context, configPath string) error {
 	client, err := elasticsearch.NewClient()
 	if err != nil {
 		return err
 	}
 
-	indices, err := client.GetIndices()
+	indices, err := client.GetIndices(ctx)
 	if err != nil {
 		return err
 	}
 
-	result, err := client.GetMappings(indices)
+	result, err := client.GetMappings(ctx, indices)
 	if err != nil {
 		return err
 	}
@@ -28,7 +30,8 @@ func updateConfiguration() error {
 		return err
 	}
 
-	file, err := os.Create("configuration.json")
+	configFilePath := filepath.Join(configPath, ConfigFileName)
+	file, err := os.Create(configFilePath)
 	if err != nil {
 		return err
 	}

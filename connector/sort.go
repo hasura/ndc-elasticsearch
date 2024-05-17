@@ -9,13 +9,12 @@ func prepareSortQuery(orderBy *schema.OrderBy, state *types.State) ([]map[string
 	elements := orderBy.Elements
 	sort := make([]map[string]interface{}, len(elements))
 	for i, element := range elements {
+		target := element.Target["name"].(string)
 		// check if the target field is orderable or not
-		for _, unsupportedSortField := range state.UnsupportedSortFields {
-			if element.Target["name"].(string) == unsupportedSortField {
-				return nil, schema.BadRequestError("sorting not supported on this field", map[string]interface{}{
-					"value": element.Target["name"].(string),
-				})
-			}
+		if _, ok := state.UnsupportedSortFields[target]; ok {
+			return nil, schema.BadRequestError("sorting not supported on this field", map[string]interface{}{
+				"value": element.Target["name"].(string),
+			})
 		}
 		sort[i] = make(map[string]interface{})
 		name := element.Target["name"].(string)

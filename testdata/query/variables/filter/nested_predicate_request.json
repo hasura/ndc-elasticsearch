@@ -1,0 +1,64 @@
+{
+    "collection": "kibana_sample_data_ecommerce",
+    "query": {
+        "fields": {
+            "fullName": {
+                "type": "column",
+                "column": "customer_full_name",
+                "fields": null
+            },
+            "currency": {
+                "type": "column",
+                "column": "currency"
+            }
+        },
+        "predicate": {
+            "type": "and",
+            "expressions": [
+                {
+                    "type": "or",
+                    "expressions": [
+                        {
+                            "type": "binary_comparison_operator",
+                            "column": {
+                                "type": "column",
+                                "name": "category",
+                                "path": []
+                            },
+                            "operator": "match_phrase_prefix",
+                            "value": {
+                                "type": "variable",
+                                "name": "$category"
+                            }
+                        },
+                        {
+                            "type": "binary_comparison_operator",
+                            "column": {
+                                "type": "column",
+                                "name": "currency",
+                                "path": []
+                            },
+                            "operator": "match",
+                            "value": {
+                                "type": "variable",
+                                "name": "$currency"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "arguments": {},
+    "collection_relationships": {},
+    "variables": [
+        {
+            "$category": "Men's",
+            "$currency": "EUR"
+        },
+        {
+            "$category": "Women's",
+            "$currency": "EUR"
+        }
+    ]
+}

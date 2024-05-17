@@ -1,0 +1,29 @@
+{
+    "collection": "kibana_sample_data_ecommerce",
+    "query": {
+        "fields": {
+            "customer_first_name": {
+                "type": "column",
+                "column": "customer_first_name"
+            },
+            "customer_gender": {
+                "type": "column",
+                "column": "customer_gender"
+            }
+        },
+        "aggregates": {
+            "sku_count": {
+                "type": "column_count",
+                "column": "sku",
+                "distinct": false
+            },
+            "sku_distinct_count": {
+                "type": "column_count",
+                "column": "sku",
+                "distinct": true
+            }
+        }
+    },
+    "arguments": {},
+    "collection_relationships": {}
+}
