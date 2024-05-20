@@ -88,6 +88,7 @@ func (c *Connector) MutationExplain(ctx context.Context, configuration *types.Co
 	return nil, schema.NotSupportedError("mutation explain has not been supported yet", nil)
 }
 
+// Mutation executes a mutation request.
 func (c *Connector) Mutation(ctx context.Context, configuration *types.Configuration, state *types.State, request *schema.MutationRequest) (*schema.MutationResponse, error) {
 	return nil, schema.NotSupportedError("mutation has not been supported yet", nil)
 }

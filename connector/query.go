@@ -12,6 +12,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// Query executes a query request.
 func (c *Connector) Query(ctx context.Context, configuration *types.Configuration, state *types.State, request *schema.QueryRequest) (schema.QueryResponse, error) {
 	span := trace.SpanFromContext(ctx)
 	response, err := executeQuery(ctx, state, request, span)
@@ -22,6 +23,7 @@ func (c *Connector) Query(ctx context.Context, configuration *types.Configuratio
 	return response, nil
 }
 
+// executeQuery prepares equivalent elasticsearch query, executes it and returns the ndc response
 func executeQuery(ctx context.Context, state *types.State, request *schema.QueryRequest, span trace.Span) (schema.QueryResponse, error) {
 	// Set the postProcessor in ctx
 	ctx = context.WithValue(ctx, "postProcessor", &types.PostProcessor{})
@@ -30,6 +32,7 @@ func executeQuery(ctx context.Context, state *types.State, request *schema.Query
 
 	prepareContext, prepareSpan := state.Tracer.Start(ctx, "prepare_elasticsearch_query")
 	defer prepareSpan.End()
+
 	body, err := prepareElasticsearchQuery(prepareContext, request, state)
 	if err != nil {
 		prepareSpan.SetStatus(codes.Error, err.Error())
@@ -40,6 +43,7 @@ func executeQuery(ctx context.Context, state *types.State, request *schema.Query
 	if request.Variables == nil || len(request.Variables) == 0 {
 		searchContext, searchSpan := state.Tracer.Start(ctx, "database_request")
 		defer searchSpan.End()
+
 		queryJson, _ := json.Marshal(body)
 		setDatabaseAttribute(span, state, request.Collection, string(queryJson))
 		addSpanEvent(searchSpan, logger, "search_elasticsearch", map[string]any{
@@ -55,6 +59,7 @@ func executeQuery(ctx context.Context, state *types.State, request *schema.Query
 
 		responseContext, responseSpan := state.Tracer.Start(ctx, "prepare_ndc_response")
 		defer responseSpan.End()
+
 		addSpanEvent(responseSpan, logger, "prepare_ndc_response", map[string]any{
 			"elasticsearch_response": res,
 		})
@@ -62,12 +67,13 @@ func executeQuery(ctx context.Context, state *types.State, request *schema.Query
 		rowSets = append(rowSets, *result)
 		responseSpan.End()
 	} else {
-		variableContext, variableSpan := state.Tracer.Start(ctx, "prepare_query_with_variables")
+		_, variableSpan := state.Tracer.Start(ctx, "prepare_query_with_variables")
 		defer variableSpan.End()
+
 		addSpanEvent(variableSpan, logger, "prepare_query_with_variables", map[string]any{
 			"variables": request.Variables,
 		})
-		variableQuery, err := executeQueryWithVariables(variableContext, state, request.Variables, body)
+		variableQuery, err := executeQueryWithVariables(request.Variables, body)
 		if err != nil {
 			variableSpan.SetStatus(codes.Error, err.Error())
 			return nil, err
@@ -76,6 +82,7 @@ func executeQuery(ctx context.Context, state *types.State, request *schema.Query
 
 		searchContext, searchSpan := state.Tracer.Start(ctx, "database_request")
 		defer searchSpan.End()
+
 		queryJson, _ := json.Marshal(variableQuery)
 		setDatabaseAttribute(span, state, request.Collection, string(queryJson))
 		addSpanEvent(searchSpan, logger, "search_elasticsearch", map[string]any{
@@ -90,6 +97,7 @@ func executeQuery(ctx context.Context, state *types.State, request *schema.Query
 
 		responseContext, responseSpan := state.Tracer.Start(ctx, "prepare_ndc_response")
 		defer responseSpan.End()
+
 		addSpanEvent(responseSpan, logger, "prepare_ndc_response", map[string]any{
 			"elasticsearch_response": res,
 		})
@@ -98,6 +106,7 @@ func executeQuery(ctx context.Context, state *types.State, request *schema.Query
 	return rowSets, nil
 }
 
+// prepareElasticsearchQuery prepares an Elasticsearch query based on the provided query request.
 func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest, state *types.State) (map[string]interface{}, error) {
 	query := map[string]interface{}{
 		"_source": map[string]interface{}{
@@ -105,30 +114,15 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 		},
 	}
 
-	postProcessor := ctx.Value("postProcessor").(*types.PostProcessor)
 	span := trace.SpanFromContext(ctx)
 
 	span.AddEvent("prepare_select_query")
 	// Select the fields
 	if request.Query.Fields != nil {
-		postProcessor.IsFields = true
-		fields := make([]string, 0)
-		selectFields := make(map[string]string)
-		for fieldName, fieldData := range request.Query.Fields {
-			if columnName, ok := fieldData["column"].(string); ok {
-				if _, ok := state.UnsupportedQueryFields[columnName]; ok {
-					return nil, schema.BadRequestError("query selection not supported on this field", map[string]interface{}{
-						"value": columnName,
-					})
-				}
-				fields = append(fields, columnName)
-				selectFields[fieldName] = columnName
-				if columnName == "_id" {
-					postProcessor.IsIDSelected = true
-				}
-			}
+		fields, err := prepareSelectQuery(ctx, state, request.Query.Fields)
+		if err != nil {
+			return nil, err
 		}
-		postProcessor.SelectedFields = selectFields
 		query["_source"] = fields
 	}
 

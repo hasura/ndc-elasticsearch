@@ -9,6 +9,7 @@ import (
 	"github.com/hasura/ndc-elasticsearch/elasticsearch"
 )
 
+// updateConfiguration updates the configuration file with the mappings retrieved from Elasticsearch.
 func updateConfiguration(ctx context.Context, configPath string) error {
 	client, err := elasticsearch.NewClient()
 	if err != nil {

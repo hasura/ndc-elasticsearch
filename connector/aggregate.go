@@ -7,6 +7,7 @@ import (
 	"github.com/hasura/ndc-sdk-go/schema"
 )
 
+// prepareAggregateQuery prepares the aggregate query based on the aggregates in the query request.
 func prepareAggregateQuery(ctx context.Context, aggregates schema.QueryAggregates, state *types.State) (map[string]interface{}, error) {
 	postProcessor := ctx.Value("postProcessor").(*types.PostProcessor)
 	aggs := make(map[string]interface{})

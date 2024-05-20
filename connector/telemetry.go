@@ -47,6 +47,7 @@ func isDebug(logger *slog.Logger) bool {
 	return logger.Enabled(context.TODO(), slog.LevelDebug)
 }
 
+// setDatabaseAttribute sets database attributes in the span.
 func setDatabaseAttribute(span trace.Span, state *types.State, index string, query string) {
 	elasticsearchInfo := state.ElasticsearchInfo
 

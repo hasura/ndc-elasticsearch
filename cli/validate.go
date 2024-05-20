@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 )
 
+// validate validates the configuration file.
 func validate(configPath string) error {
 	configFilePath := filepath.Join(configPath, ConfigFileName)
 	file, err := os.Open(configFilePath)

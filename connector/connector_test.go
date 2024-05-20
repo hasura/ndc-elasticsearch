@@ -15,6 +15,7 @@ import (
 	"github.com/hasura/ndc-elasticsearch/types"
 )
 
+// createTestServer creates a test server for the given configuration.
 func createTestServer(t *testing.T) *connector.Server[types.Configuration, types.State] {
 	server, err := connector.NewServer(&Connector{}, &connector.ServerOptions{
 		Configuration: "../testdata",
@@ -29,6 +30,7 @@ func createTestServer(t *testing.T) *connector.Server[types.Configuration, types
 	return server
 }
 
+// fetchTestSample reads the specified file and returns its content.
 func fetchTestSample(t *testing.T, fileName string) []byte {
 	res, err := os.ReadFile(fileName)
 	if err != nil {
@@ -38,6 +40,7 @@ func fetchTestSample(t *testing.T, fileName string) []byte {
 	return res
 }
 
+// assertHTTPResponseStatus asserts the HTTP response status code.
 func assertHTTPResponseStatus(t *testing.T, name string, res *http.Response, statusCode int) {
 	if res.StatusCode != statusCode {
 		t.Errorf("\n%s: expected status %d, got %d", name, statusCode, res.StatusCode)
@@ -45,6 +48,7 @@ func assertHTTPResponseStatus(t *testing.T, name string, res *http.Response, sta
 	}
 }
 
+// assertHTTPResponse performs assertions on the HTTP response.
 func assertHTTPResponse[B any](t *testing.T, res *http.Response, statusCode int, expectedBody B) {
 	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
@@ -70,6 +74,7 @@ func assertHTTPResponse[B any](t *testing.T, res *http.Response, statusCode int,
 	}
 }
 
+// TestGeneralMethods tests various general methods like capabilities, schema, health, and metrics.
 func TestGeneralMethods(t *testing.T) {
 	server := createTestServer(t).BuildTestServer()
 	t.Run("capabilities", func(t *testing.T) {
@@ -140,6 +145,7 @@ func TestGeneralMethods(t *testing.T) {
 	})
 }
 
+// TestQuery tests various query scenarios by sending HTTP requests and asserting the responses.
 func TestQuery(t *testing.T) {
 	server := createTestServer(t).BuildTestServer()
 

@@ -5,6 +5,7 @@ import (
 	"github.com/hasura/ndc-sdk-go/schema"
 )
 
+// prepareSortQuery prepares the sort query.
 func prepareSortQuery(orderBy *schema.OrderBy, state *types.State) ([]map[string]interface{}, error) {
 	elements := orderBy.Elements
 	sort := make([]map[string]interface{}, len(elements))

@@ -1,7 +1,6 @@
 package connector
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 
@@ -9,7 +8,8 @@ import (
 	"github.com/hasura/ndc-sdk-go/schema"
 )
 
-func executeQueryWithVariables(ctx context.Context, state *types.State, variableSets []schema.QueryRequestVariablesElem, body map[string]interface{}) (map[string]interface{}, error) {
+// executeQueryWithVariables prepares a dsl query for query with variables.
+func executeQueryWithVariables(variableSets []schema.QueryRequestVariablesElem, body map[string]interface{}) (map[string]interface{}, error) {
 	variableQuery := make(map[string]interface{})
 	variableQuery["size"] = 0
 
@@ -60,7 +60,7 @@ func executeQueryWithVariables(ctx context.Context, state *types.State, variable
 	return variableQuery, nil
 }
 
-// Replace variable names in the filter with values from variableSet
+// replaceVariables replaces variable names in the filter with values from variableSet
 func replaceVariables(input interface{}, variableSet map[string]interface{}) (interface{}, error) {
 	switch value := input.(type) {
 	case types.Variable:

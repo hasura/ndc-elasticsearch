@@ -5,6 +5,7 @@ import (
 	"github.com/hasura/ndc-sdk-go/schema"
 )
 
+// prepareFilterQuery prepares a filter query based on the given expression.
 func prepareFilterQuery(expression schema.Expression) (map[string]interface{}, error) {
 	filter := make(map[string]interface{})
 	switch expr := expression.Interface().(type) {
@@ -55,6 +56,7 @@ func prepareFilterQuery(expression schema.Expression) (map[string]interface{}, e
 	}
 }
 
+// handleExpressionUnaryComparisonOperator processes the unary comparison operator expression.
 func handleExpressionUnaryComparisonOperator(expr *schema.ExpressionUnaryComparisonOperator) (map[string]interface{}, error) {
 	filter := make(map[string]interface{})
 	if expr.Operator == "is_null" {
@@ -74,11 +76,12 @@ func handleExpressionUnaryComparisonOperator(expr *schema.ExpressionUnaryCompari
 	})
 }
 
+// handleExpressionBinaryComparisonOperator processes the binary comparison operator expression.
 func handleExpressionBinaryComparisonOperator(expr *schema.ExpressionBinaryComparisonOperator) (map[string]interface{}, error) {
 	filter := make(map[string]interface{})
 	switch expr.Operator {
 	case "match", "match_phrase", "match_phrase_prefix", "match_bool_prefix", "term", "prefix", "wildcard", "regexp", "terms":
-		value, err := evalElasticComparisonValue(expr.Value)
+		value, err := evalComparisonValue(expr.Value)
 		if err != nil {
 			return nil, err
 		}
@@ -93,13 +96,13 @@ func handleExpressionBinaryComparisonOperator(expr *schema.ExpressionBinaryCompa
 	}
 }
 
-func evalElasticComparisonValue(comparisonValue schema.ComparisonValue) (any, error) {
+// evalComparisonValue evaluates the comparison value for scalar and variable type.
+func evalComparisonValue(comparisonValue schema.ComparisonValue) (any, error) {
 	switch compValue := comparisonValue.Interface().(type) {
 	case *schema.ComparisonValueScalar:
 		return compValue.Value, nil
 	case *schema.ComparisonValueVariable:
 		return types.Variable(compValue.Name), nil
-
 	default:
 		return nil, schema.UnprocessableContentError("invalid comparison value", map[string]any{
 			"value": comparisonValue,

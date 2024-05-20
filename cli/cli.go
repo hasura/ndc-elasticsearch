@@ -20,6 +20,7 @@ type CLI struct {
 	Validate   Arguments `cmd:"" help:"Validate configuration directory."`
 }
 
+// Execute executes the CLI command based on the provided command string.
 func (cli *CLI) Execute(ctx context.Context, command string) error {
 	logger := connector.GetLogger(ctx)
 	switch command {

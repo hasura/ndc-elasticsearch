@@ -223,6 +223,7 @@ var objectTypeMap = map[string]schema.ObjectType{
 	},
 }
 
+// getComparisonOperatorDefinition generates and returns a map of comparison operators based on the provided data type.
 func getComparisonOperatorDefinition(dataType string) map[string]schema.ComparisonOperatorDefinition {
 	var comparisonOperators = map[string]schema.ComparisonOperatorDefinition{
 		"match":        schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),

@@ -7,6 +7,7 @@ import (
 	"github.com/hasura/ndc-sdk-go/schema"
 )
 
+// GetSchema returns the schema by parsing the configuration.
 func (c *Connector) GetSchema(ctx context.Context, configuration *types.Configuration, state *types.State) (schema.SchemaResponseMarshaler, error) {
 	schemaObject := schema.SchemaResponse{
 		ScalarTypes: make(schema.SchemaResponseScalarTypes),
@@ -20,6 +21,7 @@ func (c *Connector) GetSchema(ctx context.Context, configuration *types.Configur
 	return schemaObject, nil
 }
 
+// parseConfigurationToSchema parses the given configuration to generate the schema response.
 func parseConfigurationToSchema(configuration *types.Configuration, ndcSchema *schema.SchemaResponse, state *types.State) {
 
 	for indexName, mappings := range *configuration {
@@ -53,6 +55,7 @@ func parseConfigurationToSchema(configuration *types.Configuration, ndcSchema *s
 	}
 }
 
+// getScalarTypesAndObjects retrieves scalar types and objects from properties.
 func getScalarTypesAndObjects(properties map[string]interface{}, state *types.State) ([]map[string]interface{}, []map[string]interface{}) {
 	fields := make([]map[string]interface{}, 0)
 	objects := make([]map[string]interface{}, 0)
@@ -126,6 +129,7 @@ func getScalarTypesAndObjects(properties map[string]interface{}, state *types.St
 	return fields, objects
 }
 
+// prepareNDCSchema prepares the NDC schema.
 func prepareNDCSchema(ndcSchema *schema.SchemaResponse, index string, fields []map[string]interface{}, objects []map[string]interface{}) {
 
 	collectionFields := make(schema.ObjectTypeFields)
@@ -185,6 +189,7 @@ func prepareNDCSchema(ndcSchema *schema.SchemaResponse, index string, fields []m
 	}
 }
 
+// checkForUnsupportedFields checks for unsupported fields based on field type and field data enabled status.
 func checkForUnsupportedFields(fieldName string, fieldType string, fieldDataEnalbed bool, state *types.State) {
 	for _, unsupportedType := range unSupportedAggregateTypes {
 		if fieldType == unsupportedType && !fieldDataEnalbed {

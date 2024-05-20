@@ -54,6 +54,7 @@ func (e *Client) Ping() error {
 	return nil
 }
 
+// Search performs a search operation in elastic search.
 func (e *Client) Search(ctx context.Context, index string, body map[string]interface{}) (map[string]interface{}, error) {
 	es := e.client
 
@@ -140,6 +141,7 @@ func (e *Client) GetMappings(ctx context.Context, indices []string) (interface{}
 
 }
 
+// parseResponse parses the response from esapi and handles errors.
 func parseResponse(ctx context.Context, res *esapi.Response) (interface{}, error) {
 	logger := connector.GetLogger(ctx)
 	defer res.Body.Close()
@@ -169,6 +171,7 @@ func parseResponse(ctx context.Context, res *esapi.Response) (interface{}, error
 	return result, nil
 }
 
+// GetInfo retrieves information about elastic search.
 func (e *Client) GetInfo(ctx context.Context) (interface{}, error) {
 	req := esapi.InfoRequest{}
 	res, err := req.Do(ctx, e.client)
