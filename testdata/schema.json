@@ -120,12 +120,6 @@
                         "type": "named"
                     }
                 },
-                "category.keyword": {
-                    "type": {
-                        "name": "keyword",
-                        "type": "named"
-                    }
-                },
                 "currency": {
                     "type": {
                         "name": "keyword",
@@ -144,21 +138,9 @@
                         "type": "named"
                     }
                 },
-                "customer_first_name.keyword": {
-                    "type": {
-                        "name": "keyword",
-                        "type": "named"
-                    }
-                },
                 "customer_full_name": {
                     "type": {
                         "name": "text",
-                        "type": "named"
-                    }
-                },
-                "customer_full_name.keyword": {
-                    "type": {
-                        "name": "keyword",
                         "type": "named"
                     }
                 },
@@ -177,12 +159,6 @@
                 "customer_last_name": {
                     "type": {
                         "name": "text",
-                        "type": "named"
-                    }
-                },
-                "customer_last_name.keyword": {
-                    "type": {
-                        "name": "keyword",
                         "type": "named"
                     }
                 },
@@ -225,12 +201,6 @@
                 "manufacturer": {
                     "type": {
                         "name": "text",
-                        "type": "named"
-                    }
-                },
-                "manufacturer.keyword": {
-                    "type": {
-                        "name": "keyword",
                         "type": "named"
                     }
                 },
@@ -313,12 +283,6 @@
                         "type": "named"
                     }
                 },
-                "_id.keyword": {
-                    "type": {
-                        "name": "keyword",
-                        "type": "named"
-                    }
-                },
                 "base_price": {
                     "type": {
                         "name": "half_float",
@@ -334,12 +298,6 @@
                 "category": {
                     "type": {
                         "name": "text",
-                        "type": "named"
-                    }
-                },
-                "category.keyword": {
-                    "type": {
-                        "name": "keyword",
                         "type": "named"
                     }
                 },
@@ -367,12 +325,6 @@
                         "type": "named"
                     }
                 },
-                "manufacturer.keyword": {
-                    "type": {
-                        "name": "keyword",
-                        "type": "named"
-                    }
-                },
                 "min_price": {
                     "type": {
                         "name": "half_float",
@@ -394,12 +346,6 @@
                 "product_name": {
                     "type": {
                         "name": "text",
-                        "type": "named"
-                    }
-                },
-                "product_name.keyword": {
-                    "type": {
-                        "name": "keyword",
                         "type": "named"
                     }
                 },

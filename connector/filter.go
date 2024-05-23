@@ -6,17 +6,17 @@ import (
 )
 
 // prepareFilterQuery prepares a filter query based on the given expression.
-func prepareFilterQuery(expression schema.Expression) (map[string]interface{}, error) {
+func prepareFilterQuery(expression schema.Expression, state *types.State) (map[string]interface{}, error) {
 	filter := make(map[string]interface{})
 	switch expr := expression.Interface().(type) {
 	case *schema.ExpressionUnaryComparisonOperator:
 		return handleExpressionUnaryComparisonOperator(expr)
 	case *schema.ExpressionBinaryComparisonOperator:
-		return handleExpressionBinaryComparisonOperator(expr)
+		return handleExpressionBinaryComparisonOperator(expr, state)
 	case *schema.ExpressionAnd:
 		queries := make([]map[string]interface{}, 0)
 		for _, expr := range expr.Expressions {
-			res, err := prepareFilterQuery(expr)
+			res, err := prepareFilterQuery(expr, state)
 			if err != nil {
 				return nil, err
 			}
@@ -29,7 +29,7 @@ func prepareFilterQuery(expression schema.Expression) (map[string]interface{}, e
 	case *schema.ExpressionOr:
 		queries := make([]map[string]interface{}, 0)
 		for _, expr := range expr.Expressions {
-			res, err := prepareFilterQuery(expr)
+			res, err := prepareFilterQuery(expr, state)
 			if err != nil {
 				return nil, err
 			}
@@ -40,7 +40,7 @@ func prepareFilterQuery(expression schema.Expression) (map[string]interface{}, e
 		}
 		return filter, nil
 	case *schema.ExpressionNot:
-		res, err := prepareFilterQuery(expr.Expression)
+		res, err := prepareFilterQuery(expr.Expression, state)
 		if err != nil {
 			return nil, err
 		}
@@ -77,23 +77,46 @@ func handleExpressionUnaryComparisonOperator(expr *schema.ExpressionUnaryCompari
 }
 
 // handleExpressionBinaryComparisonOperator processes the binary comparison operator expression.
-func handleExpressionBinaryComparisonOperator(expr *schema.ExpressionBinaryComparisonOperator) (map[string]interface{}, error) {
+func handleExpressionBinaryComparisonOperator(expr *schema.ExpressionBinaryComparisonOperator, state *types.State) (map[string]interface{}, error) {
 	filter := make(map[string]interface{})
+	value, err := evalComparisonValue(expr.Value)
+	if err != nil {
+		return nil, err
+	}
 	switch expr.Operator {
-	case "match", "match_phrase", "match_phrase_prefix", "match_bool_prefix", "term", "prefix", "wildcard", "regexp", "terms":
-		value, err := evalComparisonValue(expr.Value)
-		if err != nil {
-			return nil, err
+	case "match", "match_phrase", "match_phrase_prefix", "match_bool_prefix":
+		if textFields, ok := state.SupportedFilterFields["full_text_queries"].(map[string]string); ok {
+			if textField, ok := textFields[expr.Column.Name]; ok {
+				expr.Column.Name = textField
+			}
 		}
 		filter[expr.Operator] = map[string]interface{}{
 			expr.Column.Name: value,
 		}
-		return filter, nil
+	case "term", "prefix", "terms":
+		if keywordFields, ok := state.SupportedFilterFields["term_level_queries"].(map[string]string); ok {
+			if keywordField, ok := keywordFields[expr.Column.Name]; ok {
+				expr.Column.Name = keywordField
+			}
+		}
+		filter[expr.Operator] = map[string]interface{}{
+			expr.Column.Name: value,
+		}
+	case "wildcard", "regexp":
+		if wildcardFields, ok := state.SupportedFilterFields["unstructured_text"].(map[string]string); ok {
+			if wildcardField, ok := wildcardFields[expr.Column.Name]; ok {
+				expr.Column.Name = wildcardField
+			}
+		}
+		filter[expr.Operator] = map[string]interface{}{
+			expr.Column.Name: value,
+		}
 	default:
 		return nil, schema.UnprocessableContentError("invalid binary comaparison operator", map[string]any{
 			"expression": expr.Operator,
 		})
 	}
+	return filter, nil
 }
 
 // evalComparisonValue evaluates the comparison value for scalar and variable type.

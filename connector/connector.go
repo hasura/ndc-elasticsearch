@@ -48,12 +48,12 @@ func (c *Connector) TryInitState(ctx context.Context, configuration *types.Confi
 	}
 
 	return &types.State{
-		TelemetryState:             metrics,
-		Client:                     client,
-		UnsupportedQueryFields:     map[string]string{},
-		UnsupportedSortFields:      map[string]bool{},
-		UnsupportedAggregateFields: map[string]bool{},
-		ElasticsearchInfo:          result.(map[string]interface{}),
+		TelemetryState:           metrics,
+		Client:                   client,
+		SupportedSortFields:      map[string]string{},
+		SupportedAggregateFields: map[string]string{},
+		SupportedFilterFields:    make(map[string]interface{}),
+		ElasticsearchInfo:        result.(map[string]interface{}),
 	}, nil
 }
 

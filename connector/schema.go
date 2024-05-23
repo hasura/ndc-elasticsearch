@@ -23,7 +23,9 @@ func (c *Connector) GetSchema(ctx context.Context, configuration *types.Configur
 
 // parseConfigurationToSchema parses the given configuration to generate the schema response.
 func parseConfigurationToSchema(configuration *types.Configuration, ndcSchema *schema.SchemaResponse, state *types.State) {
-
+	state.SupportedFilterFields["term_level_queries"] = map[string]string{}
+	state.SupportedFilterFields["unstructured_text"] = map[string]string{}
+	state.SupportedFilterFields["full_text_queries"] = map[string]string{}
 	for indexName, mappings := range *configuration {
 		data, ok := mappings.(map[string]interface{})
 		if !ok {
@@ -82,11 +84,21 @@ func getScalarTypesAndObjects(properties map[string]interface{}, state *types.St
 				}
 			}
 
-			fieldData, ok := fieldMap["fielddata"].(bool)
+			fieldDataEnalbed, ok := fieldMap["fielddata"].(bool)
 			if ok {
-				checkForUnsupportedFields(fieldName, fieldType, fieldData, state)
+				if isSortSupported(fieldType, fieldDataEnalbed) {
+					state.SupportedSortFields[fieldName] = fieldName
+				}
+				if isAggregateSupported(fieldType, fieldDataEnalbed) {
+					state.SupportedAggregateFields[fieldName] = fieldName
+				}
 			} else {
-				checkForUnsupportedFields(fieldName, fieldType, false, state)
+				if isSortSupported(fieldType, false) {
+					state.SupportedSortFields[fieldName] = fieldName
+				}
+				if isAggregateSupported(fieldType, false) {
+					state.SupportedAggregateFields[fieldName] = fieldName
+				}
 			}
 
 			if subFields, ok := fieldMap["fields"].(map[string]interface{}); ok {
@@ -94,18 +106,42 @@ func getScalarTypesAndObjects(properties map[string]interface{}, state *types.St
 					subFieldMap := subFieldData.(map[string]interface{})
 					if subFieldType, ok := subFieldMap["type"].(string); ok {
 						name := fieldName + "." + subFieldName
-						subField := map[string]interface{}{
-							"name": name,
-							"type": subFieldType,
-						}
-						state.UnsupportedQueryFields[name] = fieldName
-						fields = append(fields, subField)
 
-						fieldData, ok := subFieldMap["fielddata"].(bool)
+						fieldDataEnalbed, ok := subFieldMap["fielddata"].(bool)
 						if ok {
-							checkForUnsupportedFields(fieldName, subFieldType, fieldData, state)
+							if isSortSupported(subFieldType, fieldDataEnalbed) {
+								state.SupportedSortFields[name] = name
+								if _, ok := state.SupportedSortFields[fieldName]; !ok {
+									state.SupportedSortFields[fieldName] = name
+								}
+							}
+							if isAggregateSupported(subFieldType, fieldDataEnalbed) {
+								state.SupportedAggregateFields[name] = name
+								if _, ok := state.SupportedAggregateFields[fieldName]; !ok {
+									state.SupportedAggregateFields[fieldName] = name
+								}
+							}
 						} else {
-							checkForUnsupportedFields(fieldName, subFieldType, false, state)
+							if isSortSupported(subFieldType, false) {
+								state.SupportedSortFields[name] = name
+								if _, ok := state.SupportedSortFields[fieldName]; !ok {
+									state.SupportedSortFields[fieldName] = name
+								}
+							}
+							if isAggregateSupported(subFieldType, false) {
+								state.SupportedAggregateFields[name] = name
+								if _, ok := state.SupportedAggregateFields[fieldName]; !ok {
+									state.SupportedAggregateFields[fieldName] = name
+								}
+							}
+						}
+
+						if subFieldType == "keyword" {
+							state.SupportedFilterFields["term_level_queries"].(map[string]string)[fieldName] = name
+						} else if subFieldType == "wildcard" {
+							state.SupportedFilterFields["unstructured_text"].(map[string]string)[fieldName] = name
+						} else if subFieldType == "text" {
+							state.SupportedFilterFields["full_text_queries"].(map[string]string)[fieldName] = name
 						}
 					}
 				}
@@ -117,7 +153,6 @@ func getScalarTypesAndObjects(properties map[string]interface{}, state *types.St
 				"type": fieldName,
 			})
 
-			state.UnsupportedSortFields[fieldName] = true
 			flds, objs := getScalarTypesAndObjects(nestedObject, state)
 			objects = append(objects, map[string]interface{}{
 				"name":   fieldName,
@@ -189,16 +224,25 @@ func prepareNDCSchema(ndcSchema *schema.SchemaResponse, index string, fields []m
 	}
 }
 
-// checkForUnsupportedFields checks for unsupported fields based on field type and field data enabled status.
-func checkForUnsupportedFields(fieldName string, fieldType string, fieldDataEnalbed bool, state *types.State) {
-	for _, unsupportedType := range unSupportedAggregateTypes {
-		if fieldType == unsupportedType && !fieldDataEnalbed {
-			state.UnsupportedAggregateFields[fieldName] = true
+func isSortSupported(fieldType string, fieldDataEnalbed bool) bool {
+	if fieldDataEnalbed {
+		return true
+	}
+	for _, unSupportedType := range unsupportedSortDataTypes {
+		if fieldType == unSupportedType {
+			return false
 		}
 	}
-	for _, unsupportedType := range unsupportedSortDataTypes {
-		if fieldType == unsupportedType && !fieldDataEnalbed {
-			state.UnsupportedSortFields[fieldName] = true
+	return true
+}
+func isAggregateSupported(fieldType string, fieldDataEnalbed bool) bool {
+	if fieldDataEnalbed {
+		return true
+	}
+	for _, unSupportedType := range unSupportedAggregateTypes {
+		if fieldType == unSupportedType {
+			return false
 		}
 	}
+	return true
 }

@@ -30,16 +30,16 @@
                 "customer_gender": "MALE"
             },
             {
-                "customer_first_name": "Selena",
-                "customer_gender": "FEMALE"
-            },
-            {
-                "customer_first_name": "Selena",
-                "customer_gender": "FEMALE"
-            },
-            {
-                "customer_first_name": "Yahya",
+                "customer_first_name": "Eddie",
                 "customer_gender": "MALE"
+            },
+            {
+                "customer_first_name": "Selena",
+                "customer_gender": "FEMALE"
+            },
+            {
+                "customer_first_name": "Selena",
+                "customer_gender": "FEMALE"
             }
         ]
     }

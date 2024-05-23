@@ -8,11 +8,11 @@ import (
 // State is the global state which is shared for every connector request.
 type State struct {
 	*connector.TelemetryState
-	Client                     *elasticsearch.Client
-	UnsupportedAggregateFields map[string]bool
-	UnsupportedQueryFields     map[string]string
-	UnsupportedSortFields      map[string]bool
-	ElasticsearchInfo          map[string]interface{}
+	Client                   *elasticsearch.Client
+	SupportedSortFields      map[string]string
+	SupportedAggregateFields map[string]string
+	SupportedFilterFields    map[string]interface{}
+	ElasticsearchInfo        map[string]interface{}
 }
 
 // Configuration contains required settings for the connector.

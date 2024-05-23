@@ -9,11 +9,155 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hasura/ndc-sdk-go/connector"
 	"github.com/hasura/ndc-elasticsearch/internal"
-	"github.com/hasura/ndc-sdk-go/schema"
 	"github.com/hasura/ndc-elasticsearch/types"
+	"github.com/hasura/ndc-sdk-go/connector"
+	"github.com/hasura/ndc-sdk-go/schema"
 )
+
+var testCases = []struct {
+	name         string
+	requestFile  string
+	responseFile string
+	response     []byte
+}{
+	{
+		name:         "select_query",
+		requestFile:  "../testdata/query/select/request.json",
+		responseFile: "../testdata/query/select/response.json",
+	},
+	{
+		name:         "sort_asc",
+		requestFile:  "../testdata/query/sort/sort_asc_request.json",
+		responseFile: "../testdata/query/sort/sort_asc_response.json",
+	},
+	{
+		name:         "sort_desc",
+		requestFile:  "../testdata/query/sort/sort_desc_request.json",
+		responseFile: "../testdata/query/sort/sort_desc_response.json",
+	},
+	{
+		name:         "multi_column_sort",
+		requestFile:  "../testdata/query/sort/multi_column_sort_request.json",
+		responseFile: "../testdata/query/sort/multi_column_sort_response.json",
+	},
+	{
+		name:         "pagination",
+		requestFile:  "../testdata/query/pagination/request.json",
+		responseFile: "../testdata/query/pagination/response.json",
+	},
+	{
+		name:         "predicate_with_and",
+		requestFile:  "../testdata/query/filter/predicate_with_and_request.json",
+		responseFile: "../testdata/query/filter/predicate_with_and_response.json",
+	},
+	{
+		name:         "predicate_with_or",
+		requestFile:  "../testdata/query/filter/predicate_with_or_request.json",
+		responseFile: "../testdata/query/filter/predicate_with_or_response.json",
+	},
+	{
+		name:         "predicate_with_not",
+		requestFile:  "../testdata/query/filter/predicate_with_not_request.json",
+		responseFile: "../testdata/query/filter/predicate_with_not_response.json",
+	},
+	{
+		name:         "predicate_with_terms",
+		requestFile:  "../testdata/query/filter/predicate_with_terms_request.json",
+		responseFile: "../testdata/query/filter/predicate_with_terms_response.json",
+	},
+	{
+		name:         "predicate_with_match",
+		requestFile:  "../testdata/query/filter/predicate_with_match_request.json",
+		responseFile: "../testdata/query/filter/predicate_with_match_response.json",
+	},
+	{
+		name:         "nested_predicate",
+		requestFile:  "../testdata/query/filter/nested_predicate_request.json",
+		responseFile: "../testdata/query/filter/nested_predicate_response.json",
+	},
+	{
+		name:         "star_count_aggregation",
+		requestFile:  "../testdata/query/aggregation/star_count_request.json",
+		responseFile: "../testdata/query/aggregation/star_count_response.json",
+	},
+	{
+		name:         "column_count_aggregation",
+		requestFile:  "../testdata/query/aggregation/column_count_request.json",
+		responseFile: "../testdata/query/aggregation/column_count_response.json",
+	},
+	{
+		name:         "single_column_aggregation",
+		requestFile:  "../testdata/query/aggregation/single_column_request.json",
+		responseFile: "../testdata/query/aggregation/single_column_response.json",
+	},
+	// Test cases for variables
+	{
+		name:         "single_column_aggregation_using_variables",
+		requestFile:  "../testdata/query/variables/aggregation/single_column_request.json",
+		responseFile: "../testdata/query/variables/aggregation/single_column_response.json",
+	},
+	{
+		name:         "column_count_aggregation_using_variables",
+		requestFile:  "../testdata/query/variables/aggregation/column_count_request.json",
+		responseFile: "../testdata/query/variables/aggregation/column_count_response.json",
+	},
+	{
+		name:         "star_count_aggregation_using_variables",
+		requestFile:  "../testdata/query/variables/aggregation/star_count_request.json",
+		responseFile: "../testdata/query/variables/aggregation/star_count_response.json",
+	},
+	{
+		name:         "sort_asc_using_variables",
+		requestFile:  "../testdata/query/variables/sort/sort_asc_request.json",
+		responseFile: "../testdata/query/variables/sort/sort_asc_response.json",
+	},
+	{
+		name:         "sort_desc_using_variables",
+		requestFile:  "../testdata/query/variables/sort/sort_desc_request.json",
+		responseFile: "../testdata/query/variables/sort/sort_desc_response.json",
+	},
+	{
+		name:         "multi_column_sort_using_variables",
+		requestFile:  "../testdata/query/variables/sort/multi_column_sort_request.json",
+		responseFile: "../testdata/query/variables/sort/multi_column_sort_response.json",
+	},
+	{
+		name:         "pagination_using_variables",
+		requestFile:  "../testdata/query/variables/pagination/request.json",
+		responseFile: "../testdata/query/variables/pagination/response.json",
+	},
+	{
+		name:         "predicate_with_and_using_variables",
+		requestFile:  "../testdata/query/variables/filter/predicate_with_and_request.json",
+		responseFile: "../testdata/query/variables/filter/predicate_with_and_response.json",
+	},
+	{
+		name:         "predicate_with_or_using_variables",
+		requestFile:  "../testdata/query/variables/filter/predicate_with_or_request.json",
+		responseFile: "../testdata/query/variables/filter/predicate_with_or_response.json",
+	},
+	{
+		name:         "predicate_with_not_using_variables",
+		requestFile:  "../testdata/query/variables/filter/predicate_with_not_request.json",
+		responseFile: "../testdata/query/variables/filter/predicate_with_not_response.json",
+	},
+	{
+		name:         "predicate_with_terms_using_variables",
+		requestFile:  "../testdata/query/variables/filter/predicate_with_terms_request.json",
+		responseFile: "../testdata/query/variables/filter/predicate_with_terms_response.json",
+	},
+	{
+		name:         "predicate_with_match_using_variables",
+		requestFile:  "../testdata/query/variables/filter/predicate_with_match_request.json",
+		responseFile: "../testdata/query/variables/filter/predicate_with_match_response.json",
+	},
+	{
+		name:         "nested_predicate_using_variables",
+		requestFile:  "../testdata/query/variables/filter/nested_predicate_request.json",
+		responseFile: "../testdata/query/variables/filter/nested_predicate_response.json",
+	},
+}
 
 // createTestServer creates a test server for the given configuration.
 func createTestServer(t *testing.T) *connector.Server[types.Configuration, types.State] {
@@ -74,9 +218,10 @@ func assertHTTPResponse[B any](t *testing.T, res *http.Response, statusCode int,
 	}
 }
 
-// TestGeneralMethods tests various general methods like capabilities, schema, health, and metrics.
-func TestGeneralMethods(t *testing.T) {
+// TestConnector tests various query scenarios by sending HTTP requests and asserting the responses.
+func TestConnector(t *testing.T) {
 	server := createTestServer(t).BuildTestServer()
+
 	t.Run("capabilities", func(t *testing.T) {
 		expectedBytes, err := os.ReadFile("../testdata/capabilities.json")
 		if err != nil {
@@ -143,155 +288,6 @@ func TestGeneralMethods(t *testing.T) {
 			t.FailNow()
 		}
 	})
-}
-
-// TestQuery tests various query scenarios by sending HTTP requests and asserting the responses.
-func TestQuery(t *testing.T) {
-	server := createTestServer(t).BuildTestServer()
-
-	testCases := []struct {
-		name        string
-		requestFile  string
-		responseFile string
-		response    []byte
-	}{
-		{
-			name:        "select_query",
-			requestFile:  "../testdata/query/select/request.json",
-			responseFile: "../testdata/query/select/response.json",
-		},
-		{
-			name:        "sort_asc",
-			requestFile:  "../testdata/query/sort/sort_asc_request.json",
-			responseFile: "../testdata/query/sort/sort_asc_response.json",
-		},
-		{
-			name:        "sort_desc",
-			requestFile:  "../testdata/query/sort/sort_desc_request.json",
-			responseFile: "../testdata/query/sort/sort_desc_response.json",
-		},
-		{
-			name:        "multi_column_sort",
-			requestFile:  "../testdata/query/sort/multi_column_sort_request.json",
-			responseFile: "../testdata/query/sort/multi_column_sort_response.json",
-		},
-		{
-			name:        "pagination",
-			requestFile:  "../testdata/query/pagination/request.json",
-			responseFile: "../testdata/query/pagination/response.json",
-		},
-		{
-			name:        "predicate_with_and",
-			requestFile:  "../testdata/query/filter/predicate_with_and_request.json",
-			responseFile: "../testdata/query/filter/predicate_with_and_response.json",
-		},
-		{
-			name:        "predicate_with_or",
-			requestFile:  "../testdata/query/filter/predicate_with_or_request.json",
-			responseFile: "../testdata/query/filter/predicate_with_or_response.json",
-		},
-		{
-			name:        "predicate_with_not",
-			requestFile:  "../testdata/query/filter/predicate_with_not_request.json",
-			responseFile: "../testdata/query/filter/predicate_with_not_response.json",
-		},
-		{
-			name:        "predicate_with_terms",
-			requestFile:  "../testdata/query/filter/predicate_with_terms_request.json",
-			responseFile: "../testdata/query/filter/predicate_with_terms_response.json",
-		},
-		{
-			name:        "predicate_with_match",
-			requestFile:  "../testdata/query/filter/predicate_with_match_request.json",
-			responseFile: "../testdata/query/filter/predicate_with_match_response.json",
-		},
-		{
-			name:        "nested_predicate",
-			requestFile:  "../testdata/query/filter/nested_predicate_request.json",
-			responseFile: "../testdata/query/filter/nested_predicate_response.json",
-		},
-		{
-			name:        "star_count_aggregation",
-			requestFile:  "../testdata/query/aggregation/star_count_request.json",
-			responseFile: "../testdata/query/aggregation/star_count_response.json",
-		},
-		{
-			name:        "column_count_aggregation",
-			requestFile:  "../testdata/query/aggregation/column_count_request.json",
-			responseFile: "../testdata/query/aggregation/column_count_response.json",
-		},
-		{
-			name:        "single_column_aggregation",
-			requestFile:  "../testdata/query/aggregation/single_column_request.json",
-			responseFile: "../testdata/query/aggregation/single_column_response.json",
-		},
-		// Test cases for variables
-		{
-			name:        "single_column_aggregation_using_variables",
-			requestFile:  "../testdata/query/variables/aggregation/single_column_request.json",
-			responseFile: "../testdata/query/variables/aggregation/single_column_response.json",
-		},
-		{
-			name:        "column_count_aggregation_using_variables",
-			requestFile:  "../testdata/query/variables/aggregation/column_count_request.json",
-			responseFile: "../testdata/query/variables/aggregation/column_count_response.json",
-		},
-		{
-			name:        "star_count_aggregation_using_variables",
-			requestFile:  "../testdata/query/variables/aggregation/star_count_request.json",
-			responseFile: "../testdata/query/variables/aggregation/star_count_response.json",
-		},
-		{
-			name:        "sort_asc_using_variables",
-			requestFile:  "../testdata/query/variables/sort/sort_asc_request.json",
-			responseFile: "../testdata/query/variables/sort/sort_asc_response.json",
-		},
-		{
-			name:        "sort_desc_using_variables",
-			requestFile:  "../testdata/query/variables/sort/sort_desc_request.json",
-			responseFile: "../testdata/query/variables/sort/sort_desc_response.json",
-		},
-		{
-			name:        "multi_column_sort_using_variables",
-			requestFile:  "../testdata/query/variables/sort/multi_column_sort_request.json",
-			responseFile: "../testdata/query/variables/sort/multi_column_sort_response.json",
-		},
-		{
-			name:        "pagination_using_variables",
-			requestFile:  "../testdata/query/variables/pagination/request.json",
-			responseFile: "../testdata/query/variables/pagination/response.json",
-		},
-		{
-			name:        "predicate_with_and_using_variables",
-			requestFile:  "../testdata/query/variables/filter/predicate_with_and_request.json",
-			responseFile: "../testdata/query/variables/filter/predicate_with_and_response.json",
-		},
-		{
-			name:        "predicate_with_or_using_variables",
-			requestFile:  "../testdata/query/variables/filter/predicate_with_or_request.json",
-			responseFile: "../testdata/query/variables/filter/predicate_with_or_response.json",
-		},
-		{
-			name:        "predicate_with_not_using_variables",
-			requestFile:  "../testdata/query/variables/filter/predicate_with_not_request.json",
-			responseFile: "../testdata/query/variables/filter/predicate_with_not_response.json",
-		},
-		{
-			name:        "predicate_with_terms_using_variables",
-			requestFile:  "../testdata/query/variables/filter/predicate_with_terms_request.json",
-			responseFile: "../testdata/query/variables/filter/predicate_with_terms_response.json",
-		},
-		{
-			name:        "predicate_with_match_using_variables",
-			requestFile:  "../testdata/query/variables/filter/predicate_with_match_request.json",
-			responseFile: "../testdata/query/variables/filter/predicate_with_match_response.json",
-		},
-		{
-			name:        "nested_predicate_using_variables",
-			requestFile:  "../testdata/query/variables/filter/nested_predicate_request.json",
-			responseFile: "../testdata/query/variables/filter/nested_predicate_response.json",
-		},
-	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

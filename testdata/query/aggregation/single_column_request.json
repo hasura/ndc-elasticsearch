@@ -25,7 +25,7 @@
             "customer_first_name_stats": {
                 "type": "single_column",
                 "function": "string_stats",
-                "column": "customer_first_name.keyword"
+                "column": "customer_first_name"
             }
         }
     },

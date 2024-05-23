@@ -7,6 +7,7 @@ import (
 	"github.com/hasura/ndc-sdk-go/schema"
 )
 
+// prepareSelectQuery prepares a source perameter of elasticsearch's search API based on query fields.
 func prepareSelectQuery(ctx context.Context, state *types.State, ndcFields schema.QueryFields) ([]string, error) {
 	postProcessor := ctx.Value("postProcessor").(*types.PostProcessor)
 	postProcessor.IsFields = true
@@ -14,11 +15,6 @@ func prepareSelectQuery(ctx context.Context, state *types.State, ndcFields schem
 	selectFields := make(map[string]string)
 	for fieldName, fieldData := range ndcFields {
 		if columnName, ok := fieldData["column"].(string); ok {
-			if _, ok := state.UnsupportedQueryFields[columnName]; ok {
-				return nil, schema.BadRequestError("query selection not supported on this field", map[string]interface{}{
-					"value": columnName,
-				})
-			}
 			fields = append(fields, columnName)
 			selectFields[fieldName] = columnName
 			if columnName == "_id" {

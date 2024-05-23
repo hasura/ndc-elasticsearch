@@ -32,12 +32,12 @@
         "aggregates": {
             "invoiced_orders_count": {
                 "type": "column_count",
-                "column": "category.keyword",
+                "column": "category",
                 "distinct": false
             },
             "invoiced_orders_distinct_count": {
                 "type": "column_count",
-                "column": "category.keyword",
+                "column": "category",
                 "distinct": true
             }
         }

@@ -12,12 +12,11 @@ func prepareAggregateQuery(ctx context.Context, aggregates schema.QueryAggregate
 	postProcessor := ctx.Value("postProcessor").(*types.PostProcessor)
 	aggs := make(map[string]interface{})
 	for name, aggregate := range aggregates {
-		aggregatColumn, ok := aggregate["column"].(string)
+		aggregateColumn, ok := aggregate["column"].(string)
 		if ok {
-			if _, ok := state.UnsupportedAggregateFields[aggregatColumn]; ok {
-				return nil, schema.BadRequestError("aggregation not supported on this field", map[string]any{
-					"value": aggregatColumn,
-				})
+			_, ok := state.SupportedAggregateFields[aggregateColumn]
+			if !ok {
+				return nil, schema.BadRequestError("aggregation not supported on this field", map[string]any{"value": aggregateColumn})
 			}
 		}
 		switch agg := aggregate.Interface().(type) {
@@ -27,14 +26,14 @@ func prepareAggregateQuery(ctx context.Context, aggregates schema.QueryAggregate
 			if agg.Distinct {
 				aggs[name] = map[string]interface{}{
 					"cardinality": map[string]interface{}{
-						"field": agg.Column,
+						"field": state.SupportedAggregateFields[agg.Column],
 					},
 				}
 			} else {
 				aggs[name] = map[string]interface{}{
 					"filter": map[string]interface{}{
 						"exists": map[string]interface{}{
-							"field": agg.Column,
+							"field": state.SupportedAggregateFields[agg.Column],
 						},
 					},
 				}
@@ -46,7 +45,7 @@ func prepareAggregateQuery(ctx context.Context, aggregates schema.QueryAggregate
 			case "sum", "min", "max", "avg", "value_count", "cardinality", "stats", "string_stats":
 				aggs[name] = map[string]interface{}{
 					agg.Function: map[string]interface{}{
-						"field": agg.Column,
+						"field": state.SupportedAggregateFields[agg.Column],
 					},
 				}
 			default:
