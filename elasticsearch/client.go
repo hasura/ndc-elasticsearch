@@ -1,6 +1,7 @@
 package elasticsearch
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -9,13 +10,14 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"github.com/hasura/ndc-sdk-go/connector"
 )
 
 type Client struct {
 	client *elasticsearch.Client
 }
 
-// NewClient creates a new Client
+// NewClient creates a new client with configuration from cfg.
 func NewClient() (*Client, error) {
 	config, err := getConfigFromEnv()
 	if err != nil {
@@ -35,7 +37,7 @@ func NewClient() (*Client, error) {
 	return client, nil
 }
 
-// Ping checks if the Client is up and running
+// Ping returns whether the Elasticsearch cluster is running.
 func (e *Client) Ping() error {
 	res, err := e.client.Ping()
 	if err != nil {
@@ -52,10 +54,34 @@ func (e *Client) Ping() error {
 	return nil
 }
 
-func (e *Client) Search() {}
+// Search performs a search operation in elastic search.
+func (e *Client) Search(ctx context.Context, index string, body map[string]interface{}) (map[string]interface{}, error) {
+	es := e.client
 
-// GetIndices Returns comma seperated list of indices that does not start with `.` character
-func (e *Client) GetIndices() ([]string, error) {
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(body); err != nil {
+		return nil, err
+	}
+	req := esapi.SearchRequest{
+		Index: []string{index},
+		Body:  &buf,
+	}
+
+	res, err := req.Do(ctx, es)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := parseResponse(ctx, res)
+	if err != nil {
+		return nil, err
+	}
+
+	return result.(map[string]interface{}), nil
+}
+
+// GetIndices Returns comma seperated list of indices that matches the ELASTICSEARCH_INDEX_PATTERN env character.
+func (e *Client) GetIndices(ctx context.Context) ([]string, error) {
 	// Create a request to retrieve indices matching the regex pattern
 	defaultIndex := "*,-.*"
 
@@ -75,14 +101,14 @@ func (e *Client) GetIndices() ([]string, error) {
 		return nil, fmt.Errorf("error getting indices: %s", err)
 	}
 
-	indices, err := parseResponse(res)
+	indices, err := parseResponse(ctx, res)
 	if err != nil {
 		return nil, err
 	}
 
 	result := make([]string, 0)
 
-	// Print the indices matching the regex pattern
+	// Print the indices matching the regex pattern.
 	for _, index := range indices.([]interface{}) {
 		indexName, ok := index.(map[string]interface{})["index"]
 		if !ok {
@@ -94,8 +120,8 @@ func (e *Client) GetIndices() ([]string, error) {
 	return result, nil
 }
 
-// GetMappings Returns mappings for comma seperated list of indices
-func (e *Client) GetMappings(indices []string) (interface{}, error) {
+// GetMappings Returns mappings for comma seperated list of indices.
+func (e *Client) GetMappings(ctx context.Context, indices []string) (interface{}, error) {
 	req := esapi.IndicesGetMappingRequest{
 		Index: indices,
 	}
@@ -106,7 +132,7 @@ func (e *Client) GetMappings(indices []string) (interface{}, error) {
 		return nil, fmt.Errorf("error getting mappings: %s", err)
 	}
 
-	result, err := parseResponse(res)
+	result, err := parseResponse(ctx, res)
 	if err != nil {
 		return nil, err
 	}
@@ -115,23 +141,47 @@ func (e *Client) GetMappings(indices []string) (interface{}, error) {
 
 }
 
-func parseResponse(res *esapi.Response) (interface{}, error) {
+// parseResponse parses the response from esapi and handles errors.
+func parseResponse(ctx context.Context, res *esapi.Response) (interface{}, error) {
+	logger := connector.GetLogger(ctx)
 	defer res.Body.Close()
+
 	if res.IsError() {
 		var e map[string]interface{}
 		if err := json.NewDecoder(res.Body).Decode(&e); err != nil {
 			return nil, fmt.Errorf("error parsing the response body: %s", err)
 		} else {
-			_type, _ := e["error"].(map[string]interface{})["type"]
-			reason, _ := e["error"].(map[string]interface{})["reason"]
-			errMsg := fmt.Sprintf("[%s] %s: %s", res.Status(), _type, reason)
+			// Print the response status and error information.
+			root_cause, _ := e["error"].(map[string]interface{})["root_cause"].([]interface{})[0].(map[string]interface{})
+			errMsg := fmt.Sprintf("[%s] %s: %s",
+				res.Status(),
+				root_cause["type"],
+				root_cause["reason"],
+			)
+			logger.DebugContext(ctx, "Response Details", "response", e)
 			return nil, errors.New(errMsg)
 		}
 	}
 
-	var result any
+	var result interface{}
 	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("error parsing the response body: %s", err)
+	}
+
+	return result, nil
+}
+
+// GetInfo retrieves information about Elasticsearch.
+func (e *Client) GetInfo(ctx context.Context) (interface{}, error) {
+	req := esapi.InfoRequest{}
+	res, err := req.Do(ctx, e.client)
+	if err != nil {
+		return nil, fmt.Errorf("error getting elasticsearch information: %s", err)
+	}
+
+	result, err := parseResponse(ctx, res)
+	if err != nil {
+		return nil, err
 	}
 
 	return result, nil
