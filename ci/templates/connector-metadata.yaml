@@ -1,0 +1,25 @@
+packagingDefinition:
+  type: PrebuiltDockerImage
+  dockerImage: "${DOCKER_IMAGE}"
+supportedEnvironmentVariables:
+  - name: ELASTICSEARCH_URL
+    description: The comma-separated list of Elasticsearch host addresses for connection.
+  - name: ELASTICSEARCH_USERNAME
+    description: The username for authenticating to the Elasticsearch cluster.
+  - name: ELASTICSEARCH_PASSWORD
+    description: The password for the Elasticsearch user account.
+  - name: ELASTICSEARCH_API_KEY
+    description: The Elasticsearch API key for authenticating to the Elasticsearch cluster.
+  - name: ELASTICSEARCH_CA_CERT_PATH
+    description: The path to the Certificate Authority (CA) certificate for verifying the Elasticsearch server's SSL certificate.
+  - name: ELASTICSEARCH_INDEX_PATTERN
+    description: The pattern for matching Elasticsearch indices, potentially including wildcards, used by the connector.
+commands:
+  update: hasura-elasticsearch update
+cliPlugin:
+  name: elasticsearch
+  version: "${CLI_VERSION}"
+dockerComposeWatch:
+  - path: ./
+    target: /etc/connector
+    action: sync+restart
