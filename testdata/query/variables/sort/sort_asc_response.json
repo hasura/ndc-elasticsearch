@@ -1,0 +1,172 @@
+[
+  {
+    "rows": [
+      {
+        "category": [
+          "Men's Clothing",
+          "Men's Accessories",
+          "Men's Shoes"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Accessories",
+          "Men's Shoes"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Clothing",
+          "Men's Accessories"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Clothing"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Clothing"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Clothing"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Shoes",
+          "Men's Clothing"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Shoes"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Clothing",
+          "Men's Shoes"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Clothing",
+          "Men's Shoes"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      }
+    ]
+  },
+  {
+    "rows": [
+      {
+        "category": [
+          "Men's Accessories",
+          "Women's Accessories",
+          "Men's Shoes"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Women's Accessories",
+          "Men's Clothing"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Women's Accessories",
+          "Men's Accessories",
+          "Men's Clothing"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Shoes",
+          "Women's Accessories"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Women's Accessories",
+          "Men's Clothing",
+          "Men's Accessories"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Clothing",
+          "Men's Shoes",
+          "Women's Accessories"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Clothing",
+          "Women's Accessories",
+          "Men's Shoes"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Clothing",
+          "Women's Accessories"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Clothing",
+          "Women's Accessories"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      },
+      {
+        "category": [
+          "Men's Clothing",
+          "Women's Accessories"
+        ],
+        "currency": "EUR",
+        "customer_first_name": "Abd"
+      }
+    ]
+  }
+]

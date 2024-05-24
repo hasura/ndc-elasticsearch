@@ -1,0 +1,63 @@
+[
+    {
+        "aggregates": {
+            "orders_total": 10091,
+            "customer_first_name_stats": {
+                "avg_length": 6.17475935828877,
+                "count": 4675,
+                "entropy": 4.722274500110484,
+                "max_length": 14,
+                "min_length": 3
+            },
+            "total_orders_stats": {
+                "avg": 2.1585026737967916,
+                "count": 4675,
+                "max": 8,
+                "min": 1,
+                "sum": 10091
+            }
+        },
+        "rows": [
+            {
+                "customer_first_name": "Eddie",
+                "customer_gender": "MALE"
+            },
+            {
+                "customer_first_name": "Mary",
+                "customer_gender": "FEMALE"
+            },
+            {
+                "customer_first_name": "Gwen",
+                "customer_gender": "FEMALE"
+            },
+            {
+                "customer_first_name": "Diane",
+                "customer_gender": "FEMALE"
+            },
+            {
+                "customer_first_name": "Eddie",
+                "customer_gender": "MALE"
+            },
+            {
+                "customer_first_name": "Diane",
+                "customer_gender": "FEMALE"
+            },
+            {
+                "customer_first_name": "Oliver",
+                "customer_gender": "MALE"
+            },
+            {
+                "customer_first_name": "Abd",
+                "customer_gender": "MALE"
+            },
+            {
+                "customer_first_name": "Wilhemina St.",
+                "customer_gender": "FEMALE"
+            },
+            {
+                "customer_first_name": "Rabbia Al",
+                "customer_gender": "FEMALE"
+            }
+        ]
+    }
+]

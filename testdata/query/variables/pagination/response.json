@@ -1,0 +1,40 @@
+[
+    {
+        "rows": [
+            {
+                "category": [
+                    "Men's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Eddie"
+            },
+            {
+                "category": [
+                    "Men's Clothing",
+                    "Men's Accessories"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Eddie"
+            }
+        ]
+    },
+    {
+        "rows": [
+            {
+                "category": [
+                    "Women's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Mary"
+            },
+            {
+                "category": [
+                    "Women's Shoes",
+                    "Women's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Gwen"
+            }
+        ]
+    }
+]

@@ -1,0 +1,49 @@
+[
+    {
+        "aggregates": {
+            "orders_count": 4675
+        },
+        "rows": [
+            {
+                "customer_first_name": "Eddie",
+                "customer_gender": "MALE"
+            },
+            {
+                "customer_first_name": "Mary",
+                "customer_gender": "FEMALE"
+            },
+            {
+                "customer_first_name": "Gwen",
+                "customer_gender": "FEMALE"
+            },
+            {
+                "customer_first_name": "Diane",
+                "customer_gender": "FEMALE"
+            },
+            {
+                "customer_first_name": "Eddie",
+                "customer_gender": "MALE"
+            },
+            {
+                "customer_first_name": "Diane",
+                "customer_gender": "FEMALE"
+            },
+            {
+                "customer_first_name": "Oliver",
+                "customer_gender": "MALE"
+            },
+            {
+                "customer_first_name": "Abd",
+                "customer_gender": "MALE"
+            },
+            {
+                "customer_first_name": "Wilhemina St.",
+                "customer_gender": "FEMALE"
+            },
+            {
+                "customer_first_name": "Rabbia Al",
+                "customer_gender": "FEMALE"
+            }
+        ]
+    }
+]

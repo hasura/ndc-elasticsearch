@@ -1,0 +1,159 @@
+[
+    {
+        "rows": [
+            {
+                "category": [
+                    "Men's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Yuri"
+            },
+            {
+                "category": [
+                    "Men's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Yuri"
+            },
+            {
+                "category": [
+                    "Men's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Yuri"
+            },
+            {
+                "category": [
+                    "Men's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Yuri"
+            },
+            {
+                "category": [
+                    "Men's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Yuri"
+            },
+            {
+                "category": [
+                    "Men's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Yuri"
+            },
+            {
+                "category": [
+                    "Men's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Yuri"
+            },
+            {
+                "category": [
+                    "Men's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Yuri"
+            },
+            {
+                "category": [
+                    "Men's Shoes",
+                    "Men's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Yuri"
+            },
+            {
+                "category": [
+                    "Men's Shoes"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "Yuri"
+            }
+        ]
+    },
+    {
+        "rows": [
+            {
+                "category": [
+                    "Women's Shoes",
+                    "Women's Accessories"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "rania"
+            },
+            {
+                "category": [
+                    "Women's Accessories",
+                    "Women's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "rania"
+            },
+            {
+                "category": [
+                    "Women's Clothing",
+                    "Women's Shoes"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "rania"
+            },
+            {
+                "category": [
+                    "Women's Clothing",
+                    "Women's Accessories"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "rania"
+            },
+            {
+                "category": [
+                    "Women's Accessories",
+                    "Women's Shoes"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "rania"
+            },
+            {
+                "category": [
+                    "Women's Shoes",
+                    "Women's Accessories"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "rania"
+            },
+            {
+                "category": [
+                    "Women's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "rania"
+            },
+            {
+                "category": [
+                    "Women's Clothing",
+                    "Women's Shoes"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "rania"
+            },
+            {
+                "category": [
+                    "Women's Shoes",
+                    "Women's Accessories"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "rania"
+            },
+            {
+                "category": [
+                    "Women's Clothing"
+                ],
+                "currency": "EUR",
+                "customer_first_name": "rania"
+            }
+        ]
+    }
+]

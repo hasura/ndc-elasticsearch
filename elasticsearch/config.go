@@ -9,6 +9,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 )
 
+// getConfigFromEnv retrieves elastic search configuration from environment variables.
 func getConfigFromEnv() (*elasticsearch.Config, error) {
 	esConfig := elasticsearch.Config{}
 

@@ -1,0 +1,22 @@
+{
+    "collection": "kibana_sample_data_ecommerce",
+    "query": {
+        "fields": {
+            "customer_first_name": {
+                "type": "column",
+                "column": "customer_first_name"
+            },
+            "customer_gender": {
+                "type": "column",
+                "column": "customer_gender"
+            }
+        },
+        "aggregates": {
+            "orders_count": {
+                "type": "star_count"
+            }
+        }
+    },
+    "arguments": {},
+    "collection_relationships": {}
+}

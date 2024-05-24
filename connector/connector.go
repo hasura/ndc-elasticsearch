@@ -42,11 +42,24 @@ func (c *Connector) TryInitState(ctx context.Context, configuration *types.Confi
 	if err != nil {
 		return nil, err
 	}
-	return &types.State{
-		TelemetryState:         metrics,
-		Client:                 client,
-		UnsupportedQueryFields: map[string]string{},
-	}, nil
+	elasticsearchInfo, err := client.GetInfo(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	state := &types.State{
+		TelemetryState:           metrics,
+		Client:                   client,
+		SupportedSortFields:      map[string]string{},
+		SupportedAggregateFields: map[string]string{},
+		SupportedFilterFields:    make(map[string]interface{}),
+		ElasticsearchInfo:        elasticsearchInfo.(map[string]interface{}),
+	}
+
+	schema := parseConfigurationToSchema(configuration, state)
+
+	state.Schema = schema
+	return state, nil
 }
 
 // HealthCheck checks the health of the connector.
@@ -62,7 +75,10 @@ func (c *Connector) GetCapabilities(configuration *types.Configuration) schema.C
 	return &schema.CapabilitiesResponse{
 		Version: "0.1.2",
 		Capabilities: schema.Capabilities{
-			Query: schema.QueryCapabilities{},
+			Query: schema.QueryCapabilities{
+				Variables:  schema.LeafCapability{},
+				Aggregates: schema.LeafCapability{},
+			},
 		},
 	}
 }
@@ -77,6 +93,7 @@ func (c *Connector) MutationExplain(ctx context.Context, configuration *types.Co
 	return nil, schema.NotSupportedError("mutation explain has not been supported yet", nil)
 }
 
+// Mutation executes a mutation request.
 func (c *Connector) Mutation(ctx context.Context, configuration *types.Configuration, state *types.State, request *schema.MutationRequest) (*schema.MutationResponse, error) {
 	return nil, schema.NotSupportedError("mutation has not been supported yet", nil)
 }
