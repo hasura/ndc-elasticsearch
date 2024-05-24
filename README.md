@@ -1,43 +1,48 @@
-# ndc-elasticsearch Connector
+# Hasura Elasticsearch Connector
 
 ## Get started
+This guide will help you perform the setup of this connector in local
 
-### DDN CLI
+### Clone Repository
+Clone connector from [ndc-elasticsearch](https://github.com/hasura/ndc-elasticsearch/) github repository
+```
+git clone https://github.com/hasura/ndc-elasticsearch.git
+```
 
-DDN CLI automatically starts the connector with `ddn dev` command that uses Docker Compose internally. 
-Docker Compose can watch changes in the source code and rebuild the connector. However, this connector limits the changes in the root folder only to avoid rebuild noises.
-After editing files in child folders, save any `*.go` file in the root folder to trigger the build.
+### Set Environment Variables
+Set the following environment variables for connector
+```
+ELASTICSEARCH_URL=${YOUR_ELASTICSEARCH_URL}
+ELASTICSEARCH_USERNAME=${YOUR_ELASTICSEARCH_USERNAME}
+ELASTICSEARCH_PASSWORD=${YOUR_ELASTICSEARCH_PASSWORD}
+ELASTICSEARCH_API_KEY=${YOUR_ELASTICSEARCH_API_KEY}
+ELASTICSEARCH_CA_CERT_PATH=${YOUR_ELASTICSEARCH_CA_CERT_PATH}
+ELASTICSEARCH_INDEX_PATTERN=${REGEX_PATTERN_OF_INDICES}
+```
+Note: One can set either username and password or api key in env variables for authentication.
 
-### Native Go
-
-Start the connector server at http://localhost:8080
-
+### Build connector executable file
 ```go
-go run . serve
+go build
 ```
 
-## Code generation
+### Update configuration
+Run the update cli command to update the `configuration.json` file
 
-### Convenience script (Linux & MacOS only)
-
-You can run the convenience script with `make` or with the bash file directly. 
-The script automatically downloads the tool and runs the `generate` command.
-
-```bash
-make generate
+```
+ndc-elasticsearch update
 ```
 
-```bash
-sh ./scripts/generate.sh
+### Run the connector locally
+Run the following command to start your connector
+
 ```
-
-### Manually download
-
-Download the `hasura-ndc-go` tool at the [release page](https://github.com/hasura/ndc-sdk-go/releases/tag/v1.0.0) page.
-Navigate to the root project folder and run `generate` whenever there are new changes from NDC functions and types.
-
-```sh
-hasura-ndc-go generate
+ndc-elasticsearch serve
 ```
+Connector server will be up and running at http://localhost:8080
 
-See [NDC Go SDK](https://github.com/hasura/ndc-sdk-go) for more information and [the generation tool](https://github.com/hasura/ndc-sdk-go/tree/main/cmd/ndc-go-sdk) for command documentation.
+### Verify
+```
+curl http://localhost:8080/schema
+```
+Send request to `query` endpoint for queries
