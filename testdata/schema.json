@@ -91,7 +91,7 @@
                 },
                 "values": {
                     "type": {
-                        "name": "float",
+                        "name": "double",
                         "type": "named"
                     }
                 }
