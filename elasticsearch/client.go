@@ -17,7 +17,7 @@ type Client struct {
 	client *elasticsearch.Client
 }
 
-// NewClient creates a new Client
+// NewClient creates a new client with configuration from cfg.
 func NewClient() (*Client, error) {
 	config, err := getConfigFromEnv()
 	if err != nil {
@@ -37,7 +37,7 @@ func NewClient() (*Client, error) {
 	return client, nil
 }
 
-// Ping checks if the Client is up and running
+// Ping returns whether the Elasticsearch cluster is running.
 func (e *Client) Ping() error {
 	res, err := e.client.Ping()
 	if err != nil {
@@ -80,7 +80,7 @@ func (e *Client) Search(ctx context.Context, index string, body map[string]inter
 	return result.(map[string]interface{}), nil
 }
 
-// GetIndices Returns comma seperated list of indices that does not start with `.` character
+// GetIndices Returns comma seperated list of indices that matches the ELASTICSEARCH_INDEX_PATTERN env character.
 func (e *Client) GetIndices(ctx context.Context) ([]string, error) {
 	// Create a request to retrieve indices matching the regex pattern
 	defaultIndex := "*,-.*"
@@ -108,7 +108,7 @@ func (e *Client) GetIndices(ctx context.Context) ([]string, error) {
 
 	result := make([]string, 0)
 
-	// Print the indices matching the regex pattern
+	// Print the indices matching the regex pattern.
 	for _, index := range indices.([]interface{}) {
 		indexName, ok := index.(map[string]interface{})["index"]
 		if !ok {
@@ -120,7 +120,7 @@ func (e *Client) GetIndices(ctx context.Context) ([]string, error) {
 	return result, nil
 }
 
-// GetMappings Returns mappings for comma seperated list of indices
+// GetMappings Returns mappings for comma seperated list of indices.
 func (e *Client) GetMappings(ctx context.Context, indices []string) (interface{}, error) {
 	req := esapi.IndicesGetMappingRequest{
 		Index: indices,
@@ -171,7 +171,7 @@ func parseResponse(ctx context.Context, res *esapi.Response) (interface{}, error
 	return result, nil
 }
 
-// GetInfo retrieves information about elastic search.
+// GetInfo retrieves information about Elasticsearch.
 func (e *Client) GetInfo(ctx context.Context) (interface{}, error) {
 	req := esapi.InfoRequest{}
 	res, err := req.Do(ctx, e.client)

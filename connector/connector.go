@@ -42,19 +42,24 @@ func (c *Connector) TryInitState(ctx context.Context, configuration *types.Confi
 	if err != nil {
 		return nil, err
 	}
-	result, err := client.GetInfo(ctx)
+	elasticsearchInfo, err := client.GetInfo(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.State{
+	state := &types.State{
 		TelemetryState:           metrics,
 		Client:                   client,
 		SupportedSortFields:      map[string]string{},
 		SupportedAggregateFields: map[string]string{},
 		SupportedFilterFields:    make(map[string]interface{}),
-		ElasticsearchInfo:        result.(map[string]interface{}),
-	}, nil
+		ElasticsearchInfo:        elasticsearchInfo.(map[string]interface{}),
+	}
+
+	schema := parseConfigurationToSchema(configuration, state)
+
+	state.Schema = schema
+	return state, nil
 }
 
 // HealthCheck checks the health of the connector.

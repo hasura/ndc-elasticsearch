@@ -218,10 +218,9 @@ func assertHTTPResponse[B any](t *testing.T, res *http.Response, statusCode int,
 	}
 }
 
-// TestConnector tests various query scenarios by sending HTTP requests and asserting the responses.
-func TestConnector(t *testing.T) {
+// TestGeneralMethods tests various general methods like capabilities, schema, health, and metrics.
+func TestGeneralMethods(t *testing.T) {
 	server := createTestServer(t).BuildTestServer()
-
 	t.Run("capabilities", func(t *testing.T) {
 		expectedBytes, err := os.ReadFile("../testdata/capabilities.json")
 		if err != nil {
@@ -288,6 +287,11 @@ func TestConnector(t *testing.T) {
 			t.FailNow()
 		}
 	})
+}
+
+// TestQuery tests various query scenarios by sending HTTP requests and asserting the responses.
+func TestQuery(t *testing.T) {
+	server := createTestServer(t).BuildTestServer()
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

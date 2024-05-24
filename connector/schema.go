@@ -9,7 +9,12 @@ import (
 
 // GetSchema returns the schema by parsing the configuration.
 func (c *Connector) GetSchema(ctx context.Context, configuration *types.Configuration, state *types.State) (schema.SchemaResponseMarshaler, error) {
-	schemaObject := schema.SchemaResponse{
+	return state.Schema, nil
+}
+
+// parseConfigurationToSchema parses the given configuration to generate the schema response.
+func parseConfigurationToSchema(configuration *types.Configuration, state *types.State) *schema.SchemaResponse {
+	ndcSchema := schema.SchemaResponse{
 		ScalarTypes: make(schema.SchemaResponseScalarTypes),
 		ObjectTypes: make(schema.SchemaResponseObjectTypes),
 		Collections: []schema.CollectionInfo{},
@@ -17,12 +22,6 @@ func (c *Connector) GetSchema(ctx context.Context, configuration *types.Configur
 		Procedures:  []schema.ProcedureInfo{},
 	}
 
-	parseConfigurationToSchema(configuration, &schemaObject, state)
-	return schemaObject, nil
-}
-
-// parseConfigurationToSchema parses the given configuration to generate the schema response.
-func parseConfigurationToSchema(configuration *types.Configuration, ndcSchema *schema.SchemaResponse, state *types.State) {
 	state.SupportedFilterFields["term_level_queries"] = map[string]string{}
 	state.SupportedFilterFields["unstructured_text"] = map[string]string{}
 	state.SupportedFilterFields["full_text_queries"] = map[string]string{}
@@ -41,7 +40,7 @@ func parseConfigurationToSchema(configuration *types.Configuration, ndcSchema *s
 		}
 
 		fields, objects := getScalarTypesAndObjects(properties, state)
-		prepareNDCSchema(ndcSchema, indexName, fields, objects)
+		prepareNDCSchema(&ndcSchema, indexName, fields, objects)
 
 		ndcSchema.Collections = append(ndcSchema.Collections, schema.CollectionInfo{
 			Name:      indexName,
@@ -55,6 +54,7 @@ func parseConfigurationToSchema(configuration *types.Configuration, ndcSchema *s
 			ForeignKeys: schema.CollectionInfoForeignKeys{},
 		})
 	}
+	return &ndcSchema
 }
 
 // getScalarTypesAndObjects retrieves scalar types and objects from properties.

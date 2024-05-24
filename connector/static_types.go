@@ -181,7 +181,7 @@ var objectTypeMap = map[string]schema.ObjectType{
 	},
 	"histogram": {
 		Fields: schema.ObjectTypeFields{
-			"values": schema.ObjectField{Type: schema.NewNamedType("float").Encode()},
+			"values": schema.ObjectField{Type: schema.NewNamedType("double").Encode()},
 			"counts": schema.ObjectField{Type: schema.NewNamedType("integer").Encode()},
 		},
 	},
