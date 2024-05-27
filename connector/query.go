@@ -162,7 +162,7 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 	span.AddEvent("prepare_filter_query")
 	// Filter
 	if request.Query.Predicate != nil {
-		filter, err := prepareFilterQuery(request.Query.Predicate, state)
+		filter, err := prepareFilterQuery(request.Query.Predicate, state, request.Collection)
 		if err != nil {
 			return nil, err
 		}
