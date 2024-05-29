@@ -22,10 +22,12 @@ func parseConfigurationToSchema(configuration *types.Configuration, state *types
 		Procedures:  []schema.ProcedureInfo{},
 	}
 
-	state.SupportedFilterFields["term_level_queries"] = map[string]string{}
-	state.SupportedFilterFields["unstructured_text"] = map[string]string{}
-	state.SupportedFilterFields["full_text_queries"] = map[string]string{}
 	for indexName, mappings := range *configuration {
+		state.SupportedFilterFields[indexName] = map[string]interface{}{
+			"term_level_queries": make(map[string]string),
+			"unstructured_text":  make(map[string]string),
+			"full_text_queries":  make(map[string]string),
+		}
 		data, ok := mappings.(map[string]interface{})
 		if !ok {
 			continue
@@ -39,7 +41,7 @@ func parseConfigurationToSchema(configuration *types.Configuration, state *types
 			continue
 		}
 
-		fields, objects := getScalarTypesAndObjects(properties, state)
+		fields, objects := getScalarTypesAndObjects(properties, state, indexName)
 		prepareNDCSchema(&ndcSchema, indexName, fields, objects)
 
 		ndcSchema.Collections = append(ndcSchema.Collections, schema.CollectionInfo{
@@ -58,7 +60,7 @@ func parseConfigurationToSchema(configuration *types.Configuration, state *types
 }
 
 // getScalarTypesAndObjects retrieves scalar types and objects from properties.
-func getScalarTypesAndObjects(properties map[string]interface{}, state *types.State) ([]map[string]interface{}, []map[string]interface{}) {
+func getScalarTypesAndObjects(properties map[string]interface{}, state *types.State, indexName string) ([]map[string]interface{}, []map[string]interface{}) {
 	fields := make([]map[string]interface{}, 0)
 	objects := make([]map[string]interface{}, 0)
 	for fieldName, fieldData := range properties {
@@ -137,23 +139,28 @@ func getScalarTypesAndObjects(properties map[string]interface{}, state *types.St
 						}
 
 						if subFieldType == "keyword" {
-							state.SupportedFilterFields["term_level_queries"].(map[string]string)[fieldName] = name
+							state.SupportedFilterFields[indexName].(map[string]interface{})["term_level_queries"].(map[string]string)[fieldName] = name
 						} else if subFieldType == "wildcard" {
-							state.SupportedFilterFields["unstructured_text"].(map[string]string)[fieldName] = name
+							state.SupportedFilterFields[indexName].(map[string]interface{})["unstructured_text"].(map[string]string)[fieldName] = name
 						} else if subFieldType == "text" {
-							state.SupportedFilterFields["full_text_queries"].(map[string]string)[fieldName] = name
+							state.SupportedFilterFields[indexName].(map[string]interface{})["full_text_queries"].(map[string]string)[fieldName] = name
 						}
 					}
 				}
 			}
+			if fieldType == "wildcard" {
+				state.SupportedFilterFields[indexName].(map[string]interface{})["unstructured_text"].(map[string]string)[fieldName] = fieldName
+			}
+			if fieldType == "keyword" {
+				state.SupportedFilterFields[indexName].(map[string]interface{})["term_level_queries"].(map[string]string)[fieldName] = fieldName
+			}
 		} else if nestedObject, ok := fieldMap["properties"].(map[string]interface{}); ok {
-
 			fields = append(fields, map[string]interface{}{
 				"name": fieldName,
 				"type": fieldName,
 			})
 
-			flds, objs := getScalarTypesAndObjects(nestedObject, state)
+			flds, objs := getScalarTypesAndObjects(nestedObject, state, indexName)
 			objects = append(objects, map[string]interface{}{
 				"name":   fieldName,
 				"fields": flds,
