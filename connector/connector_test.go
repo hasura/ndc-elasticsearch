@@ -157,6 +157,11 @@ var testCases = []struct {
 		requestFile:  "../testdata/query/variables/filter/nested_predicate_request.json",
 		responseFile: "../testdata/query/variables/filter/nested_predicate_response.json",
 	},
+	{
+		name:         "nested_array_select",
+		requestFile:  "../testdata/query/select/nested_array_select_request.json",
+		responseFile: "../testdata/query/select/nested_array_select_response.json",
+	},
 }
 
 // createTestServer creates a test server for the given configuration.

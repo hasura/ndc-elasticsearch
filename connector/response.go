@@ -52,8 +52,12 @@ func prepareResponse(ctx context.Context, response map[string]interface{}) *sche
 
 	documents := make([]map[string]interface{}, len(hits))
 	for i, hit := range hits {
-		document := extractDocument(hit, postProcessor)
-		documents[i] = document
+		doc := hit.(map[string]interface{})
+		source := doc["_source"].(map[string]interface{})
+		if postProcessor.IsIDSelected {
+			source["_id"] = doc["_id"].(string)
+		}
+		documents[i] = extractDocument(source, postProcessor.SelectedFields)
 	}
 
 	rowSet := &schema.RowSet{
@@ -76,19 +80,26 @@ func prepareResponse(ctx context.Context, response map[string]interface{}) *sche
 }
 
 // extractDocument extracts document fields based on the selected fields from the source data.
-func extractDocument(hit interface{}, postProcessor *types.PostProcessor) map[string]interface{} {
-	hitMap := hit.(map[string]interface{})
-	source := hitMap["_source"].(map[string]interface{})
-
-	if postProcessor.IsIDSelected {
-		source["_id"] = hitMap["_id"].(string)
+func extractDocument(source map[string]interface{}, selectedFields map[string]types.Field) map[string]interface{} {
+	document := make(map[string]interface{})
+	for fieldName, fieldData := range selectedFields {
+		if fieldData.Fields != nil {
+			if fieldDataSource, ok := source[fieldData.Name].(map[string]interface{}); ok {
+				documents := extractDocument(fieldDataSource, selectedFields[fieldName].Fields)
+				document[fieldName] = []interface{}{documents}
+			}
+			if fieldDataSource, ok := source[fieldData.Name].([]interface{}); ok {
+				docs := make([]interface{}, 0)
+				for _, data := range fieldDataSource {
+					doc := extractDocument(data.(map[string]interface{}), selectedFields[fieldName].Fields)
+					docs = append(docs, doc)
+				}
+				document[fieldName] = docs
+			}
+		} else {
+			document[fieldName] = source[fieldData.Name]
+		}
 	}
-
-	document := make(map[string]interface{}, len(postProcessor.SelectedFields))
-	for fieldName, columnName := range postProcessor.SelectedFields {
-		document[fieldName] = source[columnName]
-	}
-
 	return document
 }
 

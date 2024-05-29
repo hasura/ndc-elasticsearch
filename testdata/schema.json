@@ -188,14 +188,20 @@
                 },
                 "event": {
                     "type": {
-                        "name": "event",
-                        "type": "named"
+                        "element_type": {
+                            "name": "event",
+                            "type": "named"
+                        },
+                        "type": "array"
                     }
                 },
                 "geoip": {
                     "type": {
-                        "name": "geoip",
-                        "type": "named"
+                        "element_type": {
+                            "name": "geoip",
+                            "type": "named"
+                        },
+                        "type": "array"
                     }
                 },
                 "manufacturer": {
@@ -218,8 +224,11 @@
                 },
                 "products": {
                     "type": {
-                        "name": "products",
-                        "type": "named"
+                        "element_type": {
+                            "name": "products",
+                            "type": "named"
+                        },
+                        "type": "array"
                     }
                 },
                 "sku": {

@@ -50,8 +50,8 @@ func (c *Connector) TryInitState(ctx context.Context, configuration *types.Confi
 	state := &types.State{
 		TelemetryState:           metrics,
 		Client:                   client,
-		SupportedSortFields:      map[string]string{},
-		SupportedAggregateFields: map[string]string{},
+		SupportedSortFields:      make(map[string]interface{}),
+		SupportedAggregateFields: make(map[string]interface{}),
 		SupportedFilterFields:    make(map[string]interface{}),
 		ElasticsearchInfo:        elasticsearchInfo.(map[string]interface{}),
 	}

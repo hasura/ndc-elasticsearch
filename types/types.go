@@ -10,8 +10,8 @@ import (
 type State struct {
 	*connector.TelemetryState
 	Client                   *elasticsearch.Client
-	SupportedSortFields      map[string]string
-	SupportedAggregateFields map[string]string
+	SupportedSortFields      map[string]interface{}
+	SupportedAggregateFields map[string]interface{}
 	SupportedFilterFields    map[string]interface{}
 	ElasticsearchInfo        map[string]interface{}
 	Schema                   *schema.SchemaResponse
@@ -26,7 +26,12 @@ type PostProcessor struct {
 	StarAggregates  string
 	ColumnAggregate []string
 	IsIDSelected    bool
-	SelectedFields  map[string]string
+	SelectedFields  map[string]Field
+}
+
+type Field struct {
+	Name   string
+	Fields map[string]Field
 }
 
 type Variable string

@@ -28,6 +28,8 @@ func parseConfigurationToSchema(configuration *types.Configuration, state *types
 			"unstructured_text":  make(map[string]string),
 			"full_text_queries":  make(map[string]string),
 		}
+		state.SupportedSortFields[indexName] = make(map[string]string)
+		state.SupportedAggregateFields[indexName] = make(map[string]string)
 		data, ok := mappings.(map[string]interface{})
 		if !ok {
 			continue
@@ -89,17 +91,17 @@ func getScalarTypesAndObjects(properties map[string]interface{}, state *types.St
 			fieldDataEnalbed, ok := fieldMap["fielddata"].(bool)
 			if ok {
 				if isSortSupported(fieldType, fieldDataEnalbed) {
-					state.SupportedSortFields[fieldName] = fieldName
+					state.SupportedSortFields[indexName].(map[string]string)[fieldName] = fieldName
 				}
 				if isAggregateSupported(fieldType, fieldDataEnalbed) {
-					state.SupportedAggregateFields[fieldName] = fieldName
+					state.SupportedAggregateFields[indexName].(map[string]string)[fieldName] = fieldName
 				}
 			} else {
 				if isSortSupported(fieldType, false) {
-					state.SupportedSortFields[fieldName] = fieldName
+					state.SupportedSortFields[indexName].(map[string]string)[fieldName] = fieldName
 				}
 				if isAggregateSupported(fieldType, false) {
-					state.SupportedAggregateFields[fieldName] = fieldName
+					state.SupportedAggregateFields[indexName].(map[string]string)[fieldName] = fieldName
 				}
 			}
 
@@ -112,28 +114,28 @@ func getScalarTypesAndObjects(properties map[string]interface{}, state *types.St
 						fieldDataEnalbed, ok := subFieldMap["fielddata"].(bool)
 						if ok {
 							if isSortSupported(subFieldType, fieldDataEnalbed) {
-								state.SupportedSortFields[name] = name
-								if _, ok := state.SupportedSortFields[fieldName]; !ok {
-									state.SupportedSortFields[fieldName] = name
+								state.SupportedSortFields[indexName].(map[string]string)[name] = name
+								if _, ok := state.SupportedSortFields[indexName].(map[string]string)[fieldName]; !ok {
+									state.SupportedSortFields[indexName].(map[string]string)[fieldName] = name
 								}
 							}
 							if isAggregateSupported(subFieldType, fieldDataEnalbed) {
-								state.SupportedAggregateFields[name] = name
-								if _, ok := state.SupportedAggregateFields[fieldName]; !ok {
-									state.SupportedAggregateFields[fieldName] = name
+								state.SupportedAggregateFields[indexName].(map[string]string)[name] = name
+								if _, ok := state.SupportedAggregateFields[indexName].(map[string]string)[fieldName]; !ok {
+									state.SupportedAggregateFields[indexName].(map[string]string)[fieldName] = name
 								}
 							}
 						} else {
 							if isSortSupported(subFieldType, false) {
-								state.SupportedSortFields[name] = name
-								if _, ok := state.SupportedSortFields[fieldName]; !ok {
-									state.SupportedSortFields[fieldName] = name
+								state.SupportedSortFields[indexName].(map[string]string)[name] = name
+								if _, ok := state.SupportedSortFields[indexName].(map[string]string)[fieldName]; !ok {
+									state.SupportedSortFields[indexName].(map[string]string)[fieldName] = name
 								}
 							}
 							if isAggregateSupported(subFieldType, false) {
-								state.SupportedAggregateFields[name] = name
-								if _, ok := state.SupportedAggregateFields[fieldName]; !ok {
-									state.SupportedAggregateFields[fieldName] = name
+								state.SupportedAggregateFields[indexName].(map[string]string)[name] = name
+								if _, ok := state.SupportedAggregateFields[indexName].(map[string]string)[fieldName]; !ok {
+									state.SupportedAggregateFields[indexName].(map[string]string)[fieldName] = name
 								}
 							}
 						}
@@ -158,6 +160,7 @@ func getScalarTypesAndObjects(properties map[string]interface{}, state *types.St
 			fields = append(fields, map[string]interface{}{
 				"name": fieldName,
 				"type": fieldName,
+				"obj":  true,
 			})
 
 			flds, objs := getScalarTypesAndObjects(nestedObject, state, indexName)
@@ -181,8 +184,14 @@ func prepareNDCSchema(ndcSchema *schema.SchemaResponse, index string, fields []m
 		if scalarType, ok := scalarTypeMap[fieldType]; ok {
 			ndcSchema.ScalarTypes[fieldType] = scalarType
 		}
-		collectionFields[fieldName] = schema.ObjectField{
-			Type: schema.NewNamedType(fieldType).Encode(),
+		if _, ok := field["obj"]; ok {
+			collectionFields[fieldName] = schema.ObjectField{
+				Type: schema.NewArrayType(schema.NewNamedType(fieldType)).Encode(),
+			}
+		} else {
+			collectionFields[fieldName] = schema.ObjectField{
+				Type: schema.NewNamedType(fieldType).Encode(),
+			}
 		}
 
 		if objectType, ok := objectTypeMap[fieldType]; ok {
@@ -213,8 +222,14 @@ func prepareNDCSchema(ndcSchema *schema.SchemaResponse, index string, fields []m
 				ndcSchema.ScalarTypes[fieldType] = scalarType
 			}
 
-			ndcObjectFields[fieldName] = schema.ObjectField{
-				Type: schema.NewNamedType(fieldType).Encode(),
+			if _, ok := field["obj"]; ok {
+				ndcObjectFields[fieldName] = schema.ObjectField{
+					Type: schema.NewArrayType(schema.NewNamedType(fieldType)).Encode(),
+				}
+			} else {
+				ndcObjectFields[fieldName] = schema.ObjectField{
+					Type: schema.NewNamedType(fieldType).Encode(),
+				}
 			}
 
 			if objectType, ok := objectTypeMap[fieldType]; ok {

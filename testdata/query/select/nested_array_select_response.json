@@ -1,0 +1,216 @@
+[
+    {
+      "rows": [
+        {
+          "customerBirthDate": null,
+          "customerFirstName": "Eddie",
+          "products": [
+            {
+              "basePrice": 11.99,
+              "productId": 6283
+            },
+            {
+              "basePrice": 24.99,
+              "productId": 19400
+            }
+          ],
+          "sku": [
+            "ZO0549605496",
+            "ZO0299602996"
+          ]
+        },
+        {
+          "customerBirthDate": null,
+          "customerFirstName": "Mary",
+          "products": [
+            {
+              "basePrice": 24.99,
+              "productId": 11238
+            },
+            {
+              "basePrice": 28.99,
+              "productId": 20149
+            }
+          ],
+          "sku": [
+            "ZO0489604896",
+            "ZO0185501855"
+          ]
+        },
+        {
+          "customerBirthDate": null,
+          "customerFirstName": "Gwen",
+          "products": [
+            {
+              "basePrice": 99.99,
+              "productId": 22794
+            },
+            {
+              "basePrice": 99.99,
+              "productId": 23386
+            }
+          ],
+          "sku": [
+            "ZO0374603746",
+            "ZO0272202722"
+          ]
+        },
+        {
+          "customerBirthDate": null,
+          "customerFirstName": "Diane",
+          "products": [
+            {
+              "basePrice": 74.99,
+              "productId": 12304
+            },
+            {
+              "basePrice": 99.99,
+              "productId": 19587
+            }
+          ],
+          "sku": [
+            "ZO0360303603",
+            "ZO0272002720"
+          ]
+        },
+        {
+          "customerBirthDate": null,
+          "customerFirstName": "Eddie",
+          "products": [
+            {
+              "basePrice": 59.99,
+              "productId": 11262
+            },
+            {
+              "basePrice": 20.99,
+              "productId": 15713
+            }
+          ],
+          "sku": [
+            "ZO0542505425",
+            "ZO0601306013"
+          ]
+        },
+        {
+          "customerBirthDate": null,
+          "customerFirstName": "Diane",
+          "products": [
+            {
+              "basePrice": 59.99,
+              "productId": 5419
+            },
+            {
+              "basePrice": 11.99,
+              "productId": 19325
+            }
+          ],
+          "sku": [
+            "ZO0376303763",
+            "ZO0212402124"
+          ]
+        },
+        {
+          "customerBirthDate": null,
+          "customerFirstName": "Oliver",
+          "products": [
+            {
+              "basePrice": 20.99,
+              "productId": 19919
+            },
+            {
+              "basePrice": 24.99,
+              "productId": 24502
+            }
+          ],
+          "sku": [
+            "ZO0417504175",
+            "ZO0535205352"
+          ]
+        },
+        {
+          "customerBirthDate": null,
+          "customerFirstName": "Abd",
+          "products": [
+            {
+              "basePrice": 28.99,
+              "productId": 11751
+            },
+            {
+              "basePrice": 41.99,
+              "productId": 13452
+            },
+            {
+              "basePrice": 59.99,
+              "productId": 22434
+            },
+            {
+              "basePrice": 7.99,
+              "productId": 7059
+            }
+          ],
+          "sku": [
+            "ZO0423104231",
+            "ZO0314203142",
+            "ZO0394403944",
+            "ZO0561805618"
+          ]
+        },
+        {
+          "customerBirthDate": null,
+          "customerFirstName": "Wilhemina St.",
+          "products": [
+            {
+              "basePrice": 8.99,
+              "productId": 12012
+            },
+            {
+              "basePrice": 20.99,
+              "productId": 16471
+            },
+            {
+              "basePrice": 16.99,
+              "productId": 10554
+            },
+            {
+              "basePrice": 41.99,
+              "productId": 22882
+            }
+          ],
+          "sku": [
+            "ZO0186801868",
+            "ZO0074100741",
+            "ZO0223202232",
+            "ZO0267602676"
+          ]
+        },
+        {
+          "customerBirthDate": null,
+          "customerFirstName": "Rabbia Al",
+          "products": [
+            {
+              "basePrice": 74.99,
+              "productId": 22880
+            },
+            {
+              "basePrice": 32.99,
+              "productId": 12484
+            },
+            {
+              "basePrice": 13.99,
+              "productId": 21362
+            },
+            {
+              "basePrice": 49.99,
+              "productId": 13854
+            }
+          ],
+          "sku": [
+            "ZO0249902499",
+            "ZO0068400684",
+            "ZO0494704947",
+            "ZO0143401434"
+          ]
+        }
+      ]
+    }
+  ]

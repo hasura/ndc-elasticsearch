@@ -6,15 +6,19 @@ import (
 )
 
 // prepareSortQuery prepares the sort query.
-func prepareSortQuery(orderBy *schema.OrderBy, state *types.State) ([]map[string]interface{}, error) {
+func prepareSortQuery(orderBy *schema.OrderBy, state *types.State, collection string) ([]map[string]interface{}, error) {
 	sort := make([]map[string]interface{}, len(orderBy.Elements))
 	for i, element := range orderBy.Elements {
 		field := element.Target["name"].(string)
-		if _, ok := state.SupportedSortFields[field]; !ok {
-			return nil, schema.BadRequestError("sorting not supported on this field", map[string]interface{}{"value": field})
+		if collectionSortFields, ok := state.SupportedSortFields[collection]; ok {
+			if sortField, ok := collectionSortFields.(map[string]string)[field]; !ok {
+				return nil, schema.BadRequestError("sorting not supported on this field", map[string]interface{}{"value": field})
+			} else {
+				field = sortField
+			}
 		}
 		sort[i] = map[string]interface{}{
-			state.SupportedSortFields[field]: map[string]interface{}{"order": element.OrderDirection},
+			field: map[string]interface{}{"order": element.OrderDirection},
 		}
 	}
 	return sort, nil

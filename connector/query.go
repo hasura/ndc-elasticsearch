@@ -118,12 +118,15 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 
 	span.AddEvent("prepare_select_query")
 	// Select the fields
-	if request.Query.Fields != nil {
-		fields, err := prepareSelectQuery(ctx, state, request.Query.Fields)
+	if len(request.Query.Fields) != 0 {
+		postProcessor := ctx.Value("postProcessor").(*types.PostProcessor)
+		postProcessor.IsFields = true
+		source, selectedFields, err := prepareSelectFields(ctx, request.Query.Fields, postProcessor, "")
 		if err != nil {
 			return nil, err
 		}
-		query["_source"] = fields
+		postProcessor.SelectedFields = selectedFields
+		query["_source"] = source
 	}
 
 	span.AddEvent("prepare_paginate_query")
@@ -140,7 +143,7 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 	span.AddEvent("prepare_sort_query")
 	// Order by
 	if request.Query.OrderBy != nil && len(request.Query.OrderBy.Elements) != 0 {
-		sort, err := prepareSortQuery(request.Query.OrderBy, state)
+		sort, err := prepareSortQuery(request.Query.OrderBy, state, request.Collection)
 		if err != nil {
 			return nil, err
 		}
@@ -150,7 +153,7 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 	span.AddEvent("prepare_aggregate_query")
 	// Aggregations
 	if request.Query.Aggregates != nil {
-		aggs, err := prepareAggregateQuery(ctx, request.Query.Aggregates, state)
+		aggs, err := prepareAggregateQuery(ctx, request.Query.Aggregates, state, request.Collection)
 		if err != nil {
 			return nil, err
 		}
