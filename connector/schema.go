@@ -28,8 +28,9 @@ func parseConfigurationToSchema(configuration *types.Configuration, state *types
 			"unstructured_text":  make(map[string]string),
 			"full_text_queries":  make(map[string]string),
 		}
-		state.SupportedSortFields[indexName] = make(map[string]string)
+		state.NestedFields[indexName] = make(map[string]string)
 		state.SupportedAggregateFields[indexName] = make(map[string]string)
+		state.SupportedSortFields[indexName] = make(map[string]string)
 		data, ok := mappings.(map[string]interface{})
 		if !ok {
 			continue
@@ -43,7 +44,7 @@ func parseConfigurationToSchema(configuration *types.Configuration, state *types
 			continue
 		}
 
-		fields, objects := getScalarTypesAndObjects(properties, state, indexName)
+		fields, objects := getScalarTypesAndObjects(properties, state, indexName, "")
 		prepareNDCSchema(&ndcSchema, indexName, fields, objects)
 
 		ndcSchema.Collections = append(ndcSchema.Collections, schema.CollectionInfo{
@@ -62,10 +63,14 @@ func parseConfigurationToSchema(configuration *types.Configuration, state *types
 }
 
 // getScalarTypesAndObjects retrieves scalar types and objects from properties.
-func getScalarTypesAndObjects(properties map[string]interface{}, state *types.State, indexName string) ([]map[string]interface{}, []map[string]interface{}) {
+func getScalarTypesAndObjects(properties map[string]interface{}, state *types.State, indexName string, parentField string) ([]map[string]interface{}, []map[string]interface{}) {
 	fields := make([]map[string]interface{}, 0)
 	objects := make([]map[string]interface{}, 0)
 	for fieldName, fieldData := range properties {
+		fieldWithParent := fieldName
+		if parentField != "" {
+			fieldWithParent = parentField + "." + fieldName
+		}
 		fieldMap, ok := fieldData.(map[string]interface{})
 		if !ok {
 			continue
@@ -91,17 +96,17 @@ func getScalarTypesAndObjects(properties map[string]interface{}, state *types.St
 			fieldDataEnalbed, ok := fieldMap["fielddata"].(bool)
 			if ok {
 				if isSortSupported(fieldType, fieldDataEnalbed) {
-					state.SupportedSortFields[indexName].(map[string]string)[fieldName] = fieldName
+					state.SupportedSortFields[indexName].(map[string]string)[fieldWithParent] = fieldWithParent
 				}
 				if isAggregateSupported(fieldType, fieldDataEnalbed) {
-					state.SupportedAggregateFields[indexName].(map[string]string)[fieldName] = fieldName
+					state.SupportedAggregateFields[indexName].(map[string]string)[fieldWithParent] = fieldWithParent
 				}
 			} else {
 				if isSortSupported(fieldType, false) {
-					state.SupportedSortFields[indexName].(map[string]string)[fieldName] = fieldName
+					state.SupportedSortFields[indexName].(map[string]string)[fieldWithParent] = fieldWithParent
 				}
 				if isAggregateSupported(fieldType, false) {
-					state.SupportedAggregateFields[indexName].(map[string]string)[fieldName] = fieldName
+					state.SupportedAggregateFields[indexName].(map[string]string)[fieldWithParent] = fieldWithParent
 				}
 			}
 
@@ -109,61 +114,64 @@ func getScalarTypesAndObjects(properties map[string]interface{}, state *types.St
 				for subFieldName, subFieldData := range subFields {
 					subFieldMap := subFieldData.(map[string]interface{})
 					if subFieldType, ok := subFieldMap["type"].(string); ok {
-						name := fieldName + "." + subFieldName
+						subFieldWithParent := fieldWithParent + "." + subFieldName
 
 						fieldDataEnalbed, ok := subFieldMap["fielddata"].(bool)
 						if ok {
 							if isSortSupported(subFieldType, fieldDataEnalbed) {
-								state.SupportedSortFields[indexName].(map[string]string)[name] = name
-								if _, ok := state.SupportedSortFields[indexName].(map[string]string)[fieldName]; !ok {
-									state.SupportedSortFields[indexName].(map[string]string)[fieldName] = name
+								state.SupportedSortFields[indexName].(map[string]string)[subFieldWithParent] = subFieldWithParent
+								if _, ok := state.SupportedSortFields[indexName].(map[string]string)[fieldWithParent]; !ok {
+									state.SupportedSortFields[indexName].(map[string]string)[fieldWithParent] = subFieldWithParent
 								}
 							}
 							if isAggregateSupported(subFieldType, fieldDataEnalbed) {
-								state.SupportedAggregateFields[indexName].(map[string]string)[name] = name
-								if _, ok := state.SupportedAggregateFields[indexName].(map[string]string)[fieldName]; !ok {
-									state.SupportedAggregateFields[indexName].(map[string]string)[fieldName] = name
+								state.SupportedAggregateFields[indexName].(map[string]string)[subFieldWithParent] = subFieldWithParent
+								if _, ok := state.SupportedAggregateFields[indexName].(map[string]string)[fieldWithParent]; !ok {
+									state.SupportedAggregateFields[indexName].(map[string]string)[fieldWithParent] = subFieldWithParent
 								}
 							}
 						} else {
 							if isSortSupported(subFieldType, false) {
-								state.SupportedSortFields[indexName].(map[string]string)[name] = name
-								if _, ok := state.SupportedSortFields[indexName].(map[string]string)[fieldName]; !ok {
-									state.SupportedSortFields[indexName].(map[string]string)[fieldName] = name
+								state.SupportedSortFields[indexName].(map[string]string)[subFieldWithParent] = subFieldWithParent
+								if _, ok := state.SupportedSortFields[indexName].(map[string]string)[fieldWithParent]; !ok {
+									state.SupportedSortFields[indexName].(map[string]string)[fieldWithParent] = subFieldWithParent
 								}
 							}
 							if isAggregateSupported(subFieldType, false) {
-								state.SupportedAggregateFields[indexName].(map[string]string)[name] = name
-								if _, ok := state.SupportedAggregateFields[indexName].(map[string]string)[fieldName]; !ok {
-									state.SupportedAggregateFields[indexName].(map[string]string)[fieldName] = name
+								state.SupportedAggregateFields[indexName].(map[string]string)[subFieldWithParent] = subFieldWithParent
+								if _, ok := state.SupportedAggregateFields[indexName].(map[string]string)[fieldWithParent]; !ok {
+									state.SupportedAggregateFields[indexName].(map[string]string)[fieldWithParent] = subFieldWithParent
 								}
 							}
 						}
 
 						if subFieldType == "keyword" {
-							state.SupportedFilterFields[indexName].(map[string]interface{})["term_level_queries"].(map[string]string)[fieldName] = name
+							state.SupportedFilterFields[indexName].(map[string]interface{})["term_level_queries"].(map[string]string)[fieldWithParent] = subFieldWithParent
 						} else if subFieldType == "wildcard" {
-							state.SupportedFilterFields[indexName].(map[string]interface{})["unstructured_text"].(map[string]string)[fieldName] = name
+							state.SupportedFilterFields[indexName].(map[string]interface{})["unstructured_text"].(map[string]string)[fieldWithParent] = subFieldWithParent
 						} else if subFieldType == "text" {
-							state.SupportedFilterFields[indexName].(map[string]interface{})["full_text_queries"].(map[string]string)[fieldName] = name
+							state.SupportedFilterFields[indexName].(map[string]interface{})["full_text_queries"].(map[string]string)[fieldWithParent] = subFieldWithParent
 						}
 					}
 				}
 			}
 			if fieldType == "wildcard" {
-				state.SupportedFilterFields[indexName].(map[string]interface{})["unstructured_text"].(map[string]string)[fieldName] = fieldName
+				state.SupportedFilterFields[indexName].(map[string]interface{})["unstructured_text"].(map[string]string)[fieldWithParent] = fieldWithParent
 			}
 			if fieldType == "keyword" {
-				state.SupportedFilterFields[indexName].(map[string]interface{})["term_level_queries"].(map[string]string)[fieldName] = fieldName
+				state.SupportedFilterFields[indexName].(map[string]interface{})["term_level_queries"].(map[string]string)[fieldWithParent] = fieldWithParent
 			}
 		} else if nestedObject, ok := fieldMap["properties"].(map[string]interface{}); ok {
+			if fieldType == "nested" {
+				state.NestedFields[indexName].(map[string]string)[fieldWithParent] = fieldType
+			}
 			fields = append(fields, map[string]interface{}{
 				"name": fieldName,
 				"type": fieldName,
 				"obj":  true,
 			})
 
-			flds, objs := getScalarTypesAndObjects(nestedObject, state, indexName)
+			flds, objs := getScalarTypesAndObjects(nestedObject, state, indexName, fieldWithParent)
 			objects = append(objects, map[string]interface{}{
 				"name":   fieldName,
 				"fields": flds,

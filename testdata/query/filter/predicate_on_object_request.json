@@ -1,0 +1,40 @@
+{
+    "collection": "kibana_sample_data_ecommerce",
+    "arguments": {},
+    "query": {
+        "fields": {
+            "customer_first_name": {
+                "type": "column",
+                "column": "customer_first_name"
+            },
+            "geoip": {
+                "type": "column",
+                "column": "geoip",
+                "fields": {
+                    "type": "object",
+                    "fields": {
+                        "city_name": {
+                            "type": "column",
+                            "column": "city_name"
+                        }
+                    }
+                }
+            }
+        },
+        "predicate": {
+            "type": "binary_comparison_operator",
+            "column": {
+                "type": "column",
+                "name": "geoip",
+                "field_path": ["city_name"],
+                "path": []
+            },
+            "operator": "term",
+            "value": {
+                "type": "scalar",
+                "value": "Cairo"
+            }
+        }
+    },
+    "collection_relationships": {}
+}

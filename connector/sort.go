@@ -9,17 +9,47 @@ import (
 func prepareSortQuery(orderBy *schema.OrderBy, state *types.State, collection string) ([]map[string]interface{}, error) {
 	sort := make([]map[string]interface{}, len(orderBy.Elements))
 	for i, element := range orderBy.Elements {
-		field := element.Target["name"].(string)
+		sortElmnt, err := prepareSortElement(&element, state, collection)
+		if err != nil {
+			return nil, err
+		}
+		sort[i] = sortElmnt
+	}
+	return sort, nil
+}
+
+func prepareSortElement(element *schema.OrderByElement, state *types.State, collection string) (map[string]interface{}, error) {
+	sort := make(map[string]interface{})
+	switch target := element.Target.Interface().(type) {
+	case *schema.OrderByColumn:
+		fieldName, fieldPath := joinFieldPath(state, target.FieldPath, target.Name, collection)
+
 		if collectionSortFields, ok := state.SupportedSortFields[collection]; ok {
-			if sortField, ok := collectionSortFields.(map[string]string)[field]; !ok {
-				return nil, schema.BadRequestError("sorting not supported on this field", map[string]interface{}{"value": field})
+			if sortField, ok := collectionSortFields.(map[string]string)[fieldName]; ok {
+				fieldName = sortField
 			} else {
-				field = sortField
+				return nil, schema.UnprocessableContentError("sorting not supported on this field", map[string]any{
+					"value": fieldName,
+				})
 			}
 		}
-		sort[i] = map[string]interface{}{
-			field: map[string]interface{}{"order": element.OrderDirection},
+		sort[fieldName] = map[string]interface{}{
+			"order": string(element.OrderDirection),
 		}
+		if nestedFields, ok := state.NestedFields[collection]; ok {
+			if _, ok := nestedFields.(map[string]string)[target.Name]; ok {
+				sort[fieldName] = map[string]interface{}{
+					"nested": map[string]interface{}{
+						"path": fieldPath,
+					},
+					"order": string(element.OrderDirection),
+				}
+			}
+		}
+	default:
+		return nil, schema.UnprocessableContentError("invalid order by field", map[string]any{
+			"value": element.Target,
+		})
 	}
 	return sort, nil
 }

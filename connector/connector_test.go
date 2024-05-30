@@ -27,6 +27,11 @@ var testCases = []struct {
 		responseFile: "../testdata/query/select/response.json",
 	},
 	{
+		name:         "select_query_on_array",
+		requestFile:  "../testdata/query/select/array_select_request.json",
+		responseFile: "../testdata/query/select/array_select_response.json",
+	},
+	{
 		name:         "sort_asc",
 		requestFile:  "../testdata/query/sort/sort_asc_request.json",
 		responseFile: "../testdata/query/sort/sort_asc_response.json",
@@ -40,6 +45,21 @@ var testCases = []struct {
 		name:         "multi_column_sort",
 		requestFile:  "../testdata/query/sort/multi_column_sort_request.json",
 		responseFile: "../testdata/query/sort/multi_column_sort_response.json",
+	},
+	{
+		name:         "sort_on_object_field",
+		requestFile:  "../testdata/query/sort/sort_on_object_field_request.json",
+		responseFile: "../testdata/query/sort/sort_on_object_field_response.json",
+	},
+	{
+		name:         "sort_on_nested_type_with_nesting",
+		requestFile:  "../testdata/query/sort/sort_on_nested_type_with_nesting_request.json",
+		responseFile: "../testdata/query/sort/sort_on_nested_type_with_nesting_response.json",
+	},
+	{
+		name:         "sort_on_nested_type_field",
+		requestFile:  "../testdata/query/sort/sort_on_nested_type_request.json",
+		responseFile: "../testdata/query/sort/sort_on_nested_type_response.json",
 	},
 	{
 		name:         "pagination",
@@ -75,6 +95,26 @@ var testCases = []struct {
 		name:         "nested_predicate",
 		requestFile:  "../testdata/query/filter/nested_predicate_request.json",
 		responseFile: "../testdata/query/filter/nested_predicate_response.json",
+	},
+	{
+		name:         "predicate_on_object_field",
+		requestFile:  "../testdata/query/filter/predicate_on_object_request.json",
+		responseFile: "../testdata/query/filter/predicate_on_object_response.json",
+	},
+	{
+		name:         "predicate_on_nested_type_with_nesting",
+		requestFile:  "../testdata/query/filter/predicate_on_nested_type_with_nesting_request.json",
+		responseFile: "../testdata/query/filter/predicate_on_nested_type_with_nesting_response.json",
+	},
+	{
+		name:         "predicate_on_nested_type_field",
+		requestFile:  "../testdata/query/filter/predicate_on_nested_type_request.json",
+		responseFile: "../testdata/query/filter/predicate_on_nested_type_response.json",
+	},
+	{
+		name:         "unary_predicate_on_nested_type_field",
+		requestFile:  "../testdata/query/filter/unary_predicate_on_nested_type_request.json",
+		responseFile: "../testdata/query/filter/unary_predicate_on_nested_type_response.json",
 	},
 	{
 		name:         "star_count_aggregation",
@@ -158,9 +198,14 @@ var testCases = []struct {
 		responseFile: "../testdata/query/variables/filter/nested_predicate_response.json",
 	},
 	{
-		name:         "nested_array_select",
-		requestFile:  "../testdata/query/select/nested_array_select_request.json",
-		responseFile: "../testdata/query/select/nested_array_select_response.json",
+		name:         "predicate_on_object_field_using_variables",
+		requestFile:  "../testdata/query/variables/filter/predicate_on_object_request.json",
+		responseFile: "../testdata/query/variables/filter/predicate_on_object_response.json",
+	},
+	{
+		name:         "predicate_on_nested_type_field_using_variables",
+		requestFile:  "../testdata/query/variables/filter/predicate_on_nested_type_request.json",
+		responseFile: "../testdata/query/variables/filter/predicate_on_nested_type_response.json",
 	},
 }
 

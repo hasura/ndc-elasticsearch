@@ -15,6 +15,7 @@ type State struct {
 	SupportedFilterFields    map[string]interface{}
 	ElasticsearchInfo        map[string]interface{}
 	Schema                   *schema.SchemaResponse
+	NestedFields             map[string]interface{}
 }
 
 // Configuration contains required settings for the connector.

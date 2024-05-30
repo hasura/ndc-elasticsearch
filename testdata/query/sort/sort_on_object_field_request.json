@@ -1,0 +1,45 @@
+{
+    "collection": "kibana_sample_data_ecommerce",
+    "arguments": {},
+    "query": {
+        "fields": {
+            "customer_first_name": {
+                "type": "column",
+                "column": "customer_first_name"
+            },
+            "geoip": {
+                "type": "column",
+                "column": "geoip",
+                "fields": {
+                    "type": "object",
+                    "fields": {
+                        "city_name": {
+                            "type": "column",
+                            "column": "city_name"
+                        },
+                        "continent_name": {
+                            "type": "column",
+                            "column": "continent_name"
+                        }
+                    }
+                }
+            }
+        },
+        "order_by": {
+            "elements": [
+                {
+                    "target": {
+                        "type": "column",
+                        "name": "geoip",
+                        "field_path": [
+                            "city_name"
+                        ],
+                        "path": []
+                    },
+                    "order_direction": "asc"
+                }
+            ]
+        }
+    },
+    "collection_relationships": {}
+}

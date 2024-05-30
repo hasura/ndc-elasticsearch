@@ -3,8 +3,12 @@
         "mutation": {},
         "query": {
             "aggregates": {},
+            "nested_fields": {
+                "filter_by": {},
+                "order_by": {}
+            },
             "variables": {}
         }
     },
-    "version": "0.1.2"
+    "version": "0.1.3"
 }

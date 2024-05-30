@@ -53,6 +53,7 @@ func (c *Connector) TryInitState(ctx context.Context, configuration *types.Confi
 		SupportedSortFields:      make(map[string]interface{}),
 		SupportedAggregateFields: make(map[string]interface{}),
 		SupportedFilterFields:    make(map[string]interface{}),
+		NestedFields:             make(map[string]interface{}),
 		ElasticsearchInfo:        elasticsearchInfo.(map[string]interface{}),
 	}
 
@@ -73,11 +74,15 @@ func (c *Connector) HealthCheck(ctx context.Context, configuration *types.Config
 // GetCapabilities get the connector's capabilities.
 func (c *Connector) GetCapabilities(configuration *types.Configuration) schema.CapabilitiesResponseMarshaler {
 	return &schema.CapabilitiesResponse{
-		Version: "0.1.2",
+		Version: "0.1.3",
 		Capabilities: schema.Capabilities{
 			Query: schema.QueryCapabilities{
 				Variables:  schema.LeafCapability{},
 				Aggregates: schema.LeafCapability{},
+				NestedFields: schema.NestedFieldCapabilities{
+					OrderBy:  schema.LeafCapability{},
+					FilterBy: schema.LeafCapability{},
+				},
 			},
 		},
 	}

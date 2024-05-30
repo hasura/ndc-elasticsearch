@@ -204,5 +204,112 @@
                 }
             }
         }
+    },
+    "my_sample_index": {
+        "mappings": {
+            "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "custom_rank": {
+                    "type": "rank_feature"
+                },
+                "description": {
+                    "type": "text"
+                },
+                "driver": {
+                    "properties": {
+                        "last_name": {
+                            "type": "text"
+                        },
+                        "vehicle": {
+                            "properties": {
+                                "make": {
+                                    "type": "text"
+                                },
+                                "model": {
+                                    "fields": {
+                                        "keyword": {
+                                            "type": "keyword"
+                                        },
+                                        "wildcard": {
+                                            "type": "wildcard"
+                                        }
+                                    },
+                                    "type": "text"
+                                }
+                            },
+                            "type": "nested"
+                        }
+                    },
+                    "type": "nested"
+                },
+                "file": {
+                    "type": "binary"
+                },
+                "ip_address": {
+                    "type": "ip"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "join_date": {
+                    "type": "date"
+                },
+                "location": {
+                    "type": "geo_point"
+                },
+                "name": {
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword"
+                        },
+                        "wildcard": {
+                            "type": "wildcard"
+                        }
+                    },
+                    "type": "text"
+                },
+                "profile": {
+                    "properties": {
+                        "address": {
+                            "type": "text"
+                        },
+                        "city": {
+                            "type": "keyword"
+                        },
+                        "zipcode": {
+                            "type": "integer"
+                        }
+                    },
+                    "type": "nested"
+                },
+                "salary": {
+                    "type": "float"
+                },
+                "tags": {
+                    "fields": {
+                        "text": {
+                            "type": "text"
+                        },
+                        "wildcard": {
+                            "type": "wildcard"
+                        }
+                    },
+                    "type": "keyword"
+                },
+                "wildcard_field": {
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword"
+                        },
+                        "text": {
+                            "type": "text"
+                        }
+                    },
+                    "type": "wildcard"
+                }
+            }
+        }
     }
 }

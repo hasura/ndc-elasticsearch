@@ -1,0 +1,50 @@
+{
+    "collection": "kibana_sample_data_ecommerce",
+    "query": {
+        "fields": {
+            "customer_first_name": {
+                "type": "column",
+                "column": "customer_first_name"
+            },
+            "event": {
+                "type": "column",
+                "column": "event",
+                "fields": {
+                    "type": "object",
+                    "fields": {
+                        "dataset": {
+                            "type": "column",
+                            "column": "dataset"
+                        }
+                    }
+                }
+            }
+        },
+        "predicate": {
+            "type": "binary_comparison_operator",
+            "column": {
+                "type": "column",
+                "name": "event",
+                "field_path": [
+                    "dataset"
+                ],
+                "path": []
+            },
+            "operator": "term",
+            "value": {
+                "type": "variable",
+                "name": "$dataset"
+            }
+        }
+    },
+    "arguments": {},
+    "collection_relationships": {},
+    "variables": [
+        {
+            "$dataset": "sample_ecommerce"
+        },
+        {
+            "$dataset": "Los Angeles"
+        }
+    ]
+}

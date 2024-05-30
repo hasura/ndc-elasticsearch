@@ -1,0 +1,73 @@
+{
+    "collection": "my_sample_index",
+    "query": {
+        "fields": {
+            "name": {
+                "type": "column",
+                "column": "name"
+            },
+            "profile": {
+                "type": "column",
+                "column": "profile",
+                "fields": {
+                    "type": "object",
+                    "fields": {
+                        "city": {
+                            "type": "column",
+                            "column": "city"
+                        }
+                    }
+                }
+            }
+        },
+        "predicate": {
+            "type": "and",
+            "expressions": [
+                {
+                    "type": "binary_comparison_operator",
+                    "column": {
+                        "type": "column",
+                        "name": "profile",
+                        "field_path": [
+                            "city"
+                        ],
+                        "path": []
+                    },
+                    "operator": "term",
+                    "value": {
+                        "type": "variable",
+                        "name": "$city"
+                    }
+                },
+                {
+                    "type": "binary_comparison_operator",
+                    "column": {
+                        "type": "column",
+                        "name": "profile",
+                        "field_path": [
+                            "address"
+                        ],
+                        "path": []
+                    },
+                    "operator": "match",
+                    "value": {
+                        "type": "variable",
+                        "name": "$address"
+                    }
+                }
+            ]
+        }
+    },
+    "arguments": {},
+    "collection_relationships": {},
+    "variables": [
+        {
+            "$city": "Cairo",
+            "$address": "497 Elm Street"
+        },
+        {
+            "$city": "Los Angeles",
+            "$address": "456 Elm St"
+        }
+    ]
+}

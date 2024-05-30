@@ -1,0 +1,46 @@
+{
+    "collection": "my_sample_index",
+    "query": {
+        "fields": {
+            "name": {
+                "type": "column",
+                "column": "name"
+            },
+            "profile": {
+                "type": "column",
+                "column": "profile",
+                "fields": {
+                    "type": "object",
+                    "fields": {
+                        "city": {
+                            "type": "column",
+                            "column": "city"
+                        }
+                    }
+                }
+            }
+        },
+        "predicate": {
+            "type": "and",
+            "expressions": [
+                {
+                    "type": "not",
+                    "expression": {
+                        "type": "unary_comparison_operator",
+                        "column": {
+                            "type": "column",
+                            "name": "profile",
+                            "path": [],
+                            "field_path": [
+                                "city"
+                            ]
+                        },
+                        "operator": "is_null"
+                    }
+                }
+            ]
+        }
+    },
+    "arguments": {},
+    "collection_relationships": {}
+}
