@@ -8,15 +8,18 @@ import (
 )
 
 // prepareAggregateQuery prepares the aggregate query based on the aggregates in the query request.
-func prepareAggregateQuery(ctx context.Context, aggregates schema.QueryAggregates, state *types.State) (map[string]interface{}, error) {
+func prepareAggregateQuery(ctx context.Context, aggregates schema.QueryAggregates, state *types.State, collection string) (map[string]interface{}, error) {
 	postProcessor := ctx.Value("postProcessor").(*types.PostProcessor)
 	aggs := make(map[string]interface{})
 	for name, aggregate := range aggregates {
 		aggregateColumn, ok := aggregate["column"].(string)
 		if ok {
-			_, ok := state.SupportedAggregateFields[aggregateColumn]
-			if !ok {
-				return nil, schema.BadRequestError("aggregation not supported on this field", map[string]any{"value": aggregateColumn})
+			if collectionAggregateFields, ok := state.SupportedAggregateFields[collection]; ok {
+				if aggregateField, ok := collectionAggregateFields.(map[string]string)[aggregateColumn]; !ok {
+					return nil, schema.BadRequestError("aggregation not supported on this field", map[string]any{"value": aggregateColumn})
+				} else {
+					aggregateColumn = aggregateField
+				}
 			}
 		}
 		switch agg := aggregate.Interface().(type) {
@@ -26,14 +29,14 @@ func prepareAggregateQuery(ctx context.Context, aggregates schema.QueryAggregate
 			if agg.Distinct {
 				aggs[name] = map[string]interface{}{
 					"cardinality": map[string]interface{}{
-						"field": state.SupportedAggregateFields[agg.Column],
+						"field": aggregateColumn,
 					},
 				}
 			} else {
 				aggs[name] = map[string]interface{}{
 					"filter": map[string]interface{}{
 						"exists": map[string]interface{}{
-							"field": state.SupportedAggregateFields[agg.Column],
+							"field": aggregateColumn,
 						},
 					},
 				}
@@ -45,7 +48,7 @@ func prepareAggregateQuery(ctx context.Context, aggregates schema.QueryAggregate
 			case "sum", "min", "max", "avg", "value_count", "cardinality", "stats", "string_stats":
 				aggs[name] = map[string]interface{}{
 					agg.Function: map[string]interface{}{
-						"field": state.SupportedAggregateFields[agg.Column],
+						"field": aggregateColumn,
 					},
 				}
 			default:

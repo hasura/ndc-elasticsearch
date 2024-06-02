@@ -1,0 +1,24 @@
+[
+    {
+        "rows": [
+            {
+                "name": "Josh Peterson",
+                "profile": [
+                    {
+                        "address": "497 Elm Street",
+                        "city": "Cairo"
+                    }
+                ]
+            },
+            {
+                "name": "Jane Smith",
+                "profile": [
+                    {
+                        "address": "456 Elm St",
+                        "city": "Los Angeles"
+                    }
+                ]
+            }
+        ]
+    }
+]

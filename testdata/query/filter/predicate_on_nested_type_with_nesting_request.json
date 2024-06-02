@@ -1,0 +1,60 @@
+{
+    "collection": "my_sample_index",
+    "arguments": {},
+    "query": {
+        "fields": {
+            "name": {
+                "type": "column",
+                "column": "name"
+            },
+            "driver": {
+                "type": "column",
+                "column": "driver",
+                "fields": {
+                    "type": "object",
+                    "fields": {
+                        "last_name": {
+                            "type": "column",
+                            "column": "last_name"
+                        },
+                        "vehicle": {
+                            "type": "column",
+                            "column": "vehicle",
+                            "fields": {
+                                "type": "object",
+                                "fields": {
+                                    "make": {
+                                        "type": "column",
+                                        "column": "make"
+                                    },
+                                    "model": {
+                                        "type": "column",
+                                        "column": "model"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "predicate": {
+            "type": "binary_comparison_operator",
+            "column": {
+                "type": "column",
+                "name": "driver",
+                "field_path": [
+                    "vehicle",
+                    "model"
+                ],
+                "path": []
+            },
+            "operator": "match",
+            "value": {
+                "type": "scalar",
+                "value": "Canyonero"
+            }
+        }
+    },
+    "collection_relationships": {}
+}

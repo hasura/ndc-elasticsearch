@@ -1,0 +1,87 @@
+[
+    {
+        "rows": [
+            {
+                "customer_first_name": "Eddie",
+                "event": [
+                    {
+                        "dataset": "sample_ecommerce"
+                    }
+                ]
+            },
+            {
+                "customer_first_name": "Mary",
+                "event": [
+                    {
+                        "dataset": "sample_ecommerce"
+                    }
+                ]
+            },
+            {
+                "customer_first_name": "Gwen",
+                "event": [
+                    {
+                        "dataset": "sample_ecommerce"
+                    }
+                ]
+            },
+            {
+                "customer_first_name": "Diane",
+                "event": [
+                    {
+                        "dataset": "sample_ecommerce"
+                    }
+                ]
+            },
+            {
+                "customer_first_name": "Eddie",
+                "event": [
+                    {
+                        "dataset": "sample_ecommerce"
+                    }
+                ]
+            },
+            {
+                "customer_first_name": "Diane",
+                "event": [
+                    {
+                        "dataset": "sample_ecommerce"
+                    }
+                ]
+            },
+            {
+                "customer_first_name": "Oliver",
+                "event": [
+                    {
+                        "dataset": "sample_ecommerce"
+                    }
+                ]
+            },
+            {
+                "customer_first_name": "Abd",
+                "event": [
+                    {
+                        "dataset": "sample_ecommerce"
+                    }
+                ]
+            },
+            {
+                "customer_first_name": "Wilhemina St.",
+                "event": [
+                    {
+                        "dataset": "sample_ecommerce"
+                    }
+                ]
+            },
+            {
+                "customer_first_name": "Rabbia Al",
+                "event": [
+                    {
+                        "dataset": "sample_ecommerce"
+                    }
+                ]
+            }
+        ]
+    },
+    {}
+]

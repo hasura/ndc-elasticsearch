@@ -1,0 +1,46 @@
+{
+    "collection": "my_sample_index",
+    "arguments": {},
+    "query": {
+        "fields": {
+            "name": {
+                "type": "column",
+                "column": "name"
+            },
+            "profile": {
+                "type": "column",
+                "column": "profile",
+                "fields": {
+                    "type": "object",
+                    "fields": {
+                        "city": {
+                            "type": "column",
+                            "column": "city"
+                        },
+                        "address": {
+                            "type": "column",
+                            "column": "address"
+                        }
+                    }
+                }
+            }
+        },
+        "predicate": {
+            "type": "binary_comparison_operator",
+            "column": {
+                "type": "column",
+                "name": "profile",
+                "field_path": [
+                    "city"
+                ],
+                "path": []
+            },
+            "operator": "match",
+            "value": {
+                "type": "scalar",
+                "value": "Cairo"
+            }
+        }
+    },
+    "collection_relationships": {}
+}

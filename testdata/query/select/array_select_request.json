@@ -1,0 +1,46 @@
+{
+    "collection": "kibana_sample_data_ecommerce",
+    "query": {
+        "fields": {
+            "customerBirthDate": {
+                "type": "column",
+                "column": "customer_birth_date",
+                "fields": null
+            },
+            "customerFirstName": {
+                "type": "column",
+                "column": "customer_first_name",
+                "fields": null
+            },
+            "sku": {
+                "type": "column",
+                "column": "sku",
+                "fields": null
+            },
+            "products": {
+                "type": "column",
+                "column": "products",
+                "fields": {
+                    "type": "array",
+                    "fields": {
+                        "type": "object",
+                        "fields": {
+                            "basePrice": {
+                                "type": "column",
+                                "column": "base_price",
+                                "fields": null
+                            },
+                            "productId": {
+                                "type": "column",
+                                "column": "product_id",
+                                "fields": null
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "arguments": {},
+    "collection_relationships": {}
+}

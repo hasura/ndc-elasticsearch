@@ -1,0 +1,45 @@
+{
+    "collection": "my_sample_index",
+    "arguments": {},
+    "query": {
+        "fields": {
+            "name": {
+                "type": "column",
+                "column": "name"
+            },
+            "profile": {
+                "type": "column",
+                "column": "profile",
+                "fields": {
+                    "type": "object",
+                    "fields": {
+                        "city": {
+                            "type": "column",
+                            "column": "city"
+                        },
+                        "address": {
+                            "type": "column",
+                            "column": "address"
+                        }
+                    }
+                }
+            }
+        },
+        "order_by": {
+            "elements": [
+                {
+                    "target": {
+                        "type": "column",
+                        "name": "profile",
+                        "field_path": [
+                            "city"
+                        ],
+                        "path": []
+                    },
+                    "order_direction": "asc"
+                }
+            ]
+        }
+    },
+    "collection_relationships": {}
+}
