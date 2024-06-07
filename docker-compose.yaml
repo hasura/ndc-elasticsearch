@@ -3,7 +3,7 @@ services:
   ndc-elasticsearch:
     build: .
     volumes:
-      - ./configuration.json:/etc/connector/configuration.json
+      - ./resources/configuration.json:/etc/connector/configuration.json
       - certs:/usr/share/elasticsearch/config/certs
     ports:
       - 8080:8080
