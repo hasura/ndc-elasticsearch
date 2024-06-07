@@ -45,8 +45,6 @@ Initialize with your database schema:
 ndc-elasticsearch update
 ```
 
-See [configuration.md](./configuration.md) for details.
-
 ### 5. Running the Connector Locally
 
 Execute the connector:

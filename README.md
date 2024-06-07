@@ -1,6 +1,3 @@
-<!-- TODO: Hiya, Connector Author! Throughout this template, you'll find TODO comments to help guide you and ensure
-you've updated this README to be ready for users. If you have questions, shout at the docs team on #team-docs in Slack -->
-
 # Elasticsearch Connector
 
 <a href="https://hasura.io/"><img src="./docs/logo.png" align="right" width="200"></a>
@@ -34,8 +31,8 @@ Below, you'll find a matrix of all supported features for the Elasticsearch conn
 | Paginate                        | ✅         |       |
 | Nested Objects                  | ✅         |       |
 | Nested Arrays                   | ✅         |       |
-| Nested Filtering                | ✅         |       |
-| Nested Sorting                  | ✅         |       |
+| Nested Filtering                | ❌         |       |
+| Nested Sorting                  | ❌         |       |
 | Nested Relationships            | ❌         |       |
 
 
