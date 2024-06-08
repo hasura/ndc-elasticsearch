@@ -6,7 +6,7 @@ The Elasticsearch Connector takes a `QueryRequest`, which contains information a
 
 ### Components
 
-The architecture of the Elasticsearch Connector is composed of three main components:
+The connector has three main components:
 
 1. **prepareElasticsearchQuery**
 2. **Search**
@@ -37,8 +37,8 @@ func prepareElasticsearchQuery(
 Executes the DSL query against Elasticsearch and returns results.
 
 **Functionality:**
-- Execute the query on the Elasticsearch index.
-- Fetch raw search results.
+- Execute queries on the specified Elasticsearch index.
+- Fetch search results.
 
 **API:**
 
@@ -55,8 +55,8 @@ func (e *Client) Search(
 Converts Elasticsearch search results into `QueryResponse`.
 
 **Functionality:**
-- Traverse through each field in the Elasticsearch response.
-- Construct and return the `QueryResponse`, ensuring it aligns with the expected fields.
+- Traverse each field in the Elasticsearch response.
+- Construct and return the QueryResponse, ensuring it conforms to the expected fields.
 
 **API:**
 

@@ -7,8 +7,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-purple.svg?style=flat)](LICENSE.txt)
 [![Status](https://img.shields.io/badge/status-alpha-yellow.svg?style=flat)](./readme.md)
 
-The Hasura Elasticsearch Connector allows for connecting to a Elasticsearch search engine, giving you an instant
-GraphQL API on top of your Elasticsearch data.
+With this connector, Hasura allows you to instantly create a real-time GraphQL API on top of your documents in Elasticsearch. This connector supports Elasticsearch functionalities listed in the table below, allowing for efficient and scalable data operations. Additionally, you will benefit from all the powerful features of Hasura’s Data Delivery Network (DDN) platform, including query pushdown capabilities that delegate all query operations to the Elasticsearch, thereby enhancing query optimization and performance.
 
 This connector is built using the [Go Data Connector SDK](https://github.com/hasura/ndc-sdk-go) and implements the [Data Connector Spec](https://github.com/hasura/ndc-spec).
 
