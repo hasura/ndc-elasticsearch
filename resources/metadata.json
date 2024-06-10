@@ -1,2972 +1,2135 @@
 {
-    "version": "v2",
-    "supergraph": {
-      "objects": [
-        {
-          "kind": "GraphqlConfig",
-          "version": "v1",
-          "definition": {
-            "query": {
-              "rootOperationTypeName": "Query",
-              "argumentsInput": {
-                "fieldName": "args"
-              },
-              "limitInput": {
-                "fieldName": "limit"
-              },
-              "offsetInput": {
-                "fieldName": "offset"
-              },
-              "filterInput": {
-                "fieldName": "where",
-                "operatorNames": {
-                  "and": "_and",
-                  "or": "_or",
-                  "not": "_not",
-                  "isNull": "_is_null"
-                }
-              },
-              "orderByInput": {
-                "fieldName": "order_by",
-                "enumDirectionValues": {
-                  "asc": "Asc",
-                  "desc": "Desc"
-                },
-                "enumTypeNames": [
-                  {
-                    "directions": [
-                      "Asc",
-                      "Desc"
-                    ],
-                    "typeName": "OrderBy"
-                  }
-                ]
+  "version": "v2",
+  "supergraph": {
+    "objects": [
+      {
+        "kind": "GraphqlConfig",
+        "version": "v1",
+        "definition": {
+          "query": {
+            "rootOperationTypeName": "Query",
+            "argumentsInput": {
+              "fieldName": "args"
+            },
+            "limitInput": {
+              "fieldName": "limit"
+            },
+            "offsetInput": {
+              "fieldName": "offset"
+            },
+            "filterInput": {
+              "fieldName": "where",
+              "operatorNames": {
+                "and": "_and",
+                "or": "_or",
+                "not": "_not",
+                "isNull": "_is_null"
               }
             },
-            "mutation": {
-              "rootOperationTypeName": "Mutation"
+            "orderByInput": {
+              "fieldName": "order_by",
+              "enumDirectionValues": {
+                "asc": "Asc",
+                "desc": "Desc"
+              },
+              "enumTypeNames": [
+                {
+                  "directions": [
+                    "Asc",
+                    "Desc"
+                  ],
+                  "typeName": "OrderBy"
+                }
+              ]
             }
+          },
+          "mutation": {
+            "rootOperationTypeName": "Mutation"
           }
         }
-      ]
-    },
-    "subgraphs": [
-      {
-        "name": "app",
-        "objects": [
-          {
-            "kind": "DataConnectorLink",
-            "version": "v1",
-            "definition": {
-              "name": "elasticsearch",
-              "url": {
-                "singleUrl": {
-                  "value": "http://ndc-elasticsearch:8080"
-                }
-              },
+      }
+    ]
+  },
+  "subgraphs": [
+    {
+      "name": "app",
+      "objects": [
+        {
+          "kind": "DataConnectorLink",
+          "version": "v1",
+          "definition": {
+            "name": "elasticsearch",
+            "url": {
+              "singleUrl": {
+                "value": "http://ndc-elasticsearch:8080"
+              }
+            },
+            "schema": {
+              "version": "v0.1",
               "schema": {
-                "version": "v0.1",
-                "schema": {
-                  "scalar_types": {
-                    "_id": {
-                      "representation": {
-                        "type": "string"
+                "scalar_types": {
+                  "_id": {
+                    "representation": {
+                      "type": "string"
+                    },
+                    "aggregate_functions": {},
+                    "comparison_operators": {
+                      "match": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "_id"
+                        }
                       },
-                      "aggregate_functions": {},
-                      "comparison_operators": {
-                        "match": {
-                          "type": "custom",
-                          "argument_type": {
+                      "match_phrase": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "_id"
+                        }
+                      },
+                      "term": {
+                        "type": "equal"
+                      },
+                      "terms": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "array",
+                          "element_type": {
                             "type": "named",
                             "name": "_id"
-                          }
-                        },
-                        "match_phrase": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "_id"
-                          }
-                        },
-                        "term": {
-                          "type": "equal"
-                        },
-                        "terms": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "array",
-                            "element_type": {
-                              "type": "named",
-                              "name": "_id"
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "boolean": {
-                      "representation": {
-                        "type": "boolean"
-                      },
-                      "aggregate_functions": {
-                        "avg": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "cardinality": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "max": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "min": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "stats": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "stats"
-                          }
-                        },
-                        "sum": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "value_count": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        }
-                      },
-                      "comparison_operators": {
-                        "match": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "boolean"
-                          }
-                        },
-                        "match_phrase": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "boolean"
-                          }
-                        },
-                        "term": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "boolean"
-                          }
-                        },
-                        "terms": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "array",
-                            "element_type": {
-                              "type": "named",
-                              "name": "boolean"
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "date": {
-                      "representation": {
-                        "type": "string"
-                      },
-                      "aggregate_functions": {
-                        "avg": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "long"
-                          }
-                        },
-                        "cardinality": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "max": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "long"
-                          }
-                        },
-                        "min": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "long"
-                          }
-                        },
-                        "stats": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "stats"
-                          }
-                        },
-                        "sum": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "long"
-                          }
-                        },
-                        "value_count": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        }
-                      },
-                      "comparison_operators": {
-                        "match": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "date"
-                          }
-                        },
-                        "match_phrase": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "date"
-                          }
-                        },
-                        "term": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "date"
-                          }
-                        },
-                        "terms": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "array",
-                            "element_type": {
-                              "type": "named",
-                              "name": "date"
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "double": {
-                      "representation": {
-                        "type": "number"
-                      },
-                      "aggregate_functions": {
-                        "avg": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "double"
-                          }
-                        },
-                        "cardinality": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "max": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "double"
-                          }
-                        },
-                        "min": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "double"
-                          }
-                        },
-                        "stats": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "stats"
-                          }
-                        },
-                        "sum": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "double"
-                          }
-                        },
-                        "value_count": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        }
-                      },
-                      "comparison_operators": {
-                        "match": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "double"
-                          }
-                        },
-                        "match_phrase": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "double"
-                          }
-                        },
-                        "term": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "double"
-                          }
-                        },
-                        "terms": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "array",
-                            "element_type": {
-                              "type": "named",
-                              "name": "double"
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "float": {
-                      "representation": {
-                        "type": "number"
-                      },
-                      "aggregate_functions": {
-                        "avg": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "float"
-                          }
-                        },
-                        "cardinality": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "max": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "float"
-                          }
-                        },
-                        "min": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "float"
-                          }
-                        },
-                        "stats": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "stats"
-                          }
-                        },
-                        "sum": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "float"
-                          }
-                        },
-                        "value_count": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        }
-                      },
-                      "comparison_operators": {
-                        "match": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "float"
-                          }
-                        },
-                        "match_phrase": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "float"
-                          }
-                        },
-                        "term": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "float"
-                          }
-                        },
-                        "terms": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "array",
-                            "element_type": {
-                              "type": "named",
-                              "name": "float"
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "half_float": {
-                      "representation": {
-                        "type": "number"
-                      },
-                      "aggregate_functions": {
-                        "avg": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "half_float"
-                          }
-                        },
-                        "cardinality": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "max": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "half_float"
-                          }
-                        },
-                        "min": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "half_float"
-                          }
-                        },
-                        "stats": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "stats"
-                          }
-                        },
-                        "sum": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "half_float"
-                          }
-                        },
-                        "value_count": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        }
-                      },
-                      "comparison_operators": {
-                        "match": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "half_float"
-                          }
-                        },
-                        "match_phrase": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "half_float"
-                          }
-                        },
-                        "term": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "half_float"
-                          }
-                        },
-                        "terms": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "array",
-                            "element_type": {
-                              "type": "named",
-                              "name": "half_float"
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "integer": {
-                      "representation": {
-                        "type": "integer"
-                      },
-                      "aggregate_functions": {
-                        "avg": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "cardinality": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "max": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "min": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "stats": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "stats"
-                          }
-                        },
-                        "sum": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "value_count": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        }
-                      },
-                      "comparison_operators": {
-                        "match": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "match_phrase": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "term": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "terms": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "array",
-                            "element_type": {
-                              "type": "named",
-                              "name": "integer"
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "keyword": {
-                      "representation": {
-                        "type": "string"
-                      },
-                      "aggregate_functions": {
-                        "cardinality": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "string_stats": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "string_stats"
-                          }
-                        },
-                        "value_count": {
-                          "result_type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        }
-                      },
-                      "comparison_operators": {
-                        "match": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "match_bool_prefix": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "match_phrase": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "prefix": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "regexp": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "term": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "terms": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "array",
-                            "element_type": {
-                              "type": "named",
-                              "name": "keyword"
-                            }
-                          }
-                        },
-                        "wildcard": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        }
-                      }
-                    },
-                    "text": {
-                      "representation": {
-                        "type": "string"
-                      },
-                      "aggregate_functions": {},
-                      "comparison_operators": {
-                        "match": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "text"
-                          }
-                        },
-                        "match_bool_prefix": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "text"
-                          }
-                        },
-                        "match_phrase": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "text"
-                          }
-                        },
-                        "match_phrase_prefix": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "text"
-                          }
-                        },
-                        "prefix": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "text"
-                          }
-                        },
-                        "regexp": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "text"
-                          }
-                        },
-                        "term": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "text"
-                          }
-                        },
-                        "terms": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "array",
-                            "element_type": {
-                              "type": "named",
-                              "name": "text"
-                            }
-                          }
-                        },
-                        "wildcard": {
-                          "type": "custom",
-                          "argument_type": {
-                            "type": "named",
-                            "name": "text"
                           }
                         }
                       }
                     }
                   },
-                  "object_types": {
-                    "alias": {
-                      "fields": {}
+                  "date": {
+                    "representation": {
+                      "type": "string"
                     },
-                    "date_range": {
-                      "fields": {}
-                    },
-                    "dense_vector": {
-                      "fields": {}
-                    },
-                    "double_range": {
-                      "fields": {}
-                    },
-                    "event": {
-                      "fields": {}
-                    },
-                    "float_range": {
-                      "fields": {}
-                    },
-                    "geo_point": {
-                      "fields": {}
-                    },
-                    "geo_shape": {
-                      "fields": {}
-                    },
-                    "geoip": {
-                      "fields": {}
-                    },
-                    "histogram": {
-                      "fields": {
-                        "counts": {
-                          "type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "values": {
-                          "type": {
-                            "type": "named",
-                            "name": "float"
-                          }
+                    "aggregate_functions": {
+                      "avg": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "cardinality": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "max": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "min": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "stats": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "stats"
+                        }
+                      },
+                      "sum": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "value_count": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
                         }
                       }
                     },
-                    "integer_range": {
-                      "fields": {}
-                    },
-                    "ip_range": {
-                      "fields": {}
-                    },
-                    "join": {
-                      "fields": {}
-                    },
-                    "kibana_sample_data_ecommerce": {
-                      "fields": {
-                        "_id": {
-                          "type": {
-                            "type": "named",
-                            "name": "_id"
-                          }
-                        },
-                        "category": {
-                          "type": {
-                            "type": "named",
-                            "name": "text"
-                          }
-                        },
-                        "currency": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "customer_birth_date": {
-                          "type": {
+                    "comparison_operators": {
+                      "match": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "date"
+                        }
+                      },
+                      "match_phrase": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "date"
+                        }
+                      },
+                      "term": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "date"
+                        }
+                      },
+                      "terms": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "array",
+                          "element_type": {
                             "type": "named",
                             "name": "date"
                           }
-                        },
-                        "customer_first_name": {
-                          "type": {
+                        }
+                      }
+                    }
+                  },
+                  "double": {
+                    "representation": {
+                      "type": "number"
+                    },
+                    "aggregate_functions": {
+                      "avg": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "double"
+                        }
+                      },
+                      "cardinality": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "max": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "double"
+                        }
+                      },
+                      "min": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "double"
+                        }
+                      },
+                      "stats": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "stats"
+                        }
+                      },
+                      "sum": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "double"
+                        }
+                      },
+                      "value_count": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      }
+                    },
+                    "comparison_operators": {
+                      "match": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "double"
+                        }
+                      },
+                      "match_phrase": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "double"
+                        }
+                      },
+                      "term": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "double"
+                        }
+                      },
+                      "terms": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "array",
+                          "element_type": {
                             "type": "named",
-                            "name": "text"
+                            "name": "double"
                           }
-                        },
-                        "customer_full_name": {
-                          "type": {
-                            "type": "named",
-                            "name": "text"
-                          }
-                        },
-                        "customer_gender": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "customer_id": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "customer_last_name": {
-                          "type": {
-                            "type": "named",
-                            "name": "text"
-                          }
-                        },
-                        "customer_phone": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "day_of_week": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "day_of_week_i": {
-                          "type": {
+                        }
+                      }
+                    }
+                  },
+                  "integer": {
+                    "representation": {
+                      "type": "integer"
+                    },
+                    "aggregate_functions": {
+                      "avg": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "cardinality": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "max": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "min": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "stats": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "stats"
+                        }
+                      },
+                      "sum": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "value_count": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      }
+                    },
+                    "comparison_operators": {
+                      "match": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "match_phrase": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "term": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "terms": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "array",
+                          "element_type": {
                             "type": "named",
                             "name": "integer"
                           }
-                        },
-                        "email": {
-                          "type": {
+                        }
+                      }
+                    }
+                  },
+                  "ip": {
+                    "representation": {
+                      "type": "string"
+                    },
+                    "aggregate_functions": {
+                      "cardinality": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "value_count": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      }
+                    },
+                    "comparison_operators": {
+                      "match": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "ip"
+                        }
+                      },
+                      "match_phrase": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "ip"
+                        }
+                      },
+                      "term": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "ip"
+                        }
+                      },
+                      "terms": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "array",
+                          "element_type": {
+                            "type": "named",
+                            "name": "ip"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "keyword": {
+                    "representation": {
+                      "type": "string"
+                    },
+                    "aggregate_functions": {
+                      "cardinality": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "string_stats": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "string_stats"
+                        }
+                      },
+                      "value_count": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      }
+                    },
+                    "comparison_operators": {
+                      "match": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "keyword"
+                        }
+                      },
+                      "match_bool_prefix": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "keyword"
+                        }
+                      },
+                      "match_phrase": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "keyword"
+                        }
+                      },
+                      "prefix": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "keyword"
+                        }
+                      },
+                      "regexp": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "keyword"
+                        }
+                      },
+                      "term": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "keyword"
+                        }
+                      },
+                      "terms": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "array",
+                          "element_type": {
                             "type": "named",
                             "name": "keyword"
                           }
-                        },
-                        "event": {
-                          "type": {
+                        }
+                      },
+                      "wildcard": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "keyword"
+                        }
+                      }
+                    }
+                  },
+                  "long": {
+                    "representation": {
+                      "type": "integer"
+                    },
+                    "aggregate_functions": {
+                      "avg": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "cardinality": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "max": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "min": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "stats": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "stats"
+                        }
+                      },
+                      "sum": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "value_count": {
+                        "result_type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      }
+                    },
+                    "comparison_operators": {
+                      "match": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "match_phrase": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "term": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "terms": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "array",
+                          "element_type": {
+                            "type": "named",
+                            "name": "long"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "text": {
+                    "representation": {
+                      "type": "string"
+                    },
+                    "aggregate_functions": {},
+                    "comparison_operators": {
+                      "match": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "match_bool_prefix": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "match_phrase": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "match_phrase_prefix": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "prefix": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "regexp": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "term": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "terms": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "array",
+                          "element_type": {
+                            "type": "named",
+                            "name": "text"
+                          }
+                        }
+                      },
+                      "wildcard": {
+                        "type": "custom",
+                        "argument_type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      }
+                    }
+                  }
+                },
+                "object_types": {
+                  ".ds-kibana_sample_data_logs-*": {
+                    "fields": {
+                      "@timestamp": {
+                        "type": {
+                          "type": "named",
+                          "name": "date"
+                        }
+                      },
+                      "_id": {
+                        "type": {
+                          "type": "named",
+                          "name": "_id"
+                        }
+                      },
+                      "agent": {
+                        "type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "bytes": {
+                        "type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "bytes_counter": {
+                        "type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "bytes_gauge": {
+                        "type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "clientip": {
+                        "type": {
+                          "type": "named",
+                          "name": "ip"
+                        }
+                      },
+                      "event": {
+                        "type": {
+                          "type": "array",
+                          "element_type": {
                             "type": "named",
                             "name": "event"
                           }
-                        },
-                        "geoip": {
-                          "type": {
-                            "type": "named",
-                            "name": "geoip"
-                          }
-                        },
-                        "manufacturer": {
-                          "type": {
-                            "type": "named",
-                            "name": "text"
-                          }
-                        },
-                        "order_date": {
-                          "type": {
-                            "type": "named",
-                            "name": "date"
-                          }
-                        },
-                        "order_id": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "products": {
-                          "type": {
-                            "type": "named",
-                            "name": "products"
-                          }
-                        },
-                        "sku": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "taxful_total_price": {
-                          "type": {
-                            "type": "named",
-                            "name": "half_float"
-                          }
-                        },
-                        "taxless_total_price": {
-                          "type": {
-                            "type": "named",
-                            "name": "half_float"
-                          }
-                        },
-                        "total_quantity": {
-                          "type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "total_unique_products": {
-                          "type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
+                        }
+                      },
+                      "extension": {
                         "type": {
-                          "type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "geo": {
+                        "type": {
+                          "type": "array",
+                          "element_type": {
                             "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "user": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
+                            "name": "geo"
                           }
                         }
-                      }
-                    },
-                    "kibana_sample_data_flights": {
-                      "fields": {
-                        "AvgTicketPrice": {
-                          "type": {
+                      },
+                      "host": {
+                        "type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "index": {
+                        "type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "ip": {
+                        "type": {
+                          "type": "named",
+                          "name": "ip"
+                        }
+                      },
+                      "ip_range": {
+                        "type": {
+                          "type": "named",
+                          "name": "ip_range"
+                        }
+                      },
+                      "machine": {
+                        "type": {
+                          "type": "array",
+                          "element_type": {
                             "type": "named",
-                            "name": "float"
-                          }
-                        },
-                        "Cancelled": {
-                          "type": {
-                            "type": "named",
-                            "name": "boolean"
-                          }
-                        },
-                        "Carrier": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "Dest": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "DestAirportID": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "DestCityName": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "DestCountry": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "DestLocation": {
-                          "type": {
-                            "type": "named",
-                            "name": "geo_point"
-                          }
-                        },
-                        "DestRegion": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "DestWeather": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "DistanceKilometers": {
-                          "type": {
-                            "type": "named",
-                            "name": "float"
-                          }
-                        },
-                        "DistanceMiles": {
-                          "type": {
-                            "type": "named",
-                            "name": "float"
-                          }
-                        },
-                        "FlightDelay": {
-                          "type": {
-                            "type": "named",
-                            "name": "boolean"
-                          }
-                        },
-                        "FlightDelayMin": {
-                          "type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "FlightDelayType": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "FlightNum": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "FlightTimeHour": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "FlightTimeMin": {
-                          "type": {
-                            "type": "named",
-                            "name": "float"
-                          }
-                        },
-                        "Origin": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "OriginAirportID": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "OriginCityName": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "OriginCountry": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "OriginLocation": {
-                          "type": {
-                            "type": "named",
-                            "name": "geo_point"
-                          }
-                        },
-                        "OriginRegion": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "OriginWeather": {
-                          "type": {
-                            "type": "named",
-                            "name": "keyword"
-                          }
-                        },
-                        "_id": {
-                          "type": {
-                            "type": "named",
-                            "name": "_id"
-                          }
-                        },
-                        "dayOfWeek": {
-                          "type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "timestamp": {
-                          "type": {
-                            "type": "named",
-                            "name": "date"
+                            "name": "machine"
                           }
                         }
-                      }
-                    },
-                    "long_range": {
-                      "fields": {}
-                    },
-                    "percolator": {
-                      "fields": {}
-                    },
-                    "point": {
-                      "fields": {}
-                    },
-                    "products": {
-                      "fields": {}
-                    },
-                    "rank_feature": {
-                      "fields": {}
-                    },
-                    "rank_features": {
-                      "fields": {}
-                    },
-                    "shape": {
-                      "fields": {}
-                    },
-                    "sparse_vector": {
-                      "fields": {}
-                    },
-                    "stats": {
-                      "fields": {
-                        "avg": {
-                          "type": {
-                            "type": "named",
-                            "name": "double"
-                          }
-                        },
-                        "count": {
-                          "type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "max": {
-                          "type": {
-                            "type": "named",
-                            "name": "double"
-                          }
-                        },
-                        "min": {
-                          "type": {
-                            "type": "named",
-                            "name": "double"
-                          }
-                        },
-                        "sum": {
-                          "type": {
-                            "type": "named",
-                            "name": "double"
-                          }
+                      },
+                      "memory": {
+                        "type": {
+                          "type": "named",
+                          "name": "double"
                         }
-                      }
-                    },
-                    "string_stats": {
-                      "fields": {
-                        "avg_length": {
-                          "type": {
-                            "type": "named",
-                            "name": "double"
-                          }
-                        },
-                        "count": {
-                          "type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "entropy": {
-                          "type": {
-                            "type": "named",
-                            "name": "double"
-                          }
-                        },
-                        "max_length": {
-                          "type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
-                        },
-                        "min_length": {
-                          "type": {
-                            "type": "named",
-                            "name": "integer"
-                          }
+                      },
+                      "message": {
+                        "type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "phpmemory": {
+                        "type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      },
+                      "referer": {
+                        "type": {
+                          "type": "named",
+                          "name": "keyword"
+                        }
+                      },
+                      "request": {
+                        "type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "response": {
+                        "type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "tags": {
+                        "type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "timestamp": {
+                        "type": {
+                          "type": "named",
+                          "name": "alias"
+                        }
+                      },
+                      "timestamp_range": {
+                        "type": {
+                          "type": "named",
+                          "name": "date_range"
+                        }
+                      },
+                      "url": {
+                        "type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "utc_time": {
+                        "type": {
+                          "type": "named",
+                          "name": "date"
                         }
                       }
                     }
                   },
-                  "collections": [
-                    {
-                      "name": "kibana_sample_data_ecommerce",
-                      "arguments": {},
-                      "type": "kibana_sample_data_ecommerce",
-                      "uniqueness_constraints": {
-                        "kibana_sample_data_ecommerce_by_id": {
-                          "unique_columns": [
-                            "_id"
-                          ]
+                  "alias": {
+                    "fields": {}
+                  },
+                  "date_range": {
+                    "fields": {}
+                  },
+                  "dense_vector": {
+                    "fields": {}
+                  },
+                  "double_range": {
+                    "fields": {}
+                  },
+                  "event": {
+                    "fields": {
+                      "dataset": {
+                        "type": {
+                          "type": "named",
+                          "name": "keyword"
                         }
-                      },
-                      "foreign_keys": {}
-                    },
-                    {
-                      "name": "kibana_sample_data_flights",
-                      "arguments": {},
-                      "type": "kibana_sample_data_flights",
-                      "uniqueness_constraints": {
-                        "kibana_sample_data_flights_by_id": {
-                          "unique_columns": [
-                            "_id"
-                          ]
-                        }
-                      },
-                      "foreign_keys": {}
+                      }
                     }
-                  ],
-                  "functions": [],
-                  "procedures": []
+                  },
+                  "float_range": {
+                    "fields": {}
+                  },
+                  "geo": {
+                    "fields": {
+                      "coordinates": {
+                        "type": {
+                          "type": "named",
+                          "name": "geo_point"
+                        }
+                      },
+                      "dest": {
+                        "type": {
+                          "type": "named",
+                          "name": "keyword"
+                        }
+                      },
+                      "src": {
+                        "type": {
+                          "type": "named",
+                          "name": "keyword"
+                        }
+                      },
+                      "srcdest": {
+                        "type": {
+                          "type": "named",
+                          "name": "keyword"
+                        }
+                      }
+                    }
+                  },
+                  "geo_point": {
+                    "fields": {}
+                  },
+                  "geo_shape": {
+                    "fields": {}
+                  },
+                  "histogram": {
+                    "fields": {
+                      "counts": {
+                        "type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "values": {
+                        "type": {
+                          "type": "named",
+                          "name": "double"
+                        }
+                      }
+                    }
+                  },
+                  "integer_range": {
+                    "fields": {}
+                  },
+                  "ip_range": {
+                    "fields": {}
+                  },
+                  "join": {
+                    "fields": {}
+                  },
+                  "long_range": {
+                    "fields": {}
+                  },
+                  "machine": {
+                    "fields": {
+                      "os": {
+                        "type": {
+                          "type": "named",
+                          "name": "text"
+                        }
+                      },
+                      "ram": {
+                        "type": {
+                          "type": "named",
+                          "name": "long"
+                        }
+                      }
+                    }
+                  },
+                  "percolator": {
+                    "fields": {}
+                  },
+                  "point": {
+                    "fields": {}
+                  },
+                  "rank_feature": {
+                    "fields": {}
+                  },
+                  "rank_features": {
+                    "fields": {}
+                  },
+                  "shape": {
+                    "fields": {}
+                  },
+                  "sparse_vector": {
+                    "fields": {}
+                  },
+                  "stats": {
+                    "fields": {
+                      "avg": {
+                        "type": {
+                          "type": "named",
+                          "name": "double"
+                        }
+                      },
+                      "count": {
+                        "type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "max": {
+                        "type": {
+                          "type": "named",
+                          "name": "double"
+                        }
+                      },
+                      "min": {
+                        "type": {
+                          "type": "named",
+                          "name": "double"
+                        }
+                      },
+                      "sum": {
+                        "type": {
+                          "type": "named",
+                          "name": "double"
+                        }
+                      }
+                    }
+                  },
+                  "string_stats": {
+                    "fields": {
+                      "avg_length": {
+                        "type": {
+                          "type": "named",
+                          "name": "double"
+                        }
+                      },
+                      "count": {
+                        "type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "entropy": {
+                        "type": {
+                          "type": "named",
+                          "name": "double"
+                        }
+                      },
+                      "max_length": {
+                        "type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      },
+                      "min_length": {
+                        "type": {
+                          "type": "named",
+                          "name": "integer"
+                        }
+                      }
+                    }
+                  }
                 },
+                "collections": [
+                  {
+                    "name": ".ds-kibana_sample_data_logs-*",
+                    "arguments": {},
+                    "type": ".ds-kibana_sample_data_logs-*",
+                    "uniqueness_constraints": {
+                      ".ds-kibana_sample_data_logs-*_by_id": {
+                        "unique_columns": [
+                          "_id"
+                        ]
+                      }
+                    },
+                    "foreign_keys": {}
+                  }
+                ],
+                "functions": [],
+                "procedures": []
+              },
+              "capabilities": {
+                "version": "0.1.3",
                 "capabilities": {
-                  "version": "0.1.2",
-                  "capabilities": {
-                    "query": {
-                      "aggregates": {},
-                      "variables": {}
-                    },
-                    "mutation": {}
-                  }
+                  "query": {
+                    "aggregates": {},
+                    "variables": {}
+                  },
+                  "mutation": {}
                 }
               }
-            }
-          },
-          {
-            "kind": "DataConnectorScalarRepresentation",
-            "version": "v1",
-            "definition": {
-              "graphql": {
-                "comparisonExpressionTypeName": "App_IdComparisonExp"
-              },
-              "dataConnectorName": "elasticsearch",
-              "dataConnectorScalarType": "_id",
-              "representation": "Id"
-            }
-          },
-          {
-            "kind": "DataConnectorScalarRepresentation",
-            "version": "v1",
-            "definition": {
-              "graphql": {
-                "comparisonExpressionTypeName": "App_TextComparisonExp"
-              },
-              "dataConnectorName": "elasticsearch",
-              "dataConnectorScalarType": "text",
-              "representation": "Text"
-            }
-          },
-          {
-            "kind": "DataConnectorScalarRepresentation",
-            "version": "v1",
-            "definition": {
-              "graphql": {
-                "comparisonExpressionTypeName": "App_KeywordComparisonExp"
-              },
-              "dataConnectorName": "elasticsearch",
-              "dataConnectorScalarType": "keyword",
-              "representation": "Keyword"
-            }
-          },
-          {
-            "kind": "DataConnectorScalarRepresentation",
-            "version": "v1",
-            "definition": {
-              "graphql": {
-                "comparisonExpressionTypeName": "App_DateComparisonExp"
-              },
-              "dataConnectorName": "elasticsearch",
-              "dataConnectorScalarType": "date",
-              "representation": "Date"
-            }
-          },
-          {
-            "kind": "DataConnectorScalarRepresentation",
-            "version": "v1",
-            "definition": {
-              "graphql": {
-                "comparisonExpressionTypeName": "App_IntegerComparisonExp"
-              },
-              "dataConnectorName": "elasticsearch",
-              "dataConnectorScalarType": "integer",
-              "representation": "Integer"
-            }
-          },
-          {
-            "kind": "DataConnectorScalarRepresentation",
-            "version": "v1",
-            "definition": {
-              "graphql": {
-                "comparisonExpressionTypeName": "App_HalfFloatComparisonExp"
-              },
-              "dataConnectorName": "elasticsearch",
-              "dataConnectorScalarType": "half_float",
-              "representation": "HalfFloat"
-            }
-          },
-          {
-            "kind": "DataConnectorScalarRepresentation",
-            "version": "v1",
-            "definition": {
-              "graphql": {
-                "comparisonExpressionTypeName": "App_Float1ComparisonExp"
-              },
-              "dataConnectorName": "elasticsearch",
-              "dataConnectorScalarType": "float",
-              "representation": "Float_1"
-            }
-          },
-          {
-            "kind": "DataConnectorScalarRepresentation",
-            "version": "v1",
-            "definition": {
-              "graphql": {
-                "comparisonExpressionTypeName": "App_Boolean1ComparisonExp"
-              },
-              "dataConnectorName": "elasticsearch",
-              "dataConnectorScalarType": "boolean",
-              "representation": "Boolean_1"
-            }
-          },
-          {
-            "kind": "Model",
-            "version": "v1",
-            "definition": {
-              "name": "KibanaSampleDataEcommerce",
-              "graphql": {
-                "selectUniques": [
-                  {
-                    "queryRootField": "app_kibanaSampleDataEcommerceById",
-                    "uniqueIdentifier": [
-                      "id"
-                    ]
-                  }
-                ],
-                "selectMany": {
-                  "queryRootField": "app_kibanaSampleDataEcommerce"
-                },
-                "orderByExpressionType": "App_KibanaSampleDataEcommerceOrderBy"
-              },
-              "objectType": "KibanaSampleDataEcommerce",
-              "source": {
-                "dataConnectorName": "elasticsearch",
-                "collection": "kibana_sample_data_ecommerce"
-              },
-              "filterExpressionType": "KibanaSampleDataEcommerceBoolExp",
-              "orderableFields": [
-                {
-                  "fieldName": "id",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "category",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "currency",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "customerBirthDate",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "customerFirstName",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "customerFullName",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "customerGender",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "customerId",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "customerLastName",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "customerPhone",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "dayOfWeek",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "dayOfWeekI",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "email",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "event",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "geoip",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "manufacturer",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "orderDate",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "orderId",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "products",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "sku",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "taxfulTotalPrice",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "taxlessTotalPrice",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "totalQuantity",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "totalUniqueProducts",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "type",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "user",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "kind": "Model",
-            "version": "v1",
-            "definition": {
-              "name": "KibanaSampleDataFlights",
-              "graphql": {
-                "selectUniques": [
-                  {
-                    "queryRootField": "app_kibanaSampleDataFlightsById",
-                    "uniqueIdentifier": [
-                      "id"
-                    ]
-                  }
-                ],
-                "selectMany": {
-                  "queryRootField": "app_kibanaSampleDataFlights"
-                },
-                "orderByExpressionType": "App_KibanaSampleDataFlightsOrderBy"
-              },
-              "objectType": "KibanaSampleDataFlights",
-              "source": {
-                "dataConnectorName": "elasticsearch",
-                "collection": "kibana_sample_data_flights"
-              },
-              "filterExpressionType": "KibanaSampleDataFlightsBoolExp",
-              "orderableFields": [
-                {
-                  "fieldName": "id",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "avgTicketPrice",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "cancelled",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "carrier",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "dest",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "destAirportId",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "destCityName",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "destCountry",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "destLocation",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "destRegion",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "destWeather",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "distanceKilometers",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "distanceMiles",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "flightDelay",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "flightDelayMin",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "flightDelayType",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "flightNum",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "flightTimeHour",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "flightTimeMin",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "origin",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "originAirportId",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "originCityName",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "originCountry",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "originLocation",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "originRegion",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "originWeather",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "dayOfWeek",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "timestamp",
-                  "orderByDirections": {
-                    "enableAll": true
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "kind": "ModelPermissions",
-            "version": "v1",
-            "definition": {
-              "permissions": [
-                {
-                  "role": "admin",
-                  "select": {
-                    "filter": null
-                  }
-                }
-              ],
-              "modelName": "KibanaSampleDataEcommerce"
-            }
-          },
-          {
-            "kind": "ModelPermissions",
-            "version": "v1",
-            "definition": {
-              "permissions": [
-                {
-                  "role": "admin",
-                  "select": {
-                    "filter": null
-                  }
-                }
-              ],
-              "modelName": "KibanaSampleDataFlights"
-            }
-          },
-          {
-            "kind": "ObjectBooleanExpressionType",
-            "version": "v1",
-            "definition": {
-              "name": "KibanaSampleDataEcommerceBoolExp",
-              "graphql": {
-                "typeName": "App_KibanaSampleDataEcommerceBoolExp"
-              },
-              "objectType": "KibanaSampleDataEcommerce",
-              "dataConnectorName": "elasticsearch",
-              "dataConnectorObjectType": "kibana_sample_data_ecommerce",
-              "comparableFields": [
-                {
-                  "fieldName": "id",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "category",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "currency",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "customerBirthDate",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "customerFirstName",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "customerFullName",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "customerGender",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "customerId",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "customerLastName",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "customerPhone",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "dayOfWeek",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "dayOfWeekI",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "email",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "event",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "geoip",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "manufacturer",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "orderDate",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "orderId",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "products",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "sku",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "taxfulTotalPrice",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "taxlessTotalPrice",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "totalQuantity",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "totalUniqueProducts",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "type",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "user",
-                  "operators": {
-                    "enableAll": true
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "kind": "ObjectBooleanExpressionType",
-            "version": "v1",
-            "definition": {
-              "name": "KibanaSampleDataFlightsBoolExp",
-              "graphql": {
-                "typeName": "App_KibanaSampleDataFlightsBoolExp"
-              },
-              "objectType": "KibanaSampleDataFlights",
-              "dataConnectorName": "elasticsearch",
-              "dataConnectorObjectType": "kibana_sample_data_flights",
-              "comparableFields": [
-                {
-                  "fieldName": "id",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "avgTicketPrice",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "cancelled",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "carrier",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "dest",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "destAirportId",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "destCityName",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "destCountry",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "destLocation",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "destRegion",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "destWeather",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "distanceKilometers",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "distanceMiles",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "flightDelay",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "flightDelayMin",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "flightDelayType",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "flightNum",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "flightTimeHour",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "flightTimeMin",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "origin",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "originAirportId",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "originCityName",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "originCountry",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "originLocation",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "originRegion",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "originWeather",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "dayOfWeek",
-                  "operators": {
-                    "enableAll": true
-                  }
-                },
-                {
-                  "fieldName": "timestamp",
-                  "operators": {
-                    "enableAll": true
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "kind": "ObjectType",
-            "version": "v1",
-            "definition": {
-              "name": "Event",
-              "fields": [],
-              "graphql": {
-                "typeName": "App_Event",
-                "inputTypeName": "App_EventInput"
-              },
-              "dataConnectorTypeMapping": [
-                {
-                  "dataConnectorName": "elasticsearch",
-                  "dataConnectorObjectType": "event"
-                }
-              ]
-            }
-          },
-          {
-            "kind": "ObjectType",
-            "version": "v1",
-            "definition": {
-              "name": "Geoip",
-              "fields": [],
-              "graphql": {
-                "typeName": "App_Geoip",
-                "inputTypeName": "App_GeoipInput"
-              },
-              "dataConnectorTypeMapping": [
-                {
-                  "dataConnectorName": "elasticsearch",
-                  "dataConnectorObjectType": "geoip"
-                }
-              ]
-            }
-          },
-          {
-            "kind": "ObjectType",
-            "version": "v1",
-            "definition": {
-              "name": "Products",
-              "fields": [],
-              "graphql": {
-                "typeName": "App_Products",
-                "inputTypeName": "App_ProductsInput"
-              },
-              "dataConnectorTypeMapping": [
-                {
-                  "dataConnectorName": "elasticsearch",
-                  "dataConnectorObjectType": "products"
-                }
-              ]
-            }
-          },
-          {
-            "kind": "ObjectType",
-            "version": "v1",
-            "definition": {
-              "name": "KibanaSampleDataEcommerce",
-              "fields": [
-                {
-                  "name": "id",
-                  "type": "Id!"
-                },
-                {
-                  "name": "category",
-                  "type": "Text!"
-                },
-                {
-                  "name": "currency",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "customerBirthDate",
-                  "type": "Date!"
-                },
-                {
-                  "name": "customerFirstName",
-                  "type": "Text!"
-                },
-                {
-                  "name": "customerFullName",
-                  "type": "Text!"
-                },
-                {
-                  "name": "customerGender",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "customerId",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "customerLastName",
-                  "type": "Text!"
-                },
-                {
-                  "name": "customerPhone",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "dayOfWeek",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "dayOfWeekI",
-                  "type": "Integer!"
-                },
-                {
-                  "name": "email",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "event",
-                  "type": "Event!"
-                },
-                {
-                  "name": "geoip",
-                  "type": "Geoip!"
-                },
-                {
-                  "name": "manufacturer",
-                  "type": "Text!"
-                },
-                {
-                  "name": "orderDate",
-                  "type": "Date!"
-                },
-                {
-                  "name": "orderId",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "products",
-                  "type": "Products!"
-                },
-                {
-                  "name": "sku",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "taxfulTotalPrice",
-                  "type": "HalfFloat!"
-                },
-                {
-                  "name": "taxlessTotalPrice",
-                  "type": "HalfFloat!"
-                },
-                {
-                  "name": "totalQuantity",
-                  "type": "Integer!"
-                },
-                {
-                  "name": "totalUniqueProducts",
-                  "type": "Integer!"
-                },
-                {
-                  "name": "type",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "user",
-                  "type": "Keyword!"
-                }
-              ],
-              "graphql": {
-                "typeName": "App_KibanaSampleDataEcommerce",
-                "inputTypeName": "App_KibanaSampleDataEcommerceInput"
-              },
-              "dataConnectorTypeMapping": [
-                {
-                  "dataConnectorName": "elasticsearch",
-                  "dataConnectorObjectType": "kibana_sample_data_ecommerce",
-                  "fieldMapping": {
-                    "category": {
-                      "column": {
-                        "name": "category"
-                      }
-                    },
-                    "currency": {
-                      "column": {
-                        "name": "currency"
-                      }
-                    },
-                    "customerBirthDate": {
-                      "column": {
-                        "name": "customer_birth_date"
-                      }
-                    },
-                    "customerFirstName": {
-                      "column": {
-                        "name": "customer_first_name"
-                      }
-                    },
-                    "customerFullName": {
-                      "column": {
-                        "name": "customer_full_name"
-                      }
-                    },
-                    "customerGender": {
-                      "column": {
-                        "name": "customer_gender"
-                      }
-                    },
-                    "customerId": {
-                      "column": {
-                        "name": "customer_id"
-                      }
-                    },
-                    "customerLastName": {
-                      "column": {
-                        "name": "customer_last_name"
-                      }
-                    },
-                    "customerPhone": {
-                      "column": {
-                        "name": "customer_phone"
-                      }
-                    },
-                    "dayOfWeek": {
-                      "column": {
-                        "name": "day_of_week"
-                      }
-                    },
-                    "dayOfWeekI": {
-                      "column": {
-                        "name": "day_of_week_i"
-                      }
-                    },
-                    "email": {
-                      "column": {
-                        "name": "email"
-                      }
-                    },
-                    "event": {
-                      "column": {
-                        "name": "event"
-                      }
-                    },
-                    "geoip": {
-                      "column": {
-                        "name": "geoip"
-                      }
-                    },
-                    "id": {
-                      "column": {
-                        "name": "_id"
-                      }
-                    },
-                    "manufacturer": {
-                      "column": {
-                        "name": "manufacturer"
-                      }
-                    },
-                    "orderDate": {
-                      "column": {
-                        "name": "order_date"
-                      }
-                    },
-                    "orderId": {
-                      "column": {
-                        "name": "order_id"
-                      }
-                    },
-                    "products": {
-                      "column": {
-                        "name": "products"
-                      }
-                    },
-                    "sku": {
-                      "column": {
-                        "name": "sku"
-                      }
-                    },
-                    "taxfulTotalPrice": {
-                      "column": {
-                        "name": "taxful_total_price"
-                      }
-                    },
-                    "taxlessTotalPrice": {
-                      "column": {
-                        "name": "taxless_total_price"
-                      }
-                    },
-                    "totalQuantity": {
-                      "column": {
-                        "name": "total_quantity"
-                      }
-                    },
-                    "totalUniqueProducts": {
-                      "column": {
-                        "name": "total_unique_products"
-                      }
-                    },
-                    "type": {
-                      "column": {
-                        "name": "type"
-                      }
-                    },
-                    "user": {
-                      "column": {
-                        "name": "user"
-                      }
-                    }
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "kind": "ObjectType",
-            "version": "v1",
-            "definition": {
-              "name": "GeoPoint",
-              "fields": [],
-              "graphql": {
-                "typeName": "App_GeoPoint",
-                "inputTypeName": "App_GeoPointInput"
-              },
-              "dataConnectorTypeMapping": [
-                {
-                  "dataConnectorName": "elasticsearch",
-                  "dataConnectorObjectType": "geo_point"
-                }
-              ]
-            }
-          },
-          {
-            "kind": "ObjectType",
-            "version": "v1",
-            "definition": {
-              "name": "KibanaSampleDataFlights",
-              "fields": [
-                {
-                  "name": "id",
-                  "type": "Id!"
-                },
-                {
-                  "name": "avgTicketPrice",
-                  "type": "Float_1!"
-                },
-                {
-                  "name": "cancelled",
-                  "type": "Boolean_1!"
-                },
-                {
-                  "name": "carrier",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "dest",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "destAirportId",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "destCityName",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "destCountry",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "destLocation",
-                  "type": "GeoPoint!"
-                },
-                {
-                  "name": "destRegion",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "destWeather",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "distanceKilometers",
-                  "type": "Float_1!"
-                },
-                {
-                  "name": "distanceMiles",
-                  "type": "Float_1!"
-                },
-                {
-                  "name": "flightDelay",
-                  "type": "Boolean_1!"
-                },
-                {
-                  "name": "flightDelayMin",
-                  "type": "Integer!"
-                },
-                {
-                  "name": "flightDelayType",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "flightNum",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "flightTimeHour",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "flightTimeMin",
-                  "type": "Float_1!"
-                },
-                {
-                  "name": "origin",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "originAirportId",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "originCityName",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "originCountry",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "originLocation",
-                  "type": "GeoPoint!"
-                },
-                {
-                  "name": "originRegion",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "originWeather",
-                  "type": "Keyword!"
-                },
-                {
-                  "name": "dayOfWeek",
-                  "type": "Integer!"
-                },
-                {
-                  "name": "timestamp",
-                  "type": "Date!"
-                }
-              ],
-              "graphql": {
-                "typeName": "App_KibanaSampleDataFlights",
-                "inputTypeName": "App_KibanaSampleDataFlightsInput"
-              },
-              "dataConnectorTypeMapping": [
-                {
-                  "dataConnectorName": "elasticsearch",
-                  "dataConnectorObjectType": "kibana_sample_data_flights",
-                  "fieldMapping": {
-                    "avgTicketPrice": {
-                      "column": {
-                        "name": "AvgTicketPrice"
-                      }
-                    },
-                    "cancelled": {
-                      "column": {
-                        "name": "Cancelled"
-                      }
-                    },
-                    "carrier": {
-                      "column": {
-                        "name": "Carrier"
-                      }
-                    },
-                    "dayOfWeek": {
-                      "column": {
-                        "name": "dayOfWeek"
-                      }
-                    },
-                    "dest": {
-                      "column": {
-                        "name": "Dest"
-                      }
-                    },
-                    "destAirportId": {
-                      "column": {
-                        "name": "DestAirportID"
-                      }
-                    },
-                    "destCityName": {
-                      "column": {
-                        "name": "DestCityName"
-                      }
-                    },
-                    "destCountry": {
-                      "column": {
-                        "name": "DestCountry"
-                      }
-                    },
-                    "destLocation": {
-                      "column": {
-                        "name": "DestLocation"
-                      }
-                    },
-                    "destRegion": {
-                      "column": {
-                        "name": "DestRegion"
-                      }
-                    },
-                    "destWeather": {
-                      "column": {
-                        "name": "DestWeather"
-                      }
-                    },
-                    "distanceKilometers": {
-                      "column": {
-                        "name": "DistanceKilometers"
-                      }
-                    },
-                    "distanceMiles": {
-                      "column": {
-                        "name": "DistanceMiles"
-                      }
-                    },
-                    "flightDelay": {
-                      "column": {
-                        "name": "FlightDelay"
-                      }
-                    },
-                    "flightDelayMin": {
-                      "column": {
-                        "name": "FlightDelayMin"
-                      }
-                    },
-                    "flightDelayType": {
-                      "column": {
-                        "name": "FlightDelayType"
-                      }
-                    },
-                    "flightNum": {
-                      "column": {
-                        "name": "FlightNum"
-                      }
-                    },
-                    "flightTimeHour": {
-                      "column": {
-                        "name": "FlightTimeHour"
-                      }
-                    },
-                    "flightTimeMin": {
-                      "column": {
-                        "name": "FlightTimeMin"
-                      }
-                    },
-                    "id": {
-                      "column": {
-                        "name": "_id"
-                      }
-                    },
-                    "origin": {
-                      "column": {
-                        "name": "Origin"
-                      }
-                    },
-                    "originAirportId": {
-                      "column": {
-                        "name": "OriginAirportID"
-                      }
-                    },
-                    "originCityName": {
-                      "column": {
-                        "name": "OriginCityName"
-                      }
-                    },
-                    "originCountry": {
-                      "column": {
-                        "name": "OriginCountry"
-                      }
-                    },
-                    "originLocation": {
-                      "column": {
-                        "name": "OriginLocation"
-                      }
-                    },
-                    "originRegion": {
-                      "column": {
-                        "name": "OriginRegion"
-                      }
-                    },
-                    "originWeather": {
-                      "column": {
-                        "name": "OriginWeather"
-                      }
-                    },
-                    "timestamp": {
-                      "column": {
-                        "name": "timestamp"
-                      }
-                    }
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "kind": "ScalarType",
-            "version": "v1",
-            "definition": {
-              "name": "Id",
-              "graphql": {
-                "typeName": "App_Id"
-              }
-            }
-          },
-          {
-            "kind": "ScalarType",
-            "version": "v1",
-            "definition": {
-              "name": "Text",
-              "graphql": {
-                "typeName": "App_Text"
-              }
-            }
-          },
-          {
-            "kind": "ScalarType",
-            "version": "v1",
-            "definition": {
-              "name": "Keyword",
-              "graphql": {
-                "typeName": "App_Keyword"
-              }
-            }
-          },
-          {
-            "kind": "ScalarType",
-            "version": "v1",
-            "definition": {
-              "name": "Date",
-              "graphql": {
-                "typeName": "App_Date"
-              }
-            }
-          },
-          {
-            "kind": "ScalarType",
-            "version": "v1",
-            "definition": {
-              "name": "Integer",
-              "graphql": {
-                "typeName": "App_Integer"
-              }
-            }
-          },
-          {
-            "kind": "ScalarType",
-            "version": "v1",
-            "definition": {
-              "name": "HalfFloat",
-              "graphql": {
-                "typeName": "App_HalfFloat"
-              }
-            }
-          },
-          {
-            "kind": "ScalarType",
-            "version": "v1",
-            "definition": {
-              "name": "Float_1",
-              "graphql": {
-                "typeName": "App_Float1"
-              }
-            }
-          },
-          {
-            "kind": "ScalarType",
-            "version": "v1",
-            "definition": {
-              "name": "Boolean_1",
-              "graphql": {
-                "typeName": "App_Boolean1"
-              }
-            }
-          },
-          {
-            "kind": "TypePermissions",
-            "version": "v1",
-            "definition": {
-              "typeName": "Event",
-              "permissions": [
-                {
-                  "role": "admin",
-                  "output": {
-                    "allowedFields": []
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "kind": "TypePermissions",
-            "version": "v1",
-            "definition": {
-              "typeName": "Geoip",
-              "permissions": [
-                {
-                  "role": "admin",
-                  "output": {
-                    "allowedFields": []
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "kind": "TypePermissions",
-            "version": "v1",
-            "definition": {
-              "typeName": "Products",
-              "permissions": [
-                {
-                  "role": "admin",
-                  "output": {
-                    "allowedFields": []
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "kind": "TypePermissions",
-            "version": "v1",
-            "definition": {
-              "typeName": "KibanaSampleDataEcommerce",
-              "permissions": [
-                {
-                  "role": "admin",
-                  "output": {
-                    "allowedFields": [
-                      "id",
-                      "category",
-                      "currency",
-                      "customerBirthDate",
-                      "customerFirstName",
-                      "customerFullName",
-                      "customerGender",
-                      "customerId",
-                      "customerLastName",
-                      "customerPhone",
-                      "dayOfWeek",
-                      "dayOfWeekI",
-                      "email",
-                      "event",
-                      "geoip",
-                      "manufacturer",
-                      "orderDate",
-                      "orderId",
-                      "products",
-                      "sku",
-                      "taxfulTotalPrice",
-                      "taxlessTotalPrice",
-                      "totalQuantity",
-                      "totalUniqueProducts",
-                      "type",
-                      "user"
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "kind": "TypePermissions",
-            "version": "v1",
-            "definition": {
-              "typeName": "GeoPoint",
-              "permissions": [
-                {
-                  "role": "admin",
-                  "output": {
-                    "allowedFields": []
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "kind": "TypePermissions",
-            "version": "v1",
-            "definition": {
-              "typeName": "KibanaSampleDataFlights",
-              "permissions": [
-                {
-                  "role": "admin",
-                  "output": {
-                    "allowedFields": [
-                      "id",
-                      "avgTicketPrice",
-                      "cancelled",
-                      "carrier",
-                      "dest",
-                      "destAirportId",
-                      "destCityName",
-                      "destCountry",
-                      "destLocation",
-                      "destRegion",
-                      "destWeather",
-                      "distanceKilometers",
-                      "distanceMiles",
-                      "flightDelay",
-                      "flightDelayMin",
-                      "flightDelayType",
-                      "flightNum",
-                      "flightTimeHour",
-                      "flightTimeMin",
-                      "origin",
-                      "originAirportId",
-                      "originCityName",
-                      "originCountry",
-                      "originLocation",
-                      "originRegion",
-                      "originWeather",
-                      "dayOfWeek",
-                      "timestamp"
-                    ]
-                  }
-                }
-              ]
             }
           }
-        ]
-      }
-    ]
-  }
+        },
+        {
+          "kind": "DataConnectorScalarRepresentation",
+          "version": "v1",
+          "definition": {
+            "graphql": {
+              "comparisonExpressionTypeName": "App_DateComparisonExp"
+            },
+            "dataConnectorName": "elasticsearch",
+            "dataConnectorScalarType": "date",
+            "representation": "Date"
+          }
+        },
+        {
+          "kind": "DataConnectorScalarRepresentation",
+          "version": "v1",
+          "definition": {
+            "graphql": {
+              "comparisonExpressionTypeName": "App_IdComparisonExp"
+            },
+            "dataConnectorName": "elasticsearch",
+            "dataConnectorScalarType": "_id",
+            "representation": "Id"
+          }
+        },
+        {
+          "kind": "DataConnectorScalarRepresentation",
+          "version": "v1",
+          "definition": {
+            "graphql": {
+              "comparisonExpressionTypeName": "App_TextComparisonExp"
+            },
+            "dataConnectorName": "elasticsearch",
+            "dataConnectorScalarType": "text",
+            "representation": "Text"
+          }
+        },
+        {
+          "kind": "DataConnectorScalarRepresentation",
+          "version": "v1",
+          "definition": {
+            "graphql": {
+              "comparisonExpressionTypeName": "App_LongComparisonExp"
+            },
+            "dataConnectorName": "elasticsearch",
+            "dataConnectorScalarType": "long",
+            "representation": "Long"
+          }
+        },
+        {
+          "kind": "DataConnectorScalarRepresentation",
+          "version": "v1",
+          "definition": {
+            "graphql": {
+              "comparisonExpressionTypeName": "App_IpComparisonExp"
+            },
+            "dataConnectorName": "elasticsearch",
+            "dataConnectorScalarType": "ip",
+            "representation": "Ip"
+          }
+        },
+        {
+          "kind": "DataConnectorScalarRepresentation",
+          "version": "v1",
+          "definition": {
+            "graphql": {
+              "comparisonExpressionTypeName": "App_KeywordComparisonExp"
+            },
+            "dataConnectorName": "elasticsearch",
+            "dataConnectorScalarType": "keyword",
+            "representation": "Keyword"
+          }
+        },
+        {
+          "kind": "DataConnectorScalarRepresentation",
+          "version": "v1",
+          "definition": {
+            "graphql": {
+              "comparisonExpressionTypeName": "App_DoubleComparisonExp"
+            },
+            "dataConnectorName": "elasticsearch",
+            "dataConnectorScalarType": "double",
+            "representation": "Double"
+          }
+        },
+        {
+          "kind": "Model",
+          "version": "v1",
+          "definition": {
+            "name": "DsKibanaSampleDataLogs",
+            "graphql": {
+              "selectUniques": [
+                {
+                  "queryRootField": "app_dsKibanaSampleDataLogsById",
+                  "uniqueIdentifier": [
+                    "id"
+                  ]
+                }
+              ],
+              "selectMany": {
+                "queryRootField": "app_dsKibanaSampleDataLogs"
+              },
+              "orderByExpressionType": "App_DsKibanaSampleDataLogsOrderBy"
+            },
+            "objectType": "DsKibanaSampleDataLogs",
+            "source": {
+              "dataConnectorName": "elasticsearch",
+              "collection": ".ds-kibana_sample_data_logs-*"
+            },
+            "filterExpressionType": "DsKibanaSampleDataLogsBoolExp",
+            "orderableFields": [
+              {
+                "fieldName": "timestamp",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "id",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "agent",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "bytes",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "bytesCounter",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "bytesGauge",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "clientip",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "event",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "extension",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "geo",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "host",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "index",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "ip",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "ipRange",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "machine",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "memory",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "message",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "phpmemory",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "referer",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "request",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "response",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "tags",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "timestamp_1",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "timestampRange",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "url",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "utcTime",
+                "orderByDirections": {
+                  "enableAll": true
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "ModelPermissions",
+          "version": "v1",
+          "definition": {
+            "permissions": [
+              {
+                "role": "admin",
+                "select": {
+                  "filter": null
+                }
+              }
+            ],
+            "modelName": "DsKibanaSampleDataLogs"
+          }
+        },
+        {
+          "kind": "ObjectBooleanExpressionType",
+          "version": "v1",
+          "definition": {
+            "name": "DsKibanaSampleDataLogsBoolExp",
+            "graphql": {
+              "typeName": "App_DsKibanaSampleDataLogsBoolExp"
+            },
+            "objectType": "DsKibanaSampleDataLogs",
+            "dataConnectorName": "elasticsearch",
+            "dataConnectorObjectType": ".ds-kibana_sample_data_logs-*",
+            "comparableFields": [
+              {
+                "fieldName": "timestamp",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "id",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "agent",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "bytes",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "bytesCounter",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "bytesGauge",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "clientip",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "event",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "extension",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "geo",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "host",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "index",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "ip",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "ipRange",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "machine",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "memory",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "message",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "phpmemory",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "referer",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "request",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "response",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "tags",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "timestamp_1",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "timestampRange",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "url",
+                "operators": {
+                  "enableAll": true
+                }
+              },
+              {
+                "fieldName": "utcTime",
+                "operators": {
+                  "enableAll": true
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "ObjectType",
+          "version": "v1",
+          "definition": {
+            "name": "Event",
+            "fields": [
+              {
+                "name": "dataset",
+                "type": "Keyword!"
+              }
+            ],
+            "graphql": {
+              "typeName": "App_Event",
+              "inputTypeName": "App_EventInput"
+            },
+            "dataConnectorTypeMapping": [
+              {
+                "dataConnectorName": "elasticsearch",
+                "dataConnectorObjectType": "event"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "ObjectType",
+          "version": "v1",
+          "definition": {
+            "name": "GeoPoint",
+            "fields": [],
+            "graphql": {
+              "typeName": "App_GeoPoint",
+              "inputTypeName": "App_GeoPointInput"
+            },
+            "dataConnectorTypeMapping": [
+              {
+                "dataConnectorName": "elasticsearch",
+                "dataConnectorObjectType": "geo_point"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "ObjectType",
+          "version": "v1",
+          "definition": {
+            "name": "Geo",
+            "fields": [
+              {
+                "name": "coordinates",
+                "type": "GeoPoint!"
+              },
+              {
+                "name": "dest",
+                "type": "Keyword!"
+              },
+              {
+                "name": "src",
+                "type": "Keyword!"
+              },
+              {
+                "name": "srcdest",
+                "type": "Keyword!"
+              }
+            ],
+            "graphql": {
+              "typeName": "App_Geo",
+              "inputTypeName": "App_GeoInput"
+            },
+            "dataConnectorTypeMapping": [
+              {
+                "dataConnectorName": "elasticsearch",
+                "dataConnectorObjectType": "geo"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "ObjectType",
+          "version": "v1",
+          "definition": {
+            "name": "IpRange",
+            "fields": [],
+            "graphql": {
+              "typeName": "App_IpRange",
+              "inputTypeName": "App_IpRangeInput"
+            },
+            "dataConnectorTypeMapping": [
+              {
+                "dataConnectorName": "elasticsearch",
+                "dataConnectorObjectType": "ip_range"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "ObjectType",
+          "version": "v1",
+          "definition": {
+            "name": "Machine",
+            "fields": [
+              {
+                "name": "os",
+                "type": "Text!"
+              },
+              {
+                "name": "ram",
+                "type": "Long!"
+              }
+            ],
+            "graphql": {
+              "typeName": "App_Machine",
+              "inputTypeName": "App_MachineInput"
+            },
+            "dataConnectorTypeMapping": [
+              {
+                "dataConnectorName": "elasticsearch",
+                "dataConnectorObjectType": "machine"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "ObjectType",
+          "version": "v1",
+          "definition": {
+            "name": "Alias",
+            "fields": [],
+            "graphql": {
+              "typeName": "App_Alias",
+              "inputTypeName": "App_AliasInput"
+            },
+            "dataConnectorTypeMapping": [
+              {
+                "dataConnectorName": "elasticsearch",
+                "dataConnectorObjectType": "alias"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "ObjectType",
+          "version": "v1",
+          "definition": {
+            "name": "DateRange",
+            "fields": [],
+            "graphql": {
+              "typeName": "App_DateRange",
+              "inputTypeName": "App_DateRangeInput"
+            },
+            "dataConnectorTypeMapping": [
+              {
+                "dataConnectorName": "elasticsearch",
+                "dataConnectorObjectType": "date_range"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "ObjectType",
+          "version": "v1",
+          "definition": {
+            "name": "DsKibanaSampleDataLogs",
+            "fields": [
+              {
+                "name": "timestamp",
+                "type": "Date!"
+              },
+              {
+                "name": "id",
+                "type": "Id!"
+              },
+              {
+                "name": "agent",
+                "type": "Text!"
+              },
+              {
+                "name": "bytes",
+                "type": "Long!"
+              },
+              {
+                "name": "bytesCounter",
+                "type": "Long!"
+              },
+              {
+                "name": "bytesGauge",
+                "type": "Long!"
+              },
+              {
+                "name": "clientip",
+                "type": "Ip!"
+              },
+              {
+                "name": "event",
+                "type": "[Event!]!"
+              },
+              {
+                "name": "extension",
+                "type": "Text!"
+              },
+              {
+                "name": "geo",
+                "type": "[Geo!]!"
+              },
+              {
+                "name": "host",
+                "type": "Text!"
+              },
+              {
+                "name": "index",
+                "type": "Text!"
+              },
+              {
+                "name": "ip",
+                "type": "Ip!"
+              },
+              {
+                "name": "ipRange",
+                "type": "IpRange!"
+              },
+              {
+                "name": "machine",
+                "type": "[Machine!]!"
+              },
+              {
+                "name": "memory",
+                "type": "Double!"
+              },
+              {
+                "name": "message",
+                "type": "Text!"
+              },
+              {
+                "name": "phpmemory",
+                "type": "Long!"
+              },
+              {
+                "name": "referer",
+                "type": "Keyword!"
+              },
+              {
+                "name": "request",
+                "type": "Text!"
+              },
+              {
+                "name": "response",
+                "type": "Text!"
+              },
+              {
+                "name": "tags",
+                "type": "Text!"
+              },
+              {
+                "name": "timestamp_1",
+                "type": "Alias!"
+              },
+              {
+                "name": "timestampRange",
+                "type": "DateRange!"
+              },
+              {
+                "name": "url",
+                "type": "Text!"
+              },
+              {
+                "name": "utcTime",
+                "type": "Date!"
+              }
+            ],
+            "graphql": {
+              "typeName": "App_DsKibanaSampleDataLogs",
+              "inputTypeName": "App_DsKibanaSampleDataLogsInput"
+            },
+            "dataConnectorTypeMapping": [
+              {
+                "dataConnectorName": "elasticsearch",
+                "dataConnectorObjectType": ".ds-kibana_sample_data_logs-*",
+                "fieldMapping": {
+                  "agent": {
+                    "column": {
+                      "name": "agent"
+                    }
+                  },
+                  "bytes": {
+                    "column": {
+                      "name": "bytes"
+                    }
+                  },
+                  "bytesCounter": {
+                    "column": {
+                      "name": "bytes_counter"
+                    }
+                  },
+                  "bytesGauge": {
+                    "column": {
+                      "name": "bytes_gauge"
+                    }
+                  },
+                  "clientip": {
+                    "column": {
+                      "name": "clientip"
+                    }
+                  },
+                  "event": {
+                    "column": {
+                      "name": "event"
+                    }
+                  },
+                  "extension": {
+                    "column": {
+                      "name": "extension"
+                    }
+                  },
+                  "geo": {
+                    "column": {
+                      "name": "geo"
+                    }
+                  },
+                  "host": {
+                    "column": {
+                      "name": "host"
+                    }
+                  },
+                  "id": {
+                    "column": {
+                      "name": "_id"
+                    }
+                  },
+                  "index": {
+                    "column": {
+                      "name": "index"
+                    }
+                  },
+                  "ip": {
+                    "column": {
+                      "name": "ip"
+                    }
+                  },
+                  "ipRange": {
+                    "column": {
+                      "name": "ip_range"
+                    }
+                  },
+                  "machine": {
+                    "column": {
+                      "name": "machine"
+                    }
+                  },
+                  "memory": {
+                    "column": {
+                      "name": "memory"
+                    }
+                  },
+                  "message": {
+                    "column": {
+                      "name": "message"
+                    }
+                  },
+                  "phpmemory": {
+                    "column": {
+                      "name": "phpmemory"
+                    }
+                  },
+                  "referer": {
+                    "column": {
+                      "name": "referer"
+                    }
+                  },
+                  "request": {
+                    "column": {
+                      "name": "request"
+                    }
+                  },
+                  "response": {
+                    "column": {
+                      "name": "response"
+                    }
+                  },
+                  "tags": {
+                    "column": {
+                      "name": "tags"
+                    }
+                  },
+                  "timestamp": {
+                    "column": {
+                      "name": "@timestamp"
+                    }
+                  },
+                  "timestampRange": {
+                    "column": {
+                      "name": "timestamp_range"
+                    }
+                  },
+                  "timestamp_1": {
+                    "column": {
+                      "name": "timestamp"
+                    }
+                  },
+                  "url": {
+                    "column": {
+                      "name": "url"
+                    }
+                  },
+                  "utcTime": {
+                    "column": {
+                      "name": "utc_time"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "ScalarType",
+          "version": "v1",
+          "definition": {
+            "name": "Date",
+            "graphql": {
+              "typeName": "App_Date"
+            }
+          }
+        },
+        {
+          "kind": "ScalarType",
+          "version": "v1",
+          "definition": {
+            "name": "Id",
+            "graphql": {
+              "typeName": "App_Id"
+            }
+          }
+        },
+        {
+          "kind": "ScalarType",
+          "version": "v1",
+          "definition": {
+            "name": "Text",
+            "graphql": {
+              "typeName": "App_Text"
+            }
+          }
+        },
+        {
+          "kind": "ScalarType",
+          "version": "v1",
+          "definition": {
+            "name": "Long",
+            "graphql": {
+              "typeName": "App_Long"
+            }
+          }
+        },
+        {
+          "kind": "ScalarType",
+          "version": "v1",
+          "definition": {
+            "name": "Ip",
+            "graphql": {
+              "typeName": "App_Ip"
+            }
+          }
+        },
+        {
+          "kind": "ScalarType",
+          "version": "v1",
+          "definition": {
+            "name": "Keyword",
+            "graphql": {
+              "typeName": "App_Keyword"
+            }
+          }
+        },
+        {
+          "kind": "ScalarType",
+          "version": "v1",
+          "definition": {
+            "name": "Double",
+            "graphql": {
+              "typeName": "App_Double"
+            }
+          }
+        },
+        {
+          "kind": "TypePermissions",
+          "version": "v1",
+          "definition": {
+            "typeName": "Event",
+            "permissions": [
+              {
+                "role": "admin",
+                "output": {
+                  "allowedFields": [
+                    "dataset"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "TypePermissions",
+          "version": "v1",
+          "definition": {
+            "typeName": "GeoPoint",
+            "permissions": [
+              {
+                "role": "admin",
+                "output": {
+                  "allowedFields": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "TypePermissions",
+          "version": "v1",
+          "definition": {
+            "typeName": "Geo",
+            "permissions": [
+              {
+                "role": "admin",
+                "output": {
+                  "allowedFields": [
+                    "coordinates",
+                    "dest",
+                    "src",
+                    "srcdest"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "TypePermissions",
+          "version": "v1",
+          "definition": {
+            "typeName": "IpRange",
+            "permissions": [
+              {
+                "role": "admin",
+                "output": {
+                  "allowedFields": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "TypePermissions",
+          "version": "v1",
+          "definition": {
+            "typeName": "Machine",
+            "permissions": [
+              {
+                "role": "admin",
+                "output": {
+                  "allowedFields": [
+                    "os",
+                    "ram"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "TypePermissions",
+          "version": "v1",
+          "definition": {
+            "typeName": "Alias",
+            "permissions": [
+              {
+                "role": "admin",
+                "output": {
+                  "allowedFields": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "TypePermissions",
+          "version": "v1",
+          "definition": {
+            "typeName": "DateRange",
+            "permissions": [
+              {
+                "role": "admin",
+                "output": {
+                  "allowedFields": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "TypePermissions",
+          "version": "v1",
+          "definition": {
+            "typeName": "DsKibanaSampleDataLogs",
+            "permissions": [
+              {
+                "role": "admin",
+                "output": {
+                  "allowedFields": [
+                    "timestamp",
+                    "id",
+                    "agent",
+                    "bytes",
+                    "bytesCounter",
+                    "bytesGauge",
+                    "clientip",
+                    "event",
+                    "extension",
+                    "geo",
+                    "host",
+                    "index",
+                    "ip",
+                    "ipRange",
+                    "machine",
+                    "memory",
+                    "message",
+                    "phpmemory",
+                    "referer",
+                    "request",
+                    "response",
+                    "tags",
+                    "timestamp_1",
+                    "timestampRange",
+                    "url",
+                    "utcTime"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
