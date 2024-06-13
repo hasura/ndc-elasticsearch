@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1]
+
+- Fixed the configuration directory environment variable in the CLI.
+- Handled null values for nested fields in the response.
+
 ## [0.1.0]
 
 - Initial release of the Hasura connector for Elasticsearch.
