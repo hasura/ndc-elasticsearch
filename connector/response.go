@@ -83,24 +83,37 @@ func prepareResponse(ctx context.Context, response map[string]interface{}) *sche
 func extractDocument(source map[string]interface{}, selectedFields map[string]types.Field) map[string]interface{} {
 	document := make(map[string]interface{})
 	for fieldName, fieldData := range selectedFields {
-		if fieldData.Fields != nil {
-			if fieldDataSource, ok := source[fieldData.Name].(map[string]interface{}); ok {
-				documents := extractDocument(fieldDataSource, selectedFields[fieldName].Fields)
-				document[fieldName] = []interface{}{documents}
-			}
-			if fieldDataSource, ok := source[fieldData.Name].([]interface{}); ok {
-				docs := make([]interface{}, 0)
-				for _, data := range fieldDataSource {
-					doc := extractDocument(data.(map[string]interface{}), selectedFields[fieldName].Fields)
-					docs = append(docs, doc)
-				}
-				document[fieldName] = docs
-			}
-		} else {
-			document[fieldName] = source[fieldData.Name]
-		}
+		document[fieldName] = extractSubDocument(source, fieldData)
 	}
 	return document
+}
+
+// extractSubDocument extracts sub-documents based on the selected fields.
+func extractSubDocument(source map[string]interface{}, fieldData types.Field) interface{} {
+	if fieldData.Fields != nil {
+		sourceData, ok := source[fieldData.Name]
+		if !ok {
+			return []interface{}{extractDocument(make(map[string]interface{}), fieldData.Fields)}
+		}
+
+		if subDocument, ok := sourceData.(map[string]interface{}); ok {
+			return []interface{}{extractDocument(subDocument, fieldData.Fields)}
+		}
+
+		if subDocuments, ok := sourceData.([]interface{}); ok {
+			subDocumentsList := make([]interface{}, 0)
+			for _, subDocument := range subDocuments {
+				subDocumentsList = append(subDocumentsList, extractDocument(subDocument.(map[string]interface{}), fieldData.Fields))
+			}
+			return subDocumentsList
+		}
+	}
+
+	if fieldValue, ok := source[fieldData.Name]; ok {
+		return fieldValue
+	}
+
+	return nil
 }
 
 // extractAggregates extracts aggregate values from the source data and updates the row set aggregates.

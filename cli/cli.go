@@ -9,7 +9,7 @@ import (
 
 type Arguments struct {
 	// The path to the configuration. Defaults to the current directory.
-	Configuration string `help:"Configuration directory." env:"HASURA_CONFIGURATION_DIRECTORY"`
+	Configuration string `help:"Configuration directory." env:"HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH"`
 }
 
 type CLI struct {
