@@ -111,8 +111,11 @@ func handleExpressionBinaryComparisonOperator(expr *schema.ExpressionBinaryCompa
 	return filter, nil
 }
 
+// joinFieldPath joins the fieldPath and columnName to form a fully qualified field path.
+// It also checks if the field is nested and returns the nested path.
 func joinFieldPath(state *types.State, fieldPath []string, columnName string, collection string) (string, string) {
 	nestedPath := ""
+
 	if nestedFields, ok := state.NestedFields[collection]; ok {
 		if _, ok := nestedFields.(map[string]string)[columnName]; ok {
 			nestedPath = columnName
@@ -120,14 +123,18 @@ func joinFieldPath(state *types.State, fieldPath []string, columnName string, co
 	}
 
 	joinedPath := columnName
+
 	for _, field := range fieldPath {
 		joinedPath = joinedPath + "." + field
+
+		// Check if the joined path is nested.
 		if nestedFields, ok := state.NestedFields[collection]; ok {
 			if _, ok := nestedFields.(map[string]string)[joinedPath]; ok {
 				nestedPath = nestedPath + "." + field
 			}
 		}
 	}
+
 	return joinedPath, nestedPath
 }
 
@@ -136,6 +143,7 @@ func joinNestedFieldPath(state *types.State, operator string, value map[string]i
 	// Create the innermost query
 	operators := strings.Split(operator, ".")
 	query := value
+	// Iterate over the operators in reverse order
 	for i := len(operators) - 1; i >= 0; i-- {
 		// Wrap the current query part inside the new level
 		query = map[string]interface{}{
@@ -145,8 +153,10 @@ func joinNestedFieldPath(state *types.State, operator string, value map[string]i
 	// Iterate over the fieldPath in to build the nested structure
 	pathIdx := strings.LastIndex(fieldName, ".")
 	for i := 0; i <= nestedLevel-1; i++ {
+		// Check if the current field is nested
 		if nestedFields, ok := state.NestedFields[collection]; ok {
 			if _, ok := nestedFields.(map[string]string)[fieldName[:pathIdx]]; ok {
+				// Create the nested query with the current path and query
 				query = map[string]interface{}{
 					"nested": map[string]interface{}{
 						"path":  fieldName[:pathIdx],
@@ -155,13 +165,16 @@ func joinNestedFieldPath(state *types.State, operator string, value map[string]i
 				}
 			}
 		}
+		// Update the pathIdx to the next level
 		pathIdx = strings.LastIndex(fieldName[:pathIdx], ".")
 	}
 
 	return query
 }
 
-// getKeywordFieldFromState retrieves best matching field for term level queries.
+// getKeywordFieldFromState retrieves the best matching field for term level queries
+// from the state. If the field is found, it returns the corresponding field
+// name; otherwise, it returns the original columnName.
 func getKeywordFieldFromState(state *types.State, columnName string, collection string) string {
 	if collectionFields, ok := state.SupportedFilterFields[collection]; ok {
 		if keywordFields, ok := collectionFields.(map[string]interface{})["term_level_queries"].(map[string]string); ok {
@@ -178,6 +191,9 @@ func getKeywordFieldFromState(state *types.State, columnName string, collection 
 	return columnName
 }
 
+// getTextFieldFromState retrieves the best matching field for full text queries
+// from the state. If the field is found, it returns the corresponding field
+// name; otherwise, it returns the original columnName.
 func getTextFieldFromState(state *types.State, columnName string, collection string) string {
 	if collectionField, ok := state.SupportedFilterFields[collection]; ok {
 		if textFields, ok := collectionField.(map[string]interface{})["full_text_queries"].(map[string]string); ok {
@@ -189,7 +205,9 @@ func getTextFieldFromState(state *types.State, columnName string, collection str
 	return columnName
 }
 
-// getWildcardFieldFromState retrieves best matching field for wildcard and regexp queries.
+// getWildcardFieldFromState retrieves the best matching field for wildcard and regexp
+// queries from the state. If the field is found, it returns the corresponding field
+// name; otherwise, it returns the original columnName.
 func getWildcardFieldFromState(state *types.State, columnName string, collection string) string {
 	if collectionFields, ok := state.SupportedFilterFields[collection]; ok {
 		if wildcardFields, ok := collectionFields.(map[string]interface{})["unstructured_text"].(map[string]string); ok {

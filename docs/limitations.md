@@ -2,8 +2,9 @@
 
 ## Query
 
-- Native Queries and logical models are not supported
 - Nested relationships are not supported
+- Comparison by column value is currently not supported.
+- Order by aggregate is currently not supported.
 
 ## Mutations
 

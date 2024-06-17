@@ -5,10 +5,11 @@
             "aggregates": {},
             "nested_fields": {
                 "filter_by": {},
-                "order_by": {}
+                "order_by": {},
+                "aggregates": {}
             },
             "variables": {}
         }
     },
-    "version": "0.1.3"
+    "version": "0.1.4"
 }

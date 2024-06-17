@@ -1,0 +1,55 @@
+{
+    "collection": "range_query",
+    "query": {
+        "fields": {
+            "age": {
+                "type": "column",
+                "column": "age",
+                "fields": null
+            },
+            "driver": {
+                "type": "column",
+                "column": "driver",
+                "fields": {
+                    "type": "object",
+                    "fields": {
+                        "lastName": {
+                            "type": "column",
+                            "column": "last_name"
+                        }
+                    }
+                }
+            }
+        },
+        "predicate": {
+            "type": "binary_comparison_operator",
+                    "column": {
+                        "type": "column",
+                        "name": "driver",
+                        "path": [],
+                        "field_path": ["last_name"]
+                    },
+                    "operator": "match",
+                    "value": {
+                        "type": "scalar",
+                        "value": "Hudson"
+                    }
+        }
+    },
+    "arguments": {
+      "lte": {
+            "type": "literal",
+            "value": 25
+        },
+        "gte": {
+            "type": "variable",
+            "name": "$gte"
+        }
+    },
+    "variables": [
+        {
+            "$gte": 20
+        }
+    ],
+    "collection_relationships": {}
+}

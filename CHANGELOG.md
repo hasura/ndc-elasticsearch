@@ -7,7 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0]
+
+### Added
+
+- Support for native queries.
+- Support ndc-spec v0.1.4 and aggregate by nested fields.
+
+### Changed
+
+- Configuration structure to be compatible with the latest connector version.
+
 ## [0.1.1]
+
+### Fixed
 
 - Fixed the configuration directory environment variable in the CLI.
 - Handled null values for nested fields in the response.

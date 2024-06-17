@@ -246,22 +246,27 @@ func getComparisonOperatorDefinition(dataType string) map[string]schema.Comparis
 	return comparisonOperators
 }
 
+// getAggregationFunctions generates and returns a map of aggregation functions based on the provided list of functions and data type.
 func getAggregationFunctions(functions []string, typeName string) schema.ScalarTypeAggregateFunctions {
 	aggregationFunctions := make(schema.ScalarTypeAggregateFunctions)
+
 	for _, function := range functions {
 		if function == "cardinality" || function == "value_count" {
 			typeName = "integer"
-		}
-		if function == "stats" || function == "string_stats" {
+		} else if function == "stats" || function == "string_stats" {
 			typeName = function
 		}
+
+		// Generate the function definition and add it to the map
 		aggregationFunctions[function] = schema.AggregateFunctionDefinition{
 			ResultType: schema.NewNamedType(typeName).Encode(),
 		}
 	}
+
 	return aggregationFunctions
 }
 
+// unSupportedAggregateTypes are lists of data types that do not support aggregation in elasticsearch.
 var unSupportedAggregateTypes = []string{
 	"text",
 	"search_as_you_type",
@@ -270,6 +275,7 @@ var unSupportedAggregateTypes = []string{
 	"binary",
 }
 
+// unsupportedSortDataTypes are lists of data types that do not support sorting in elasticsearch.
 var unsupportedSortDataTypes = []string{
 	"text",
 	"search_as_you_type",

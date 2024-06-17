@@ -3,6 +3,19 @@
         {
             "arguments": {},
             "foreign_keys": {},
+            "name": "kibana_sample_data_ecommerce",
+            "type": "kibana_sample_data_ecommerce",
+            "uniqueness_constraints": {
+                "kibana_sample_data_ecommerce_by_id": {
+                    "unique_columns": [
+                        "_id"
+                    ]
+                }
+            }
+        },
+        {
+            "arguments": {},
+            "foreign_keys": {},
             "name": "my_sample_index",
             "type": "my_sample_index",
             "uniqueness_constraints": {
@@ -14,12 +27,38 @@
             }
         },
         {
+            "arguments": {
+                "gte": {
+                    "type": {
+                        "name": "integer",
+                        "type": "named"
+                    }
+                },
+                "lte": {
+                    "type": {
+                        "name": "integer",
+                        "type": "named"
+                    }
+                }
+            },
+            "foreign_keys": {},
+            "name": "range_query",
+            "type": "range_query",
+            "uniqueness_constraints": {
+                "range_query_by_id": {
+                    "unique_columns": [
+                        "_id"
+                    ]
+                }
+            }
+        },
+        {
             "arguments": {},
             "foreign_keys": {},
-            "name": "kibana_sample_data_ecommerce",
+            "name": "aggregate_query",
             "type": "kibana_sample_data_ecommerce",
             "uniqueness_constraints": {
-                "kibana_sample_data_ecommerce_by_id": {
+                "aggregate_query_by_id": {
                     "unique_columns": [
                         "_id"
                     ]
@@ -31,6 +70,22 @@
     "object_types": {
         "alias": {
             "fields": {}
+        },
+        "contact": {
+            "fields": {
+                "email": {
+                    "type": {
+                        "name": "keyword",
+                        "type": "named"
+                    }
+                },
+                "phone": {
+                    "type": {
+                        "name": "keyword",
+                        "type": "named"
+                    }
+                }
+            }
         },
         "date_range": {
             "fields": {}
@@ -542,9 +597,28 @@
                         "type": "named"
                     }
                 },
+                "contact": {
+                    "type": {
+                        "element_type": {
+                            "name": "contact",
+                            "type": "named"
+                        },
+                        "type": "array"
+                    }
+                },
                 "zipcode": {
                     "type": {
                         "name": "integer",
+                        "type": "named"
+                    }
+                }
+            }
+        },
+        "range_query": {
+            "fields": {
+                "_id": {
+                    "type": {
+                        "name": "_id",
                         "type": "named"
                     }
                 }

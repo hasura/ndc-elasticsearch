@@ -79,7 +79,7 @@ func prepareResponse(ctx context.Context, response map[string]interface{}) *sche
 	return rowSet
 }
 
-// extractDocument extracts document fields based on the selected fields from the source data.
+// extractDocument extracts selected fields from the source data.
 func extractDocument(source map[string]interface{}, selectedFields map[string]types.Field) map[string]interface{} {
 	document := make(map[string]interface{})
 	for fieldName, fieldData := range selectedFields {
@@ -122,15 +122,18 @@ func extractAggregates(aggregates schema.RowSetAggregates, aggregations map[stri
 		return aggregates
 	}
 
-	for _, column := range postProcessor.ColumnAggregate {
-		if record, ok := aggregations[column].(map[string]interface{}); ok {
+	for aggName, isNested := range postProcessor.ColumnAggregate {
+		if record, ok := aggregations[aggName].(map[string]interface{}); ok {
+			if isNested {
+				record = record[aggName].(map[string]interface{})
+			}
 			val, ok := record["value"]
 			if ok {
-				aggregates[column] = val
+				aggregates[aggName] = val
 			} else if val, ok := record["doc_count"]; ok {
-				aggregates[column] = val
+				aggregates[aggName] = val
 			} else {
-				aggregates[column] = record
+				aggregates[aggName] = record
 			}
 		}
 	}

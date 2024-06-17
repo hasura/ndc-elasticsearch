@@ -1,0 +1,22 @@
+{
+    "collection": "aggregate_query",
+    "query": {
+        "aggregates": {
+            "sku_count": {
+                "type": "column_count",
+                "column": "sku",
+                "distinct": false
+            },
+            "orders_total": {
+                "type": "single_column",
+                "function": "sum",
+                "column": "total_quantity"
+            },
+            "orders_count": {
+                "type": "star_count"
+            }
+        }
+    },
+    "arguments": {},
+    "collection_relationships": {}
+}
