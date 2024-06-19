@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Use static linking to resolve `glibc` version issues
+
 ## [0.1.1]
 
 - Fixed the configuration directory environment variable in the CLI.
