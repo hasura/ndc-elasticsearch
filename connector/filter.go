@@ -68,7 +68,7 @@ func handleExpressionUnaryComparisonOperator(expr *schema.ExpressionUnaryCompari
 		filter := map[string]interface{}{"bool": map[string]interface{}{"must_not": map[string]interface{}{"exists": value}}}
 		if nestedFields, ok := state.NestedFields[collection]; ok {
 			if _, ok := nestedFields.(map[string]string)[expr.Column.Name]; ok {
-				filter = joinNestedFieldPath(state, "bool.must_not.exists", value, fieldName, len(expr.Column.FieldPath), collection)
+				filter = prepareNestedQuery(state, "bool.must_not.exists", value, fieldName, len(expr.Column.FieldPath), collection)
 			}
 		}
 		return filter, nil
@@ -79,40 +79,50 @@ func handleExpressionUnaryComparisonOperator(expr *schema.ExpressionUnaryCompari
 }
 
 // handleExpressionBinaryComparisonOperator processes the binary comparison operator expression.
-func handleExpressionBinaryComparisonOperator(expr *schema.ExpressionBinaryComparisonOperator, state *types.State, collection string) (map[string]interface{}, error) {
-	var filter map[string]interface{}
-	fieldName, _ := joinFieldPath(state, expr.Column.FieldPath, expr.Column.Name, collection)
+func handleExpressionBinaryComparisonOperator(
+	expr *schema.ExpressionBinaryComparisonOperator,
+	state *types.State,
+	collection string,
+) (map[string]interface{}, error) {
+	fieldPath, nestedPath := joinFieldPath(state, expr.Column.FieldPath, expr.Column.Name, collection)
 	var bestSubField string
+
 	switch expr.Operator {
 	case "match", "match_phrase", "match_phrase_prefix", "match_bool_prefix":
-		bestSubField = getTextFieldFromState(state, fieldName, collection)
+		bestSubField = getTextFieldFromState(state, fieldPath, collection)
 	case "term", "prefix", "terms":
-		bestSubField = getKeywordFieldFromState(state, fieldName, collection)
+		bestSubField = getKeywordFieldFromState(state, fieldPath, collection)
 	case "wildcard", "regexp":
-		bestSubField = getWildcardFieldFromState(state, fieldName, collection)
+		bestSubField = getWildcardFieldFromState(state, fieldPath, collection)
+	case "range":
+		bestSubField = getNumericFieldFromState(state, fieldPath, collection)
 	default:
 		return nil, schema.UnprocessableContentError("invalid binary comaparison operator", map[string]any{
 			"expression": expr.Operator,
 		})
 	}
 
-	value, err := evalComparisonValue(expr.Value, bestSubField)
+	value, err := evalComparisonValue(expr.Value, bestSubField, expr.Operator)
 	if err != nil {
 		return nil, err
 	}
-	filter = map[string]interface{}{
+
+	filter := map[string]interface{}{
 		expr.Operator: value,
 	}
-	if nestedFields, ok := state.NestedFields[collection]; ok {
-		if _, ok := nestedFields.(map[string]string)[expr.Column.Name]; ok {
-			filter = joinNestedFieldPath(state, expr.Operator, value, fieldName, len(expr.Column.FieldPath), collection)
-		}
+
+	if nestedPath != "" {
+		filter = prepareNestedQuery(state, expr.Operator, value, fieldPath, len(expr.Column.FieldPath), collection)
 	}
+
 	return filter, nil
 }
 
+// joinFieldPath joins the fieldPath and columnName to form a fully qualified field path.
+// It also checks if the field is nested and returns the nested path.
 func joinFieldPath(state *types.State, fieldPath []string, columnName string, collection string) (string, string) {
 	nestedPath := ""
+
 	if nestedFields, ok := state.NestedFields[collection]; ok {
 		if _, ok := nestedFields.(map[string]string)[columnName]; ok {
 			nestedPath = columnName
@@ -120,22 +130,34 @@ func joinFieldPath(state *types.State, fieldPath []string, columnName string, co
 	}
 
 	joinedPath := columnName
+
 	for _, field := range fieldPath {
 		joinedPath = joinedPath + "." + field
+
+		// Check if the joined path is nested.
 		if nestedFields, ok := state.NestedFields[collection]; ok {
 			if _, ok := nestedFields.(map[string]string)[joinedPath]; ok {
 				nestedPath = nestedPath + "." + field
 			}
 		}
 	}
+
 	return joinedPath, nestedPath
 }
 
-// joinNestedFieldPath creates a Elasticsearch's nested query based on field_path.
-func joinNestedFieldPath(state *types.State, operator string, value map[string]interface{}, fieldName string, nestedLevel int, collection string) map[string]interface{} {
+// prepareNestedQuery creates a Elasticsearch's nested query based on field_path.
+func prepareNestedQuery(
+	state *types.State,
+	operator string,
+	value map[string]interface{},
+	fieldName string,
+	nestedLevel int,
+	collection string,
+) map[string]interface{} {
 	// Create the innermost query
 	operators := strings.Split(operator, ".")
 	query := value
+	// Iterate over the operators in reverse order
 	for i := len(operators) - 1; i >= 0; i-- {
 		// Wrap the current query part inside the new level
 		query = map[string]interface{}{
@@ -145,8 +167,10 @@ func joinNestedFieldPath(state *types.State, operator string, value map[string]i
 	// Iterate over the fieldPath in to build the nested structure
 	pathIdx := strings.LastIndex(fieldName, ".")
 	for i := 0; i <= nestedLevel-1; i++ {
+		// Check if the current field is nested
 		if nestedFields, ok := state.NestedFields[collection]; ok {
 			if _, ok := nestedFields.(map[string]string)[fieldName[:pathIdx]]; ok {
+				// Create the nested query with the current path and query
 				query = map[string]interface{}{
 					"nested": map[string]interface{}{
 						"path":  fieldName[:pathIdx],
@@ -155,13 +179,16 @@ func joinNestedFieldPath(state *types.State, operator string, value map[string]i
 				}
 			}
 		}
+		// Update the pathIdx to the next level
 		pathIdx = strings.LastIndex(fieldName[:pathIdx], ".")
 	}
 
 	return query
 }
 
-// getKeywordFieldFromState retrieves best matching field for term level queries.
+// getKeywordFieldFromState retrieves the best matching field for term level queries
+// from the state. If the field is found, it returns the corresponding field
+// name; otherwise, it returns the original columnName.
 func getKeywordFieldFromState(state *types.State, columnName string, collection string) string {
 	if collectionFields, ok := state.SupportedFilterFields[collection]; ok {
 		if keywordFields, ok := collectionFields.(map[string]interface{})["term_level_queries"].(map[string]string); ok {
@@ -178,6 +205,9 @@ func getKeywordFieldFromState(state *types.State, columnName string, collection 
 	return columnName
 }
 
+// getTextFieldFromState retrieves the best matching field for full text queries
+// from the state. If the field is found, it returns the corresponding field
+// name; otherwise, it returns the original columnName.
 func getTextFieldFromState(state *types.State, columnName string, collection string) string {
 	if collectionField, ok := state.SupportedFilterFields[collection]; ok {
 		if textFields, ok := collectionField.(map[string]interface{})["full_text_queries"].(map[string]string); ok {
@@ -189,7 +219,33 @@ func getTextFieldFromState(state *types.State, columnName string, collection str
 	return columnName
 }
 
-// getWildcardFieldFromState retrieves best matching field for wildcard and regexp queries.
+// getNumericFieldFromState retrieves the best matching field for range queries
+// from the state. If the field is found, it returns the corresponding field
+// name; otherwise, it returns the original columnName.
+func getNumericFieldFromState(state *types.State, columnName string, collection string) string {
+	if collectionField, ok := state.SupportedFilterFields[collection]; ok {
+		if numericFields, ok := collectionField.(map[string]interface{})["range_queries"].(map[string]string); ok {
+			if numericField, ok := numericFields[columnName]; ok {
+				return numericField
+			}
+		}
+		if keywordFields, ok := collectionField.(map[string]interface{})["term_level_queries"].(map[string]string); ok {
+			if keywordField, ok := keywordFields[columnName]; ok {
+				return keywordField
+			}
+		}
+		if wildcardFields, ok := collectionField.(map[string]interface{})["unstructured_text"].(map[string]string); ok {
+			if wildcardField, ok := wildcardFields[columnName]; ok {
+				return wildcardField
+			}
+		}
+	}
+	return columnName
+}
+
+// getWildcardFieldFromState retrieves the best matching field for wildcard and regexp
+// queries from the state. If the field is found, it returns the corresponding field
+// name; otherwise, it returns the original columnName.
 func getWildcardFieldFromState(state *types.State, columnName string, collection string) string {
 	if collectionFields, ok := state.SupportedFilterFields[collection]; ok {
 		if wildcardFields, ok := collectionFields.(map[string]interface{})["unstructured_text"].(map[string]string); ok {
@@ -207,19 +263,45 @@ func getWildcardFieldFromState(state *types.State, columnName string, collection
 }
 
 // evalComparisonValue evaluates the comparison value for scalar and variable type.
-func evalComparisonValue(comparisonValue schema.ComparisonValue, columnName string) (map[string]interface{}, error) {
+func evalComparisonValue(comparisonValue schema.ComparisonValue, columnName string, operator string) (map[string]interface{}, error) {
 	switch compValue := comparisonValue.Interface().(type) {
 	case *schema.ComparisonValueScalar:
-		return map[string]interface{}{
-			columnName: compValue.Value,
-		}, nil
+		if operator == "range" {
+			validValue, err := processRangeValue(compValue.Value)
+			if err != nil {
+				return nil, err
+			}
+			return map[string]interface{}{columnName: validValue}, nil
+		}
+		return map[string]interface{}{columnName: compValue.Value}, nil
 	case *schema.ComparisonValueVariable:
-		return map[string]interface{}{
-			columnName: types.Variable(compValue.Name),
-		}, nil
+		return map[string]interface{}{columnName: types.Variable(compValue.Name)}, nil
 	default:
 		return nil, schema.UnprocessableContentError("invalid type of comparison value", map[string]any{
 			"value": comparisonValue["type"],
 		})
 	}
+}
+
+// processRangeValue processes the range value for a range comparison.
+// It checks if the range value is valid and returns the valid range value.
+// If the range value is invalid, it returns an error.
+func processRangeValue(rangeValue interface{}) (map[string]interface{}, error) {
+	if rangeValue == nil {
+		return nil, schema.UnprocessableContentError("invalid range value", nil)
+	}
+
+	rangeMap, ok := rangeValue.(map[string]interface{})
+	if !ok {
+		return nil, schema.UnprocessableContentError("invalid range value", nil)
+	}
+
+	// Remove empty range values
+	for key, value := range rangeMap {
+		if valueStr, ok := value.(string); ok && valueStr == "" {
+			delete(rangeMap, key)
+		}
+	}
+
+	return rangeMap, nil
 }

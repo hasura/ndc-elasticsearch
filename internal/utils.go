@@ -103,3 +103,13 @@ func DeepEqual(v1, v2 any) bool {
 	_ = json.Unmarshal(bytesB, &x2)
 	return reflect.DeepEqual(x1, x2)
 }
+
+// contains checks if a string slice contains a specific element.
+func Contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}

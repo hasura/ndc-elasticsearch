@@ -3,19 +3,6 @@
         {
             "arguments": {},
             "foreign_keys": {},
-            "name": "my_sample_index",
-            "type": "my_sample_index",
-            "uniqueness_constraints": {
-                "my_sample_index_by_id": {
-                    "unique_columns": [
-                        "_id"
-                    ]
-                }
-            }
-        },
-        {
-            "arguments": {},
-            "foreign_keys": {},
             "name": "kibana_sample_data_ecommerce",
             "type": "kibana_sample_data_ecommerce",
             "uniqueness_constraints": {
@@ -25,21 +12,75 @@
                     ]
                 }
             }
+        },
+        {
+            "arguments": {},
+            "foreign_keys": {},
+            "name": "my_sample_index",
+            "type": "my_sample_index",
+            "uniqueness_constraints": {
+                "my_sample_index_by_id": {
+                    "unique_columns": [
+                        "_id"
+                    ]
+                }
+            }
         }
     ],
     "functions": [],
     "object_types": {
-        "alias": {
-            "fields": {}
-        },
-        "date_range": {
-            "fields": {}
-        },
-        "dense_vector": {
-            "fields": {}
-        },
-        "double_range": {
-            "fields": {}
+        "date_range_query": {
+            "fields": {
+                "boost": {
+                    "description": "(Optional, float) Floating point number used to decrease or increase the relevance scores of a query. Defaults to 1.0.",
+                    "type": {
+                        "name": "float",
+                        "type": "named"
+                    }
+                },
+                "format": {
+                    "description": "(Optional, string) Date format used to convert date values in the query.",
+                    "type": {
+                        "name": "keyword",
+                        "type": "named"
+                    }
+                },
+                "gt": {
+                    "description": "(Optional) Greater than.",
+                    "type": {
+                        "name": "double",
+                        "type": "named"
+                    }
+                },
+                "gte": {
+                    "description": "(Optional) Greater than or equal.",
+                    "type": {
+                        "name": "double",
+                        "type": "named"
+                    }
+                },
+                "lt": {
+                    "description": "(Optional) Less than.",
+                    "type": {
+                        "name": "double",
+                        "type": "named"
+                    }
+                },
+                "lte": {
+                    "description": "(Optional) Less than or equal.",
+                    "type": {
+                        "name": "double",
+                        "type": "named"
+                    }
+                },
+                "time_zone": {
+                    "description": "(Optional, string) Coordinated Universal Time (UTC) offset or IANA time zone used to convert date values in the query to UTC.",
+                    "type": {
+                        "name": "keyword",
+                        "type": "named"
+                    }
+                }
+            }
         },
         "driver": {
             "fields": {
@@ -70,13 +111,7 @@
                 }
             }
         },
-        "float_range": {
-            "fields": {}
-        },
         "geo_point": {
-            "fields": {}
-        },
-        "geo_shape": {
             "fields": {}
         },
         "geoip": {
@@ -112,31 +147,6 @@
                     }
                 }
             }
-        },
-        "histogram": {
-            "fields": {
-                "counts": {
-                    "type": {
-                        "name": "integer",
-                        "type": "named"
-                    }
-                },
-                "values": {
-                    "type": {
-                        "name": "double",
-                        "type": "named"
-                    }
-                }
-            }
-        },
-        "integer_range": {
-            "fields": {}
-        },
-        "ip_range": {
-            "fields": {}
-        },
-        "join": {
-            "fields": {}
         },
         "kibana_sample_data_ecommerce": {
             "fields": {
@@ -307,9 +317,6 @@
                 }
             }
         },
-        "long_range": {
-            "fields": {}
-        },
         "my_sample_index": {
             "fields": {
                 "_id": {
@@ -409,12 +416,6 @@
                     }
                 }
             }
-        },
-        "percolator": {
-            "fields": {}
-        },
-        "point": {
-            "fields": {}
         },
         "products": {
             "fields": {
@@ -550,16 +551,46 @@
                 }
             }
         },
+        "range": {
+            "fields": {
+                "boost": {
+                    "description": "(Optional, float) Floating point number used to decrease or increase the relevance scores of a query. Defaults to 1.0.",
+                    "type": {
+                        "name": "float",
+                        "type": "named"
+                    }
+                },
+                "gt": {
+                    "description": "(Optional) Greater than.",
+                    "type": {
+                        "name": "double",
+                        "type": "named"
+                    }
+                },
+                "gte": {
+                    "description": "(Optional) Greater than or equal.",
+                    "type": {
+                        "name": "double",
+                        "type": "named"
+                    }
+                },
+                "lt": {
+                    "description": "(Optional) Less than.",
+                    "type": {
+                        "name": "double",
+                        "type": "named"
+                    }
+                },
+                "lte": {
+                    "description": "(Optional) Less than or equal.",
+                    "type": {
+                        "name": "double",
+                        "type": "named"
+                    }
+                }
+            }
+        },
         "rank_feature": {
-            "fields": {}
-        },
-        "rank_features": {
-            "fields": {}
-        },
-        "shape": {
-            "fields": {}
-        },
-        "sparse_vector": {
             "fields": {}
         },
         "stats": {
@@ -666,6 +697,13 @@
                     },
                     "type": "custom"
                 },
+                "range": {
+                    "argument_type": {
+                        "name": "range",
+                        "type": "named"
+                    },
+                    "type": "custom"
+                },
                 "term": {
                     "type": "equal"
                 },
@@ -747,6 +785,13 @@
                 "match_phrase": {
                     "argument_type": {
                         "name": "boolean",
+                        "type": "named"
+                    },
+                    "type": "custom"
+                },
+                "range": {
+                    "argument_type": {
+                        "name": "range",
                         "type": "named"
                     },
                     "type": "custom"
@@ -833,6 +878,13 @@
                     },
                     "type": "custom"
                 },
+                "range": {
+                    "argument_type": {
+                        "name": "date_range_query",
+                        "type": "named"
+                    },
+                    "type": "custom"
+                },
                 "term": {
                     "argument_type": {
                         "name": "date",
@@ -911,6 +963,13 @@
                 "match_phrase": {
                     "argument_type": {
                         "name": "double",
+                        "type": "named"
+                    },
+                    "type": "custom"
+                },
+                "range": {
+                    "argument_type": {
+                        "name": "range",
                         "type": "named"
                     },
                     "type": "custom"
@@ -997,6 +1056,13 @@
                     },
                     "type": "custom"
                 },
+                "range": {
+                    "argument_type": {
+                        "name": "range",
+                        "type": "named"
+                    },
+                    "type": "custom"
+                },
                 "term": {
                     "argument_type": {
                         "name": "float",
@@ -1075,6 +1141,13 @@
                 "match_phrase": {
                     "argument_type": {
                         "name": "half_float",
+                        "type": "named"
+                    },
+                    "type": "custom"
+                },
+                "range": {
+                    "argument_type": {
+                        "name": "range",
                         "type": "named"
                     },
                     "type": "custom"
@@ -1161,6 +1234,13 @@
                     },
                     "type": "custom"
                 },
+                "range": {
+                    "argument_type": {
+                        "name": "range",
+                        "type": "named"
+                    },
+                    "type": "custom"
+                },
                 "term": {
                     "argument_type": {
                         "name": "integer",
@@ -1209,6 +1289,13 @@
                 "match_phrase": {
                     "argument_type": {
                         "name": "ip",
+                        "type": "named"
+                    },
+                    "type": "custom"
+                },
+                "range": {
+                    "argument_type": {
+                        "name": "range",
                         "type": "named"
                     },
                     "type": "custom"
@@ -1281,6 +1368,13 @@
                 "prefix": {
                     "argument_type": {
                         "name": "keyword",
+                        "type": "named"
+                    },
+                    "type": "custom"
+                },
+                "range": {
+                    "argument_type": {
+                        "name": "range",
                         "type": "named"
                     },
                     "type": "custom"
@@ -1381,6 +1475,13 @@
                     },
                     "type": "custom"
                 },
+                "range": {
+                    "argument_type": {
+                        "name": "range",
+                        "type": "named"
+                    },
+                    "type": "custom"
+                },
                 "term": {
                     "argument_type": {
                         "name": "long",
@@ -1437,6 +1538,13 @@
                 "prefix": {
                     "argument_type": {
                         "name": "text",
+                        "type": "named"
+                    },
+                    "type": "custom"
+                },
+                "range": {
+                    "argument_type": {
+                        "name": "range",
                         "type": "named"
                     },
                     "type": "custom"
@@ -1523,6 +1631,13 @@
                 "prefix": {
                     "argument_type": {
                         "name": "wildcard",
+                        "type": "named"
+                    },
+                    "type": "custom"
+                },
+                "range": {
+                    "argument_type": {
+                        "name": "range",
                         "type": "named"
                     },
                     "type": "custom"

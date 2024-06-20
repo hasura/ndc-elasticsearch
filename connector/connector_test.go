@@ -117,6 +117,11 @@ var testCases = []struct {
 		responseFile: "../testdata/query/filter/unary_predicate_on_nested_type_response.json",
 	},
 	{
+		name:         "range_query",
+		requestFile:  "../testdata/query/filter/range_query_request.json",
+		responseFile: "../testdata/query/filter/range_query_response.json",
+	},
+	{
 		name:         "star_count_aggregation",
 		requestFile:  "../testdata/query/aggregation/star_count_request.json",
 		responseFile: "../testdata/query/aggregation/star_count_response.json",
