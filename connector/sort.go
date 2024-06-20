@@ -1,6 +1,7 @@
 package connector
 
 import (
+	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-elasticsearch/types"
 	"github.com/hasura/ndc-sdk-go/schema"
 )
@@ -18,29 +19,35 @@ func prepareSortQuery(orderBy *schema.OrderBy, state *types.State, collection st
 	return sort, nil
 }
 
+// prepareSortElement prepares the sort element for Elasticsearch query.
+//
+// It takes in the OrderByElement, state, and collection as parameters.
+// It returns the prepared sort element and an error if any.
 func prepareSortElement(element *schema.OrderByElement, state *types.State, collection string) (map[string]interface{}, error) {
 	sort := make(map[string]interface{})
 	switch target := element.Target.Interface().(type) {
 	case *schema.OrderByColumn:
-		fieldName, fieldPath := joinFieldPath(state, target.FieldPath, target.Name, collection)
+		// Join the field path to get the field path and nested path.
+		fieldPath, nestedPath := joinFieldPath(state, target.FieldPath, target.Name, collection)
 
-		if collectionSortFields, ok := state.SupportedSortFields[collection]; ok {
-			if sortField, ok := collectionSortFields.(map[string]string)[fieldName]; ok {
-				fieldName = sortField
-			} else {
-				return nil, schema.UnprocessableContentError("sorting not supported on this field", map[string]any{
-					"value": fieldName,
-				})
-			}
+		validField := internal.ValidateFieldOperation(state, "sort", collection, fieldPath)
+		if validField == "" {
+			return nil, schema.UnprocessableContentError("sorting not supported on this field", map[string]any{
+				"value": fieldPath,
+			})
 		}
-		sort[fieldName] = map[string]interface{}{
+		fieldPath = validField
+		sort[fieldPath] = map[string]interface{}{
 			"order": string(element.OrderDirection),
 		}
+
+		// Check if the field is nested.
 		if nestedFields, ok := state.NestedFields[collection]; ok {
 			if _, ok := nestedFields.(map[string]string)[target.Name]; ok {
-				sort[fieldName] = map[string]interface{}{
+				// If the field is nested, add the nested path to the sort element.
+				sort[fieldPath] = map[string]interface{}{
 					"nested": map[string]interface{}{
-						"path": fieldPath,
+						"path": nestedPath,
 					},
 					"order": string(element.OrderDirection),
 				}
@@ -51,5 +58,6 @@ func prepareSortElement(element *schema.OrderByElement, state *types.State, coll
 			"value": element.Target,
 		})
 	}
+
 	return sort, nil
 }

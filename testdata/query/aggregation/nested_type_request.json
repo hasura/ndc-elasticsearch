@@ -1,0 +1,15 @@
+{
+    "collection": "my_sample_index",
+    "arguments": {},
+    "query": {
+        "aggregates": {
+            "totalEmail": {
+                "type": "single_column",
+                "function": "value_count",
+                "column": "profile",
+                "field_path": ["contact", "email"]
+            }
+        }
+    },
+    "collection_relationships": {}
+}

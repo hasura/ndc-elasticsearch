@@ -1,0 +1,14 @@
+{
+    "aggs": {
+        "price_outlier": {
+            "percentiles": {
+                "field": "products.base_price",
+                "percents": [
+                    95,
+                    99,
+                    99.9
+                ]
+            }
+        }
+    }
+}

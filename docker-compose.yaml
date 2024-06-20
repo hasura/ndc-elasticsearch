@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   ndc-elasticsearch:
-    build: .
+    image: ghcr.io/hasura/ndc-elasticsearch:latest
     volumes:
       - ./resources/configuration.json:/etc/connector/configuration.json
       - certs:/usr/share/elasticsearch/config/certs
@@ -140,7 +140,7 @@ services:
       retries: 120
 
   engine:
-    image: ghcr.io/hasura/v3-engine:6c9979ddaad50d476c0996d1ece48f0cf1c8e99d
+    image: ghcr.io/hasura/v3-engine:latest
     platform: linux/amd64
     environment:
       - METADATA_PATH=/metadata/metadata.json

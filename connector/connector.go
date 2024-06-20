@@ -2,9 +2,6 @@ package connector
 
 import (
 	"context"
-	"encoding/json"
-	"os"
-	"path/filepath"
 
 	"github.com/hasura/ndc-elasticsearch/elasticsearch"
 	"github.com/hasura/ndc-elasticsearch/types"
@@ -16,25 +13,6 @@ var configFileName = "configuration.json"
 
 // Connector implements the SDK interface of NDC specification
 type Connector struct{}
-
-// ParseConfiguration parses the connector's configuration
-func (c *Connector) ParseConfiguration(ctx context.Context, configurationDir string) (*types.Configuration, error) {
-
-	configFilePath := filepath.Join(configurationDir, configFileName)
-
-	config, err := os.ReadFile(configFilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	var configuration types.Configuration
-	err = json.Unmarshal(config, &configuration)
-	if err != nil {
-		return nil, err
-	}
-
-	return &configuration, nil
-}
 
 // TryInitState initializes the connector's in-memory state.
 func (c *Connector) TryInitState(ctx context.Context, configuration *types.Configuration, metrics *connector.TelemetryState) (*types.State, error) {
@@ -74,14 +52,15 @@ func (c *Connector) HealthCheck(ctx context.Context, configuration *types.Config
 // GetCapabilities get the connector's capabilities.
 func (c *Connector) GetCapabilities(configuration *types.Configuration) schema.CapabilitiesResponseMarshaler {
 	return &schema.CapabilitiesResponse{
-		Version: "0.1.3",
+		Version: "0.1.4",
 		Capabilities: schema.Capabilities{
 			Query: schema.QueryCapabilities{
 				Variables:  schema.LeafCapability{},
 				Aggregates: schema.LeafCapability{},
 				NestedFields: schema.NestedFieldCapabilities{
-					OrderBy:  schema.LeafCapability{},
-					FilterBy: schema.LeafCapability{},
+					OrderBy:    schema.LeafCapability{},
+					FilterBy:   schema.LeafCapability{},
+					Aggregates: schema.LeafCapability{},
 				},
 			},
 		},

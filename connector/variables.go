@@ -1,22 +1,23 @@
 package connector
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"github.com/hasura/ndc-elasticsearch/types"
 	"github.com/hasura/ndc-sdk-go/schema"
 )
 
 // executeQueryWithVariables prepares a dsl query for query with variables.
+// It takes a list of variable sets and a query body as input.
+// It replaces the variable names in the query body with values from the variable sets.
+// It returns the prepared query and an error if any.
 func executeQueryWithVariables(variableSets []schema.QueryRequestVariablesElem, body map[string]interface{}) (map[string]interface{}, error) {
 	variableQuery := make(map[string]interface{})
+	// do not to return any documents in the search results while performing aggregations
 	variableQuery["size"] = 0
 
 	var filters []interface{}
 	if filter, ok := body["query"]; ok {
 		for _, variableSet := range variableSets {
-			// Replace variable names in the map with values from memoization
+			// Replace variable names in the filter map with values from variableSet
 			updatedFilter, err := replaceVariables(filter, variableSet)
 			if err != nil {
 				return nil, err
@@ -53,9 +54,6 @@ func executeQueryWithVariables(variableSets []schema.QueryRequestVariablesElem, 
 			"aggs": aggregate,
 		},
 	}
-	// Pretty print query
-	queryJSON, _ := json.MarshalIndent(variableQuery, "", "  ")
-	fmt.Println("Variable Query", string(queryJSON))
 
 	return variableQuery, nil
 }
