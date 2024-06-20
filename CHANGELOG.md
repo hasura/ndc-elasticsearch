@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Configuration structure to be compatible with the latest connector version.
 
+### Fixed
+
+- Use static linking to resolve `glibc` version issues
+
 ## [0.1.1]
 
 ### Fixed

@@ -84,7 +84,7 @@ jobs:
         run: |
           mkdir -p release
           echo "Building binary file for target: ${{ matrix.goos }}${{ matrix.goarch }}"
-          env GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ./release/ndc-elasticsearch-cli-${{ matrix.target }}${{ matrix.extension }}
+          env GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 go build -o ./release/ndc-elasticsearch-cli-${{ matrix.target }}${{ matrix.extension }}
           
       - uses: actions/upload-artifact@v4
         with:
