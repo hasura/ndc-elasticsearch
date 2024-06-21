@@ -2,11 +2,15 @@ package internal
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
+	"os"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/hasura/ndc-elasticsearch/types"
 )
 
 const (
@@ -102,6 +106,67 @@ func DeepEqual(v1, v2 any) bool {
 	_ = json.Unmarshal(bytesA, &x1)
 	_ = json.Unmarshal(bytesB, &x2)
 	return reflect.DeepEqual(x1, x2)
+}
+
+// validateFieldOperation checks if the given field is supported for the specified operation in the given collection.
+// It returns the valid field name if it is supported, otherwise an empty string.
+func ValidateFieldOperation(state *types.State, operation, collection, field string) string {
+	supportedFields := state.SupportedSortFields
+	if operation == "aggregate" {
+		supportedFields = state.SupportedAggregateFields
+	}
+
+	supportedFieldsMap, ok := supportedFields[collection].(map[string]string)
+	if !ok {
+		return field
+	}
+
+	validField, ok := supportedFieldsMap[field]
+	if !ok {
+		return ""
+	}
+
+	return validField
+}
+
+// ReadJsonFileUsingDecoder reads a JSON file using a decoder.
+func ReadJsonFileUsingDecoder(filename string) (map[string]interface{}, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file %s: %w", filename, err)
+	}
+	defer file.Close()
+
+	var data map[string]interface{}
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&data); err != nil {
+		return nil, fmt.Errorf("failed to decode JSON for file %s: %w", filename, err)
+	}
+
+	return data, nil
+}
+
+// WriteJsonFile writes the given byte slice to a temporary file first
+// and then renaming it to the destination to avoid partial writes in case of a failure.
+func WriteJsonFile(filename string, data []byte) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %w", err)
+	}
+	defer file.Close()
+
+	_, err = file.Write(data)
+	if err != nil {
+		return fmt.Errorf("failed to write to file: %w", err)
+	}
+
+	return nil
+}
+
+// FileExists checks whether a file exists and returns a boolean value.
+func FileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	return !os.IsNotExist(err)
 }
 
 // contains checks if a string slice contains a specific element.

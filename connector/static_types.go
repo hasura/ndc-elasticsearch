@@ -7,6 +7,8 @@ import (
 
 var numericFields = []string{"integer", "long", "short", "byte", "halft_float", "unsigned_long", "float", "double", "scaled_float"}
 
+var validFunctions = []string{"sum", "min", "max", "avg", "value_count", "cardinality", "stats", "string_stats"}
+
 var scalarTypeMap = map[string]schema.ScalarType{
 	"integer": {
 		AggregateFunctions:  getAggregationFunctions([]string{"max", "min", "sum", "avg", "value_count", "cardinality", "stats"}, "integer"),

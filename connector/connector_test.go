@@ -136,6 +136,16 @@ var testCases = []struct {
 		requestFile:  "../testdata/query/aggregation/single_column_request.json",
 		responseFile: "../testdata/query/aggregation/single_column_response.json",
 	},
+	{
+		name:         "aggregation_on_nested_type_field",
+		requestFile:  "../testdata/query/aggregation/nested_type_request.json",
+		responseFile: "../testdata/query/aggregation/nested_type_response.json",
+	},
+	{
+		name:         "aggregation_on_object_type_field",
+		requestFile:  "../testdata/query/aggregation/object_type_request.json",
+		responseFile: "../testdata/query/aggregation/object_type_response.json",
+	},
 	// Test cases for variables
 	{
 		name:         "single_column_aggregation_using_variables",
@@ -151,6 +161,11 @@ var testCases = []struct {
 		name:         "star_count_aggregation_using_variables",
 		requestFile:  "../testdata/query/variables/aggregation/star_count_request.json",
 		responseFile: "../testdata/query/variables/aggregation/star_count_response.json",
+	},
+	{
+		name:         "aggregation_with_native_query",
+		requestFile:  "../testdata/query/aggregation/native_query_request.json",
+		responseFile: "../testdata/query/aggregation/native_query_response.json",
 	},
 	{
 		name:         "sort_asc_using_variables",
@@ -211,6 +226,11 @@ var testCases = []struct {
 		name:         "predicate_on_nested_type_field_using_variables",
 		requestFile:  "../testdata/query/variables/filter/predicate_on_nested_type_request.json",
 		responseFile: "../testdata/query/variables/filter/predicate_on_nested_type_response.json",
+	},
+	{
+		name:         "predicate_with_native_query",
+		requestFile:  "../testdata/query/filter/native_query_request.json",
+		responseFile: "../testdata/query/filter/native_query_response.json",
 	},
 }
 

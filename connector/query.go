@@ -15,7 +15,7 @@ import (
 // Query executes a query request.
 func (c *Connector) Query(ctx context.Context, configuration *types.Configuration, state *types.State, request *schema.QueryRequest) (schema.QueryResponse, error) {
 	span := trace.SpanFromContext(ctx)
-	response, err := executeQuery(ctx, state, request, span)
+	response, err := executeQuery(ctx, configuration, state, request, span)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
 		return nil, err
@@ -23,40 +23,82 @@ func (c *Connector) Query(ctx context.Context, configuration *types.Configuratio
 	return response, nil
 }
 
-// executeQuery prepares equivalent elasticsearch query, executes it and returns the ndc response
-func executeQuery(ctx context.Context, state *types.State, request *schema.QueryRequest, span trace.Span) (schema.QueryResponse, error) {
+// executeQuery prepares equivalent elasticsearch query, executes it and returns the ndc response.
+func executeQuery(ctx context.Context, configuration *types.Configuration, state *types.State, request *schema.QueryRequest, span trace.Span) (schema.QueryResponse, error) {
 	// Set the postProcessor in ctx
 	ctx = context.WithValue(ctx, "postProcessor", &types.PostProcessor{})
 	logger := connector.GetLogger(ctx)
 	rowSets := make([]schema.RowSet, 0)
+	index := request.Collection
 
+	// Identify the index from configuration
+	nativeQueries := configuration.Queries
+	queryConfig, ok := nativeQueries[request.Collection]
+	if ok {
+		index = queryConfig.Index
+	}
+
+	// Prepare the elasticsearch query
 	prepareContext, prepareSpan := state.Tracer.Start(ctx, "prepare_elasticsearch_query")
 	defer prepareSpan.End()
 
-	body, err := prepareElasticsearchQuery(prepareContext, request, state)
+	dslQuery, err := prepareElasticsearchQuery(prepareContext, request, state, index)
 	if err != nil {
 		prepareSpan.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 	prepareSpan.End()
 
-	if request.Variables == nil || len(request.Variables) == 0 {
-		searchContext, searchSpan := state.Tracer.Start(ctx, "database_request")
-		defer searchSpan.End()
-
-		queryJson, _ := json.Marshal(body)
-		setDatabaseAttribute(span, state, request.Collection, string(queryJson))
-		addSpanEvent(searchSpan, logger, "search_elasticsearch", map[string]any{
-			"elasticsearch_request": body,
-		})
-
-		res, err := state.Client.Search(searchContext, request.Collection, body)
+	// Handle native queries if present
+	if ok {
+		dslQuery, err = handleNativeQuery(ctx, queryConfig, dslQuery, request.Arguments)
 		if err != nil {
-			searchSpan.SetStatus(codes.Error, err.Error())
 			return nil, err
 		}
-		searchSpan.End()
+	}
 
+	// Prepare query with variables if present
+	if len(request.Variables) != 0 {
+		_, variableSpan := state.Tracer.Start(ctx, "prepare_query_with_variables")
+		defer variableSpan.End()
+
+		addSpanEvent(variableSpan, logger, "prepare_query_with_variables", map[string]any{
+			"variables": request.Variables,
+		})
+		dslQuery, err = executeQueryWithVariables(request.Variables, dslQuery)
+		if err != nil {
+			variableSpan.SetStatus(codes.Error, err.Error())
+			return nil, err
+		}
+		variableSpan.End()
+	}
+
+	// Execute the elasticsearch query
+	searchContext, searchSpan := state.Tracer.Start(ctx, "database_request")
+	defer searchSpan.End()
+
+	queryJson, _ := json.Marshal(dslQuery)
+	setDatabaseAttribute(span, state, index, string(queryJson))
+	addSpanEvent(searchSpan, logger, "search_elasticsearch", map[string]any{
+		"elasticsearch_request": dslQuery,
+	})
+	res, err := state.Client.Search(searchContext, index, dslQuery)
+	if err != nil {
+		searchSpan.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+	searchSpan.End()
+
+	// Prepare response based on variables
+	if len(request.Variables) != 0 {
+		responseContext, responseSpan := state.Tracer.Start(ctx, "prepare_ndc_response")
+		defer responseSpan.End()
+
+		addSpanEvent(responseSpan, logger, "prepare_ndc_response", map[string]any{
+			"elasticsearch_response": res,
+		})
+		rowSets = prepareResponseWithVariables(responseContext, res)
+	} else {
 		responseContext, responseSpan := state.Tracer.Start(ctx, "prepare_ndc_response")
 		defer responseSpan.End()
 
@@ -66,48 +108,12 @@ func executeQuery(ctx context.Context, state *types.State, request *schema.Query
 		result := prepareResponse(responseContext, res)
 		rowSets = append(rowSets, *result)
 		responseSpan.End()
-	} else {
-		_, variableSpan := state.Tracer.Start(ctx, "prepare_query_with_variables")
-		defer variableSpan.End()
-
-		addSpanEvent(variableSpan, logger, "prepare_query_with_variables", map[string]any{
-			"variables": request.Variables,
-		})
-		variableQuery, err := executeQueryWithVariables(request.Variables, body)
-		if err != nil {
-			variableSpan.SetStatus(codes.Error, err.Error())
-			return nil, err
-		}
-		variableSpan.End()
-
-		searchContext, searchSpan := state.Tracer.Start(ctx, "database_request")
-		defer searchSpan.End()
-
-		queryJson, _ := json.Marshal(variableQuery)
-		setDatabaseAttribute(span, state, request.Collection, string(queryJson))
-		addSpanEvent(searchSpan, logger, "search_elasticsearch", map[string]any{
-			"elasticsearch_request": variableQuery,
-		})
-		res, err := state.Client.Search(searchContext, request.Collection, variableQuery)
-		if err != nil {
-			searchSpan.SetStatus(codes.Error, err.Error())
-			return nil, err
-		}
-		searchSpan.End()
-
-		responseContext, responseSpan := state.Tracer.Start(ctx, "prepare_ndc_response")
-		defer responseSpan.End()
-
-		addSpanEvent(responseSpan, logger, "prepare_ndc_response", map[string]any{
-			"elasticsearch_response": res,
-		})
-		rowSets = prepareResponseWithVariables(responseContext, res)
 	}
 	return rowSets, nil
 }
 
 // prepareElasticsearchQuery prepares an Elasticsearch query based on the provided query request.
-func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest, state *types.State) (map[string]interface{}, error) {
+func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest, state *types.State, index string) (map[string]interface{}, error) {
 	query := map[string]interface{}{
 		"_source": map[string]interface{}{
 			"excludes": []string{"*"},
@@ -143,7 +149,7 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 	span.AddEvent("prepare_sort_query")
 	// Order by
 	if request.Query.OrderBy != nil && len(request.Query.OrderBy.Elements) != 0 {
-		sort, err := prepareSortQuery(request.Query.OrderBy, state, request.Collection)
+		sort, err := prepareSortQuery(request.Query.OrderBy, state, index)
 		if err != nil {
 			return nil, err
 		}
@@ -153,7 +159,7 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 	span.AddEvent("prepare_aggregate_query")
 	// Aggregations
 	if request.Query.Aggregates != nil {
-		aggs, err := prepareAggregateQuery(ctx, request.Query.Aggregates, state, request.Collection)
+		aggs, err := prepareAggregateQuery(ctx, request.Query.Aggregates, state, index)
 		if err != nil {
 			return nil, err
 		}
@@ -165,7 +171,7 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 	span.AddEvent("prepare_filter_query")
 	// Filter
 	if request.Query.Predicate != nil {
-		filter, err := prepareFilterQuery(request.Query.Predicate, state, request.Collection)
+		filter, err := prepareFilterQuery(request.Query.Predicate, state, index)
 		if err != nil {
 			return nil, err
 		}
@@ -174,7 +180,7 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 		}
 	}
 
-	// Pretty print query
+	// Pretty print the query
 	queryJSON, _ := json.MarshalIndent(query, "", "  ")
 	fmt.Println(string(queryJSON))
 

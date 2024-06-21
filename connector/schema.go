@@ -23,7 +23,9 @@ func parseConfigurationToSchema(configuration *types.Configuration, state *types
 		Procedures:  []schema.ProcedureInfo{},
 	}
 
-	for indexName, mappings := range *configuration {
+	indices := configuration.Indices
+
+	for indexName, mappings := range indices {
 		state.SupportedFilterFields[indexName] = map[string]interface{}{
 			"term_level_queries": make(map[string]string),
 			"unstructured_text":  make(map[string]string),
@@ -61,7 +63,88 @@ func parseConfigurationToSchema(configuration *types.Configuration, state *types
 			ForeignKeys: schema.CollectionInfoForeignKeys{},
 		})
 	}
+
+	nativeQueries := configuration.Queries
+
+	ndcSchema = parseNativeQueryToSchema(&ndcSchema, state, nativeQueries)
+
 	return &ndcSchema
+}
+
+// parseNativeQueryToSchema parses the given native queries and adds them to the schema response.
+// It also handles return types of kind "defination" and updates the state accordingly.
+func parseNativeQueryToSchema(schemaResponse *schema.SchemaResponse, state *types.State, nativeQueries map[string]types.NativeQuery) schema.SchemaResponse {
+	for queryName, queryConfig := range nativeQueries {
+		indexName := queryConfig.Index
+
+		returnType := queryConfig.ReturnType
+		returnTypeKind := returnType.Kind
+
+		if returnTypeKind == "defination" {
+			indexName = queryName
+			mapping := returnType.Mappings
+
+			properties, ok := (*mapping)["properties"].(map[string]interface{})
+			if !ok {
+				continue
+			}
+
+			state.SupportedFilterFields[indexName] = map[string]interface{}{
+				"term_level_queries": make(map[string]string),
+				"unstructured_text":  make(map[string]string),
+				"full_text_queries":  make(map[string]string),
+				"range_queries":      make(map[string]string),
+			}
+			state.NestedFields[indexName] = make(map[string]string)
+			state.SupportedAggregateFields[indexName] = make(map[string]string)
+			state.SupportedSortFields[indexName] = make(map[string]string)
+			fields, objects := getScalarTypesAndObjects(properties, state, indexName, "")
+			prepareNdcSchema(schemaResponse, indexName, fields, objects)
+		}
+
+		// Get arguments for the collection info
+		arguments := schema.CollectionInfoArguments{}
+		if queryConfig.Arguments != nil {
+			arguments = getNdcArguments(*queryConfig.Arguments)
+		}
+
+		collectionInfo := schema.CollectionInfo{
+			Name:      queryName,
+			Arguments: arguments,
+			Type:      indexName,
+			UniquenessConstraints: schema.CollectionInfoUniquenessConstraints{
+				queryName + "_by_id": schema.UniquenessConstraint{
+					UniqueColumns: []string{"_id"},
+				},
+			},
+			ForeignKeys: schema.CollectionInfoForeignKeys{},
+		}
+
+		schemaResponse.Collections = append(schemaResponse.Collections, collectionInfo)
+	}
+
+	return *schemaResponse
+}
+
+// getNdcArguments converts the query parameters to NDC ArgumentInfo objects.
+func getNdcArguments(parameters map[string]interface{}) schema.CollectionInfoArguments {
+	arguments := schema.CollectionInfoArguments{}
+
+	for argName, argData := range parameters {
+		argMap, ok := argData.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		typeStr := argMap["type"].(string)
+		typeObj := schema.NewNamedType(typeStr)
+
+		arguments[argName] = schema.ArgumentInfo{
+			Type: typeObj.Encode(),
+		}
+	}
+
+	return arguments
 }
 
 // getScalarTypesAndObjects retrieves scalar types and objects from properties.

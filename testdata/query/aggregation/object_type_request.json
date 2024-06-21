@@ -1,0 +1,15 @@
+{
+    "collection": "kibana_sample_data_ecommerce",
+    "arguments": {},
+    "query": {
+        "aggregates": {
+            "uniqueDatasets": {
+                "type": "column_count",
+                "column": "event",
+                "field_path": ["dataset"],
+                "distinct": true
+            }
+        }
+    },
+    "collection_relationships": {}
+}

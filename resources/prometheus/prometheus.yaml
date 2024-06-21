@@ -10,7 +10,7 @@ alerting:
       timeout: 10s
       api_version: v1
 scrape_configs:
-  - job_name: ndc-learn
+  - job_name: ndc-elasticsearch
     honor_timestamps: true
     scrape_interval: 15s
     scrape_timeout: 10s
@@ -18,4 +18,4 @@ scrape_configs:
     scheme: http
     static_configs:
       - targets:
-        - connector:8080
+        - jaeger:14269
