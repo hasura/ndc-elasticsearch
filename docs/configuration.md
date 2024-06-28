@@ -24,7 +24,7 @@ These mappings are similar to what we get in [Elasticsearch's mappings API](http
 
 Native Queries allow you to run custom DSL queries on your Elasticsearch. This enables you to run queries that are not supported by Hasura DDN's GraphQL engine. This unlocks the full power of your search-engine, allowing you to run complex queries all directly from your Hasura GraphQL API.
 
-In the internal section within the `dsl`, you have the option to write an Elasticsearch DSL query. Additionally, you can create a native query in a `.json` file located in your configuration directory, usually within a specific subdirectory. When specifying the query in the `dsl`, use the `file` option.
+In the `internal` section within the `dsl`, you have the option to write an Elasticsearch DSL query. Additionally, you can create a native query in a `.json` file located in your configuration directory, usually within a specific subdirectory. When specifying the query in the `dsl`, use the `file` option.
 
 Your file may only contain only a single JSON DSL query.
 
@@ -48,6 +48,38 @@ The return type can either be of kind `defination` or `index`. kind defination r
 you can define custom mappings for your returned documents (Logical Models).
 
 Set `kind` to `index` to use mappings of the existing index in the `indices` section of the configuration.
+
+### Examples:
+1. Using `internal` parameter
+
+```json
+{
+    "aggregate_query": {
+        "dsl": {
+            "internal": {
+                "aggs": {
+                    "price_outlier": {
+                        "percentiles": {
+                            "field": "products.base_price",
+                            "percents": [
+                                95,
+                                99,
+                                99.9
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "index": "kibana_sample_data_ecommerce",
+        "return_type": {
+            "kind": "index"
+        }
+    }
+}
+```
+
+2. Using `file` parameter
 
 ```json
 {

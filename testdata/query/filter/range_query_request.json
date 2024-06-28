@@ -1,0 +1,38 @@
+{
+    "arguments": {},
+    "collection": "my_sample_index",
+    "collection_relationships": {},
+    "query": {
+        "fields": {
+            "age": {
+                "column": "age",
+                "type": "column"
+            },
+            "name": {
+                "column": "name",
+                "type": "column"
+            }
+        },
+        "predicate": {
+            "expressions": [
+                {
+                    "column": {
+                        "type": "column",
+                        "name": "age",
+                        "field_path": []
+                    },
+                    "operator": "range",
+                    "type": "binary_comparison_operator",
+                    "value": {
+                        "type": "scalar",
+                        "value": {
+                            "lte": "25",
+                            "gte": "21"
+                        }
+                    }
+                }
+            ],
+            "type": "and"
+        }
+    }
+}

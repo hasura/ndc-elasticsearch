@@ -106,8 +106,7 @@ func prepareAggregateColumnCount(ctx context.Context, field string, path string,
 // If the field is nested, it generates a nested query to perform the specified function on the field in the nested document.
 func prepareAggregateSingleColumn(ctx context.Context, function, field string, path string, aggName string) (map[string]interface{}, error) {
 	// Validate the function
-	validFunctions := []string{"sum", "min", "max", "avg", "value_count", "cardinality", "stats", "string_stats"}
-	if !contains(validFunctions, function) {
+	if !internal.Contains(validFunctions, function) {
 		return nil, schema.UnprocessableContentError("invalid aggregate function", map[string]any{
 			"value": function,
 		})
@@ -147,14 +146,4 @@ func prepareNestedAggregate(ctx context.Context, aggName string, aggregation map
 	}
 
 	return aggregation
-}
-
-// contains checks if a string slice contains a specific element.
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
 }

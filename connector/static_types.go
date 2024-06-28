@@ -1,6 +1,13 @@
 package connector
 
-import "github.com/hasura/ndc-sdk-go/schema"
+import (
+	"github.com/hasura/ndc-sdk-go/schema"
+	"github.com/hasura/ndc-sdk-go/utils"
+)
+
+var numericFields = []string{"integer", "long", "short", "byte", "halft_float", "unsigned_long", "float", "double", "scaled_float"}
+
+var validFunctions = []string{"sum", "min", "max", "avg", "value_count", "cardinality", "stats", "string_stats"}
 
 var scalarTypeMap = map[string]schema.ScalarType{
 	"integer": {
@@ -125,7 +132,14 @@ var scalarTypeMap = map[string]schema.ScalarType{
 	},
 }
 
-var objectTypeMap = map[string]schema.ObjectType{
+var requiredScalarTypes = map[string]schema.ScalarType{
+	"double":  scalarTypeMap["double"],
+	"integer": scalarTypeMap["integer"],
+	"float":   scalarTypeMap["float"],
+	"keyword": scalarTypeMap["keyword"],
+}
+
+var requiredObjectTypes = map[string]schema.ObjectType{
 	"stats": {
 		Fields: schema.ObjectTypeFields{
 			"count": schema.ObjectField{
@@ -164,6 +178,33 @@ var objectTypeMap = map[string]schema.ObjectType{
 			},
 		},
 	},
+	"range": {
+		Fields: schema.ObjectTypeFields{
+			"gt": schema.ObjectField{
+				Description: utils.ToPtr("(Optional) Greater than."),
+				Type:        schema.NewNamedType("double").Encode(),
+			},
+			"lt": schema.ObjectField{
+				Description: utils.ToPtr("(Optional) Less than."),
+				Type:        schema.NewNamedType("double").Encode(),
+			},
+			"gte": schema.ObjectField{
+				Description: utils.ToPtr("(Optional) Greater than or equal."),
+				Type:        schema.NewNamedType("double").Encode(),
+			},
+			"lte": schema.ObjectField{
+				Description: utils.ToPtr("(Optional) Less than or equal."),
+				Type:        schema.NewNamedType("double").Encode(),
+			},
+			"boost": schema.ObjectField{
+				Description: utils.ToPtr("(Optional, float) Floating point number used to decrease or increase the relevance scores of a query. Defaults to 1.0."),
+				Type:        schema.NewNamedType("float").Encode(),
+			},
+		},
+	},
+}
+
+var objectTypeMap = map[string]schema.ObjectType{
 	"sparse_vector": {
 		Fields: schema.ObjectTypeFields{},
 	},
@@ -221,6 +262,38 @@ var objectTypeMap = map[string]schema.ObjectType{
 	"alias": {
 		Fields: schema.ObjectTypeFields{},
 	},
+	"date_range_query": {
+		Fields: schema.ObjectTypeFields{
+			"gt": schema.ObjectField{
+				Description: utils.ToPtr("(Optional) Greater than."),
+				Type:        schema.NewNamedType("double").Encode(),
+			},
+			"lt": schema.ObjectField{
+				Description: utils.ToPtr("(Optional) Less than."),
+				Type:        schema.NewNamedType("double").Encode(),
+			},
+			"gte": schema.ObjectField{
+				Description: utils.ToPtr("(Optional) Greater than or equal."),
+				Type:        schema.NewNamedType("double").Encode(),
+			},
+			"lte": schema.ObjectField{
+				Description: utils.ToPtr("(Optional) Less than or equal."),
+				Type:        schema.NewNamedType("double").Encode(),
+			},
+			"format": schema.ObjectField{
+				Description: utils.ToPtr("(Optional, string) Date format used to convert date values in the query."),
+				Type:        schema.NewNamedType("keyword").Encode(),
+			},
+			"boost": schema.ObjectField{
+				Description: utils.ToPtr("(Optional, float) Floating point number used to decrease or increase the relevance scores of a query. Defaults to 1.0."),
+				Type:        schema.NewNamedType("float").Encode(),
+			},
+			"time_zone": schema.ObjectField{
+				Description: utils.ToPtr("(Optional, string) Coordinated Universal Time (UTC) offset or IANA time zone used to convert date values in the query to UTC."),
+				Type:        schema.NewNamedType("keyword").Encode(),
+			},
+		},
+	},
 }
 
 // getComparisonOperatorDefinition generates and returns a map of comparison operators based on the provided data type.
@@ -229,20 +302,30 @@ func getComparisonOperatorDefinition(dataType string) map[string]schema.Comparis
 		"match":        schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
 		"match_phrase": schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
 		"term":         schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
+		"range":        schema.NewComparisonOperatorCustom(schema.NewNamedType("range")).Encode(),
 		"terms":        schema.NewComparisonOperatorCustom(schema.NewArrayType(schema.NewNamedType(dataType))).Encode(),
 	}
+
+	if dataType == "date" {
+		requiredObjectTypes["date_range_query"] = objectTypeMap["date_range_query"]
+		comparisonOperators["range"] = schema.NewComparisonOperatorCustom(schema.NewNamedType("date_range_query")).Encode()
+	}
+
 	if dataType == "text" {
 		comparisonOperators["match_phrase_prefix"] = schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode()
 	}
+
 	if dataType == "text" || dataType == "keyword" || dataType == "wildcard" {
 		comparisonOperators["wildcard"] = schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode()
 		comparisonOperators["regexp"] = schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode()
 		comparisonOperators["prefix"] = schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode()
 		comparisonOperators["match_bool_prefix"] = schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode()
 	}
+
 	if dataType == "_id" {
 		comparisonOperators["term"] = schema.NewComparisonOperatorEqual().Encode()
 	}
+
 	return comparisonOperators
 }
 

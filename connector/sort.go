@@ -42,15 +42,13 @@ func prepareSortElement(element *schema.OrderByElement, state *types.State, coll
 		}
 
 		// Check if the field is nested.
-		if nestedFields, ok := state.NestedFields[collection]; ok {
-			if _, ok := nestedFields.(map[string]string)[target.Name]; ok {
-				// If the field is nested, add the nested path to the sort element.
-				sort[fieldPath] = map[string]interface{}{
-					"nested": map[string]interface{}{
-						"path": nestedPath,
-					},
-					"order": string(element.OrderDirection),
-				}
+		if nestedPath != "" {
+			// If the field is nested, add the nested path to the sort element.
+			sort[fieldPath] = map[string]interface{}{
+				"nested": map[string]interface{}{
+					"path": nestedPath,
+				},
+				"order": string(element.OrderDirection),
 			}
 		}
 	default:
