@@ -55,6 +55,8 @@ To use the Elasticsearch connector, follow these steps in a Hasura project:
 
 ### 2. Add your Elasticsearch credentials:
 
+Add your credentials to `my_subgraph/connector/my_elastic/.env.local`
+
 ```env title="my_subgraph/connector/my_elastic/.env.local"
 OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://local.hasura.dev:4317
 OTEL_SERVICE_NAME=my_subgraph_my_elastic
