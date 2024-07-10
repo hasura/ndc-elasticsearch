@@ -13,6 +13,7 @@ This connector is built using the [Go Data Connector SDK](https://github.com/has
 
 - [Connector information in the Hasura Hub](https://hasura.io/connectors/elasticsearch)
 - [Hasura V3 Documentation](https://hasura.io/docs/3.0)
+- [GraphQL on Elasticsearch](https://hasura.io/graphql/database/elasticsearch)
 
 ## Features
 
