@@ -29,7 +29,7 @@ Below, you'll find a matrix of all supported features for the Elasticsearch conn
 | Paginate                        | ✅         |       |
 | Nested Objects                  | ✅         |       |
 | Nested Arrays                   | ✅         |       |
-| Nested Filtering                | ❌         |       |
+| Nested Filtering                | ✅         |       |
 | Nested Sorting                  | ❌         |       |
 | Nested Relationships            | ❌         |       |
 
