@@ -302,7 +302,7 @@ func getComparisonOperatorDefinition(dataType string) map[string]schema.Comparis
 		"match":        schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
 		"match_phrase": schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
 		"term":         schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		"range":        schema.NewComparisonOperatorCustom(schema.NewNamedType("range")).Encode(),
+		// "range":        schema.NewComparisonOperatorCustom(schema.NewNamedType("range")).Encode(), // TODO: add back once object types are supported as comparison operators
 		"terms":        schema.NewComparisonOperatorCustom(schema.NewArrayType(schema.NewNamedType(dataType))).Encode(),
 	}
 
