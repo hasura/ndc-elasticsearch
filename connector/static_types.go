@@ -1,6 +1,8 @@
 package connector
 
 import (
+	"slices"
+
 	"github.com/hasura/ndc-sdk-go/schema"
 	"github.com/hasura/ndc-sdk-go/utils"
 )
@@ -296,14 +298,19 @@ var objectTypeMap = map[string]schema.ObjectType{
 	},
 }
 
+var unsupportedRangeQueryScalars = []string{"binary", "completion", "_id", "wildcard", "match_only_text", "search_as_you_type"};
+
 // getComparisonOperatorDefinition generates and returns a map of comparison operators based on the provided data type.
 func getComparisonOperatorDefinition(dataType string) map[string]schema.ComparisonOperatorDefinition {
 	var comparisonOperators = map[string]schema.ComparisonOperatorDefinition{
 		"match":        schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
 		"match_phrase": schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
 		"term":         schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		// "range":        schema.NewComparisonOperatorCustom(schema.NewNamedType("range")).Encode(), // TODO: add back once object types are supported as comparison operators
 		"terms":        schema.NewComparisonOperatorCustom(schema.NewArrayType(schema.NewNamedType(dataType))).Encode(),
+	}
+
+	if (!slices.Contains(unsupportedRangeQueryScalars, dataType)) {
+		comparisonOperators["range"] = schema.NewComparisonOperatorCustom(schema.NewNamedType("range")).Encode()
 	}
 
 	if dataType == "date" {
