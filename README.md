@@ -93,7 +93,7 @@ To configure the connector, the following environment variables need to be set:
 ddn connector introspect <connector-name>
 ```
 
-This will generate a `configuration.json` file that will have the schema of your Elasticsearch db
+This will generate a `configuration.json` file that will have the schema of your Elasticsearch DB.
 
 ## Step 4: Add your resources
 
