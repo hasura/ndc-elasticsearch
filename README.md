@@ -101,7 +101,7 @@ This will generate a `configuration.json` file that will have the schema of your
 ddn connector-link add-resources <connector-name>
 ```
 
-This command will track all the indices in your Elasticsearch DB as Models
+This command will track all the indices in your Elasticsearch DB as [Models](https://hasura.io/docs/3.0/supergraph-modeling/models).
 
 ## Contributing
 
