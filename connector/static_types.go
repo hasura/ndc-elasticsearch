@@ -307,7 +307,7 @@ func getComparisonOperatorDefinition(dataType string) map[string]schema.Comparis
 	}
 
 	// if dataType == "date" { // TODO: add back once object types are supported as comparison operators
-		// requiredObjectTypes["date_range_query"] = objectTypeMap["date_range_query"] 
+		// requiredObjectTypes["date_range_query"] = objectTypeMap["date_range_query"]
 		// comparisonOperators["range"] = schema.NewComparisonOperatorCustom(schema.NewNamedType("date_range_query")).Encode()
 	// }
 
@@ -322,9 +322,7 @@ func getComparisonOperatorDefinition(dataType string) map[string]schema.Comparis
 		comparisonOperators["match_bool_prefix"] = schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode()
 	}
 
-	if dataType == "_id" {
-		comparisonOperators["term"] = schema.NewComparisonOperatorEqual().Encode()
-	}
+	comparisonOperators["term"] = schema.NewComparisonOperatorEqual().Encode()
 
 	return comparisonOperators
 }
