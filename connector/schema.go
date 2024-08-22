@@ -55,11 +55,7 @@ func parseConfigurationToSchema(configuration *types.Configuration, state *types
 			Name:      indexName,
 			Arguments: schema.CollectionInfoArguments{},
 			Type:      indexName,
-			UniquenessConstraints: schema.CollectionInfoUniquenessConstraints{
-				indexName + "_by_id": schema.UniquenessConstraint{
-					UniqueColumns: []string{"_id"},
-				},
-			},
+			UniquenessConstraints: schema.CollectionInfoUniquenessConstraints{},
 			ForeignKeys: schema.CollectionInfoForeignKeys{},
 		})
 	}
