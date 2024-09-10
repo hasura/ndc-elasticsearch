@@ -35,7 +35,7 @@ func (c *Connector) TryInitState(ctx context.Context, configuration *types.Confi
 		ElasticsearchInfo:        elasticsearchInfo.(map[string]interface{}),
 	}
 
-	schema := parseConfigurationToSchema(configuration, state)
+	schema := ParseConfigurationToSchema(configuration, state)
 
 	state.Schema = schema
 	return state, nil

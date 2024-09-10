@@ -3,7 +3,6 @@ package connector
 import (
 	"context"
 
-	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-elasticsearch/types"
 	"github.com/hasura/ndc-sdk-go/schema"
 )
@@ -14,7 +13,7 @@ func (c *Connector) GetSchema(ctx context.Context, configuration *types.Configur
 }
 
 // parseConfigurationToSchema parses the given configuration to generate the schema response.
-func parseConfigurationToSchema(configuration *types.Configuration, state *types.State) *schema.SchemaResponse {
+func ParseConfigurationToSchema(configuration *types.Configuration, state *types.State) *schema.SchemaResponse {
 	ndcSchema := schema.SchemaResponse{
 		ScalarTypes: make(schema.SchemaResponseScalarTypes),
 		ObjectTypes: make(schema.SchemaResponseObjectTypes),
@@ -52,11 +51,11 @@ func parseConfigurationToSchema(configuration *types.Configuration, state *types
 		prepareNdcSchema(&ndcSchema, indexName, fields, objects)
 
 		ndcSchema.Collections = append(ndcSchema.Collections, schema.CollectionInfo{
-			Name:      indexName,
-			Arguments: schema.CollectionInfoArguments{},
-			Type:      indexName,
+			Name:                  indexName,
+			Arguments:             schema.CollectionInfoArguments{},
+			Type:                  indexName,
 			UniquenessConstraints: schema.CollectionInfoUniquenessConstraints{},
-			ForeignKeys: schema.CollectionInfoForeignKeys{},
+			ForeignKeys:           schema.CollectionInfoForeignKeys{},
 		})
 	}
 
@@ -152,49 +151,19 @@ func getScalarTypesAndObjects(properties map[string]interface{}, state *types.St
 		if parentField != "" {
 			fieldWithParent = parentField + "." + fieldName
 		}
+
 		fieldMap, ok := fieldData.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		if fieldType, ok := fieldMap["type"].(string); ok && fieldType != "nested" && fieldType != "object" && fieldType != "flattened" {
+
+		if fieldType, ok := fieldIsScalar(fieldMap); ok {
+			scalarFieldType := GetFieldType(fieldMap, state, indexName, fieldWithParent)
 			fields = append(fields, map[string]interface{}{
 				"name": fieldName,
-				"type": fieldType,
+				"type": scalarFieldType,
 			})
-			if fieldType == "aggregate_metric_double" {
-				metrics, ok := fieldMap["metrics"].([]interface{})
-				metricFields := schema.ObjectTypeFields{}
-				if ok {
-					for _, metric := range metrics {
-						if metricValue, ok := metric.(string); ok {
-							metricFields[metricValue] = schema.ObjectField{Type: schema.NewNamedType("double").Encode()}
-						}
-					}
-					objectTypeMap[fieldType] = schema.ObjectType{
-						Fields: metricFields,
-					}
-				}
-			}
-			fieldDataEnalbed := false
-			if fieldData, ok := fieldMap["fielddata"].(bool); ok {
-				fieldDataEnalbed = fieldData
-			}
-			if isSortSupported(fieldType, fieldDataEnalbed) {
-				state.SupportedSortFields[indexName].(map[string]string)[fieldWithParent] = fieldWithParent
-			}
-			if isAggregateSupported(fieldType, fieldDataEnalbed) {
-				state.SupportedAggregateFields[indexName].(map[string]string)[fieldWithParent] = fieldWithParent
-			}
 
-			if subFields, ok := fieldMap["fields"].(map[string]interface{}); ok {
-				handleSubFields(state, subFields, indexName, fieldWithParent)
-			}
-			if fieldType == "wildcard" {
-				state.SupportedFilterFields[indexName].(map[string]interface{})["unstructured_text"].(map[string]string)[fieldWithParent] = fieldWithParent
-			}
-			if fieldType == "keyword" {
-				state.SupportedFilterFields[indexName].(map[string]interface{})["term_level_queries"].(map[string]string)[fieldWithParent] = fieldWithParent
-			}
 		} else if nestedObject, ok := fieldMap["properties"].(map[string]interface{}); ok {
 			if fieldType == "nested" {
 				state.NestedFields[indexName].(map[string]string)[fieldWithParent] = fieldType
@@ -214,54 +183,6 @@ func getScalarTypesAndObjects(properties map[string]interface{}, state *types.St
 		}
 	}
 	return fields, objects
-}
-
-// handleSubFields processes the subfields of a parent field and updates the state
-// accordingly.
-func handleSubFields(state *types.State, subFields map[string]interface{}, indexName string, parentField string) {
-	for subFieldName, subFieldData := range subFields {
-		subFieldMap, ok := subFieldData.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		subFieldType, ok := subFieldMap["type"].(string)
-		if !ok {
-			continue
-		}
-
-		fieldDataEnalbed := false
-		if fieldData, ok := subFieldMap["fielddata"].(bool); ok {
-			fieldDataEnalbed = fieldData
-		}
-		subFieldWithParent := parentField + "." + subFieldName
-
-		// Update the supported sort fields if the subfield is sortable.
-		if isSortSupported(subFieldType, fieldDataEnalbed) {
-			state.SupportedSortFields[indexName].(map[string]string)[subFieldWithParent] = subFieldWithParent
-			if _, ok := state.SupportedSortFields[indexName].(map[string]string)[parentField]; !ok {
-				state.SupportedSortFields[indexName].(map[string]string)[parentField] = subFieldWithParent
-			}
-		}
-
-		// Update the supported aggregate fields if the subfield is aggregatable.
-		if isAggregateSupported(subFieldType, fieldDataEnalbed) {
-			state.SupportedAggregateFields[indexName].(map[string]string)[subFieldWithParent] = subFieldWithParent
-			if _, ok := state.SupportedAggregateFields[indexName].(map[string]string)[parentField]; !ok {
-				state.SupportedAggregateFields[indexName].(map[string]string)[parentField] = subFieldWithParent
-			}
-		}
-
-		// Update the supported filter fields based on the subfield type.
-		if subFieldType == "keyword" {
-			state.SupportedFilterFields[indexName].(map[string]interface{})["term_level_queries"].(map[string]string)[parentField] = subFieldWithParent
-		} else if subFieldType == "wildcard" {
-			state.SupportedFilterFields[indexName].(map[string]interface{})["unstructured_text"].(map[string]string)[parentField] = subFieldWithParent
-		} else if subFieldType == "text" {
-			state.SupportedFilterFields[indexName].(map[string]interface{})["full_text_queries"].(map[string]string)[parentField] = subFieldWithParent
-		} else if internal.Contains(numericFields, subFieldType) {
-			state.SupportedFilterFields[indexName].(map[string]interface{})["range_queries"].(map[string]string)[parentField] = subFieldWithParent
-		}
-	}
 }
 
 // prepareNdcSchema prepares the NDC schema. It takes in the NDC schema,
@@ -342,34 +263,4 @@ func getNdcObjectFields(fields []map[string]interface{}, ndcSchema *schema.Schem
 
 	// Return the object fields for the NDC schema
 	return ndcObjectFields
-}
-
-// isSortSupported checks if a field type is supported for sorting
-// based on fielddata and unsupported sort data types.
-func isSortSupported(fieldType string, fieldDataEnalbed bool) bool {
-	if fieldDataEnalbed {
-		return true
-	}
-	for _, unSupportedType := range unsupportedSortDataTypes {
-		if fieldType == unSupportedType {
-			return false
-		}
-	}
-	return true
-}
-
-// isAggregateSupported checks if a field type is supported for aggregation
-// based on fielddata and unsupported aggregate data types.
-func isAggregateSupported(fieldType string, fieldDataEnalbed bool) bool {
-	if fieldDataEnalbed {
-		return true
-	}
-
-	for _, unSupportedType := range unSupportedAggregateTypes {
-		if fieldType == unSupportedType {
-			return false
-		}
-	}
-
-	return true
 }
