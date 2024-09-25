@@ -132,11 +132,45 @@ var scalarTypeMap = map[string]schema.ScalarType{
 	},
 }
 
+// typePriorityMap is a map of data types and their priority for sorting.
+// The 'priority' of a type refers to how encapsulating of other types it is.
+// It means can a type represent another type or not.
+//
+// For example, 'string' is a higher priority than float, because every float can be represented as a string, but not vice versa.
+var typePriorityMap = map[string]int{
+	"binary":  1,
+	"boolean": 2,
+
+	// numeric representations, second highest priority
+	"date":          11,
+	"float":         10,
+	"double":        11,
+	"integer":       10,
+	"long":          11,
+	"date_nanos":    11,
+	"scaled_float":  10,
+	"unsigned_long": 11,
+	"short":         10,
+	"byte":          10,
+	"half_float":    10,
+
+	// string representations, highest priority
+	"ip":               20,
+	"version":          20,
+	"match_only_text":  20,
+	"wildcard":         20,
+	"constant_keyword": 20,
+	"keyword":          20,
+	"text":             20,
+	"_id":              20,
+}
+
 var requiredScalarTypes = map[string]schema.ScalarType{
 	"double":  scalarTypeMap["double"],
 	"integer": scalarTypeMap["integer"],
 	"float":   scalarTypeMap["float"],
 	"keyword": scalarTypeMap["keyword"],
+	"long":    scalarTypeMap["long"],
 }
 
 var requiredObjectTypes = map[string]schema.ObjectType{
@@ -303,12 +337,12 @@ func getComparisonOperatorDefinition(dataType string) map[string]schema.Comparis
 		"match_phrase": schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
 		"term":         schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
 		// "range":        schema.NewComparisonOperatorCustom(schema.NewNamedType("range")).Encode(), // TODO: add back once object types are supported as comparison operators
-		"terms":        schema.NewComparisonOperatorCustom(schema.NewArrayType(schema.NewNamedType(dataType))).Encode(),
+		"terms": schema.NewComparisonOperatorCustom(schema.NewArrayType(schema.NewNamedType(dataType))).Encode(),
 	}
 
 	// if dataType == "date" { // TODO: add back once object types are supported as comparison operators
-		// requiredObjectTypes["date_range_query"] = objectTypeMap["date_range_query"]
-		// comparisonOperators["range"] = schema.NewComparisonOperatorCustom(schema.NewNamedType("date_range_query")).Encode()
+	// requiredObjectTypes["date_range_query"] = objectTypeMap["date_range_query"]
+	// comparisonOperators["range"] = schema.NewComparisonOperatorCustom(schema.NewNamedType("date_range_query")).Encode()
 	// }
 
 	if dataType == "text" {
@@ -345,6 +379,21 @@ func getAggregationFunctions(functions []string, typeName string) schema.ScalarT
 	}
 
 	return aggregationFunctions
+}
+
+func sortTypesByPriority(types []string) {
+	for i := 0; i < len(types); i++ {
+		for j := i + 1; j < len(types); j++ {
+			if typePriorityMap[types[i]] > typePriorityMap[types[j]] {
+				types[i], types[j] = types[j], types[i]
+			} else if typePriorityMap[types[i]] == typePriorityMap[types[j]] {
+				// priority is same, sort alphabetically
+				if types[i] > types[j] {
+					types[i], types[j] = types[j], types[i]
+				}
+			}
+		}
+	}
 }
 
 // unSupportedAggregateTypes are lists of data types that do not support aggregation in elasticsearch.
