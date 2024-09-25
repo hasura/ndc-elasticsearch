@@ -336,14 +336,14 @@ func getComparisonOperatorDefinition(dataType string) map[string]schema.Comparis
 		"match":        schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
 		"match_phrase": schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
 		"term":         schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode(),
-		// "range":        schema.NewComparisonOperatorCustom(schema.NewNamedType("range")).Encode(), // TODO: add back once object types are supported as comparison operators
-		"terms": schema.NewComparisonOperatorCustom(schema.NewArrayType(schema.NewNamedType(dataType))).Encode(),
+		"range":        schema.NewComparisonOperatorCustom(schema.NewNamedType("range")).Encode(),
+		"terms":        schema.NewComparisonOperatorCustom(schema.NewArrayType(schema.NewNamedType(dataType))).Encode(),
 	}
 
-	// if dataType == "date" { // TODO: add back once object types are supported as comparison operators
-	// requiredObjectTypes["date_range_query"] = objectTypeMap["date_range_query"]
-	// comparisonOperators["range"] = schema.NewComparisonOperatorCustom(schema.NewNamedType("date_range_query")).Encode()
-	// }
+	if dataType == "date" {
+		requiredObjectTypes["date_range_query"] = objectTypeMap["date_range_query"]
+		comparisonOperators["range"] = schema.NewComparisonOperatorCustom(schema.NewNamedType("date_range_query")).Encode()
+	}
 
 	if dataType == "text" {
 		comparisonOperators["match_phrase_prefix"] = schema.NewComparisonOperatorCustom(schema.NewNamedType(dataType)).Encode()
