@@ -332,7 +332,7 @@ var objectTypeMap = map[string]schema.ObjectType{
 	},
 }
 
-var unsupportedRangeQueryScalars = []string{"binary", "completion", "_id", "wildcard", "match_only_text", "search_as_you_type"};
+var unsupportedRangeQueryScalars = []string{"binary", "completion", "_id", "wildcard", "match_only_text", "search_as_you_type"}
 
 // getComparisonOperatorDefinition generates and returns a map of comparison operators based on the provided data type.
 func getComparisonOperatorDefinition(dataType string) map[string]schema.ComparisonOperatorDefinition {
@@ -343,7 +343,7 @@ func getComparisonOperatorDefinition(dataType string) map[string]schema.Comparis
 		"terms":        schema.NewComparisonOperatorCustom(schema.NewArrayType(schema.NewNamedType(dataType))).Encode(),
 	}
 
-	if (!slices.Contains(unsupportedRangeQueryScalars, dataType)) {
+	if !slices.Contains(unsupportedRangeQueryScalars, dataType) {
 		comparisonOperators["range"] = schema.NewComparisonOperatorCustom(schema.NewNamedType("range")).Encode()
 	}
 
