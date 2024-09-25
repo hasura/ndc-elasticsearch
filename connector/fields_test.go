@@ -558,6 +558,84 @@ const SCHEMA_IDENTIFICATION = `{
         "type": "string"
       }
     },
+    "long": {
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "name": "long",
+            "type": "named"
+          }
+        },
+        "cardinality": {
+          "result_type": {
+            "name": "integer",
+            "type": "named"
+          }
+        },
+        "max": {
+          "result_type": {
+            "name": "long",
+            "type": "named"
+          }
+        },
+        "min": {
+          "result_type": {
+            "name": "long",
+            "type": "named"
+          }
+        },
+        "stats": {
+          "result_type": {
+            "name": "stats",
+            "type": "named"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "name": "long",
+            "type": "named"
+          }
+        },
+        "value_count": {
+          "result_type": {
+            "name": "integer",
+            "type": "named"
+          }
+        }
+      },
+      "comparison_operators": {
+        "match": {
+          "argument_type": {
+            "name": "long",
+            "type": "named"
+          },
+          "type": "custom"
+        },
+        "match_phrase": {
+          "argument_type": {
+            "name": "long",
+            "type": "named"
+          },
+          "type": "custom"
+        },
+        "term": {
+          "type": "equal"
+        },
+        "terms": {
+          "argument_type": {
+            "element_type": {
+              "name": "long",
+              "type": "named"
+            },
+            "type": "array"
+          },
+          "type": "custom"
+        }
+      },
+      "representation": {
+        "type": "integer"
+      }
+    },
     "text": {
       "aggregate_functions": {},
       "comparison_operators": {
@@ -1273,6 +1351,84 @@ const SCHEMA_BOOKS = `{
         "type": "string"
       }
     },
+    "long": {
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "name": "long",
+            "type": "named"
+          }
+        },
+        "cardinality": {
+          "result_type": {
+            "name": "integer",
+            "type": "named"
+          }
+        },
+        "max": {
+          "result_type": {
+            "name": "long",
+            "type": "named"
+          }
+        },
+        "min": {
+          "result_type": {
+            "name": "long",
+            "type": "named"
+          }
+        },
+        "stats": {
+          "result_type": {
+            "name": "stats",
+            "type": "named"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "name": "long",
+            "type": "named"
+          }
+        },
+        "value_count": {
+          "result_type": {
+            "name": "integer",
+            "type": "named"
+          }
+        }
+      },
+      "comparison_operators": {
+        "match": {
+          "argument_type": {
+            "name": "long",
+            "type": "named"
+          },
+          "type": "custom"
+        },
+        "match_phrase": {
+          "argument_type": {
+            "name": "long",
+            "type": "named"
+          },
+          "type": "custom"
+        },
+        "term": {
+          "type": "equal"
+        },
+        "terms": {
+          "argument_type": {
+            "element_type": {
+              "name": "long",
+              "type": "named"
+            },
+            "type": "array"
+          },
+          "type": "custom"
+        }
+      },
+      "representation": {
+        "type": "integer"
+      }
+    },
     "text": {
       "aggregate_functions": {},
       "comparison_operators": {
@@ -1478,7 +1634,7 @@ func TestSchema(t *testing.T) {
 				t.Fatalf("Error marshalling schema: %v", err)
 			}
 
-			// fmt.Printf("\n\n\nSchema: %s\n", string(jsonData));
+			// fmt.Printf("\n\n\nSchema: %s\n\n", string(jsonData));
 
 			assert.JSONEq(t, tt.schema, string(jsonData), "Schema does not match");
 		})

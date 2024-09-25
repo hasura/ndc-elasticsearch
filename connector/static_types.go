@@ -170,6 +170,7 @@ var requiredScalarTypes = map[string]schema.ScalarType{
 	"integer": scalarTypeMap["integer"],
 	"float":   scalarTypeMap["float"],
 	"keyword": scalarTypeMap["keyword"],
+	"long":    scalarTypeMap["long"],
 }
 
 var requiredObjectTypes = map[string]schema.ObjectType{
