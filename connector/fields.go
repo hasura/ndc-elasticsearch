@@ -10,7 +10,7 @@ import (
 
 /**
  * This function checks if a field is a scalar field
- * Scalar field here refers to a filed that does not have any nested fields/properties
+ * Scalar field here refers to a field that does not have any nested fields/properties
  */
 func fieldIsScalar(fieldMap map[string]interface{}) (fieldType string, isFieldScalar bool) {
 	fieldType, ok := fieldMap["type"].(string)
