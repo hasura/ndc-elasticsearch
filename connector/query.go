@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hasura/ndc-elasticsearch/elasticsearch"
 	"github.com/hasura/ndc-elasticsearch/types"
 	"github.com/hasura/ndc-sdk-go/connector"
 	"github.com/hasura/ndc-sdk-go/schema"
@@ -114,6 +115,9 @@ func executeQuery(ctx context.Context, configuration *types.Configuration, state
 
 // prepareElasticsearchQuery prepares an Elasticsearch query based on the provided query request.
 func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest, state *types.State, index string) (map[string]interface{}, error) {
+	// Set the user configured default result size in ctx
+	ctx = context.WithValue(ctx, elasticsearch.DEFAULT_RESULT_SIZE_KEY, elasticsearch.GetDefaultResultSize())
+
 	query := map[string]interface{}{
 		"_source": map[string]interface{}{
 			"excludes": []string{"*"},
@@ -139,6 +143,8 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 	// Set the limit
 	if request.Query.Limit != nil {
 		query["size"] = *request.Query.Limit
+	} else {
+		query["size"] = ctx.Value(elasticsearch.DEFAULT_RESULT_SIZE_KEY).(int)
 	}
 
 	// Set the offset

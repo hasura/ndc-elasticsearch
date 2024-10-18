@@ -14,6 +14,9 @@ supportedEnvironmentVariables:
     description: The path to the Certificate Authority (CA) certificate for verifying the Elasticsearch server's SSL certificate.
   - name: ELASTICSEARCH_INDEX_PATTERN
     description: The pattern for matching Elasticsearch indices, potentially including wildcards, used by the connector.
+  - name: ELASTICSEARCH_DEFAULT_RESULT_SIZE
+    description: The default query size when no limit is applied. Defaults to 10,000.
+    defaultValue: "10000"
 commands:
   update: hasura-elasticsearch update
 cliPlugin:
