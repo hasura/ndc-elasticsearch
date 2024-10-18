@@ -139,6 +139,8 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 	// Set the limit
 	if request.Query.Limit != nil {
 		query["size"] = *request.Query.Limit
+	} else {
+		query["size"] = 10000
 	}
 
 	// Set the offset
