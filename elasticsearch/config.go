@@ -4,10 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
 )
+
+const esMaxResultSize = 10000;
+const DEFAULT_RESULT_SIZE_KEY = "esDefaultResultSize"
 
 // getConfigFromEnv retrieves elastic search configuration from environment variables.
 func getConfigFromEnv() (*elasticsearch.Config, error) {
@@ -48,4 +52,18 @@ func getConfigFromEnv() (*elasticsearch.Config, error) {
 	}
 
 	return &esConfig, nil
+}
+
+func GetDefaultResultSize() int {
+	defaultResultSize := os.Getenv("ELASTICSEARCH_DEFAULT_RESULT_SIZE")
+	if defaultResultSize == "" {
+		return esMaxResultSize
+	}
+
+	size, err := strconv.Atoi(defaultResultSize)
+	if err != nil {
+		return esMaxResultSize
+	}
+
+	return size
 }

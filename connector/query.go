@@ -10,6 +10,7 @@ import (
 	"github.com/hasura/ndc-sdk-go/schema"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
+	"github.com/hasura/ndc-elasticsearch/elasticsearch"
 )
 
 // Query executes a query request.
@@ -114,6 +115,9 @@ func executeQuery(ctx context.Context, configuration *types.Configuration, state
 
 // prepareElasticsearchQuery prepares an Elasticsearch query based on the provided query request.
 func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest, state *types.State, index string) (map[string]interface{}, error) {
+	// Set the user configured default result size in ctx
+	ctx = context.WithValue(ctx, elasticsearch.DEFAULT_RESULT_SIZE_KEY, elasticsearch.GetDefaultResultSize())
+
 	query := map[string]interface{}{
 		"_source": map[string]interface{}{
 			"excludes": []string{"*"},
@@ -140,7 +144,7 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 	if request.Query.Limit != nil {
 		query["size"] = *request.Query.Limit
 	} else {
-		query["size"] = 10000
+		query["size"] = ctx.Value(elasticsearch.DEFAULT_RESULT_SIZE_KEY).(int)
 	}
 
 	// Set the offset
