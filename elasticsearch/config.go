@@ -10,7 +10,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 )
 
-const esMaxResultSize = 10000;
+const esMaxResultSize = 10000
 const DEFAULT_RESULT_SIZE_KEY = "esDefaultResultSize"
 
 // getConfigFromEnv retrieves elastic search configuration from environment variables.

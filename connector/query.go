@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hasura/ndc-elasticsearch/elasticsearch"
 	"github.com/hasura/ndc-elasticsearch/types"
 	"github.com/hasura/ndc-sdk-go/connector"
 	"github.com/hasura/ndc-sdk-go/schema"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
-	"github.com/hasura/ndc-elasticsearch/elasticsearch"
 )
 
 // Query executes a query request.
