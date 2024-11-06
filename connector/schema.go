@@ -5,6 +5,7 @@ import (
 
 	"github.com/hasura/ndc-elasticsearch/types"
 	"github.com/hasura/ndc-sdk-go/schema"
+	"github.com/hasura/ndc-elasticsearch/internal"
 )
 
 // GetSchema returns the schema by parsing the configuration.
@@ -214,15 +215,15 @@ func prepareNdcSchema(ndcSchema *schema.SchemaResponse, index string, fields []m
 	}
 
 	// Add the required fields to the schema
-	ndcSchema.ScalarTypes["_id"] = scalarTypeMap["_id"]
+	ndcSchema.ScalarTypes["_id"] = internal.ScalarTypeMap["_id"]
 
 	// ADd the required scalar type to the schema
-	for scalarTypeName, ScalarType := range requiredScalarTypes {
+	for scalarTypeName, ScalarType := range internal.RequiredScalarTypes {
 		ndcSchema.ScalarTypes[scalarTypeName] = ScalarType
 	}
 
 	// Add the required object types to the schema.
-	for objectName, objectType := range requiredObjectTypes {
+	for objectName, objectType := range internal.RequiredObjectTypes {
 		ndcSchema.ObjectTypes[objectName] = objectType
 	}
 }
@@ -239,10 +240,10 @@ func getNdcObjectFields(fields []map[string]interface{}, ndcSchema *schema.Schem
 		fieldName := field["name"].(string)
 
 		// Add scalar or object type to the schema
-		if scalarType, ok := scalarTypeMap[fieldType]; ok {
+		if scalarType, ok := internal.ScalarTypeMap[fieldType]; ok {
 			// Add the scalar type to the NDC schema
 			ndcSchema.ScalarTypes[fieldType] = scalarType
-		} else if objectType, ok := objectTypeMap[fieldType]; ok {
+		} else if objectType, ok := internal.ObjectTypeMap[fieldType]; ok {
 			// Add the object type to the NDC schema
 			ndcSchema.ObjectTypes[fieldType] = objectType
 		}

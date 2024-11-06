@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/hasura/ndc-elasticsearch/types"
+	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-sdk-go/schema"
 )
 
@@ -32,7 +33,7 @@ func handleFieldTypeAggregateMetricDouble(fieldMap map[string]interface{}) {
 				metricFields[metricValue] = schema.ObjectField{Type: schema.NewNamedType("double").Encode()}
 			}
 		}
-		objectTypeMap[fieldType] = schema.ObjectType{
+		internal.ObjectTypeMap[fieldType] = schema.ObjectType{
 			Fields: metricFields,
 		}
 	}
@@ -48,7 +49,7 @@ func handleFieldTypeAggregateMetricDouble(fieldMap map[string]interface{}) {
 // This compound scalar type supports a superset of comparison and aggregation operations of all its subtypes and the actualType
 // This compund scalar type is added to the scalarTypeMap before being returned
 func GetFieldType(fieldMap map[string]interface{}, state *types.State, indexName string, fieldName string) string {
-	fieldTypes := extractTypes(fieldMap)
+	fieldTypes := internal.ExtractTypes(fieldMap)
 	actualFieldType := fieldTypes[0] // actualFieldType is the type type of the field that the db has. It is the main type, not the subtype
 
 	if len(fieldTypes) > 1 {
@@ -56,7 +57,7 @@ func GetFieldType(fieldMap map[string]interface{}, state *types.State, indexName
 		// we need to sort fields by priority
 		// because the fields that can represent the most format of data should be added at the end,
 		// so that their comparison operators are not overridden by the fields that can represent less formats and same for aggregate functions
-		sortTypesByPriority(fieldTypes)
+		internal.SortTypesByPriority(fieldTypes)
 	}
 
 	allSupportedComparisonOperations := make(map[string]schema.ComparisonOperatorDefinition)
@@ -118,31 +119,14 @@ func GetFieldType(fieldMap map[string]interface{}, state *types.State, indexName
 	return scalarType
 }
 
-// Given a fieldMap, this function extracts the type and all subtypes (if present)
-func extractTypes(fieldMap map[string]interface{}) (fieldAndSubfields []string) {
-	if subFields, ok := hasSubfields(fieldMap); ok {
-		for _, subFieldData := range subFields {
-			fieldAndSubfields = append(fieldAndSubfields, extractTypes(subFieldData.(map[string]interface{}))...)
-		}
-	}
-
-	fieldType, _ := fieldIsScalar(fieldMap)
-	fieldAndSubfields = append([]string{fieldType}, fieldAndSubfields...)
-	return fieldAndSubfields
-}
-
 func appendCompoundTypeToStaticTypes(typeName string, sortOperations map[string]schema.ComparisonOperatorDefinition, aggegateOperations schema.ScalarTypeAggregateFunctions, actualFieldType string) {
-	scalarTypeMap[typeName] = schema.ScalarType{
+	internal.ScalarTypeMap[typeName] = schema.ScalarType{
 		AggregateFunctions:  aggegateOperations,
 		ComparisonOperators: sortOperations,
-		Representation:      scalarTypeMap[actualFieldType].Representation,
+		Representation:      internal.ScalarTypeMap[actualFieldType].Representation,
 	}
 }
 
-func hasSubfields(fieldMap map[string]interface{}) (subFields map[string]interface{}, ok bool) {
-	subFields, ok = fieldMap["fields"].(map[string]interface{})
-	return subFields, ok
-}
 
 // This function takes a fieldType and checks whether it
 // 1. supports comparison operations
@@ -161,11 +145,11 @@ func processFieldType(fieldMap map[string]interface{}, fieldType string) (suppor
 		fieldDataEnalbed = fieldData
 	}
 
-	if isSortSupported(fieldType, fieldDataEnalbed) {
-		supportedComparisionOperations = scalarTypeMap[fieldType].ComparisonOperators
+	if internal.IsSortSupported(fieldType, fieldDataEnalbed) {
+		supportedComparisionOperations = internal.ScalarTypeMap[fieldType].ComparisonOperators
 	}
-	if isAggregateSupported(fieldType, fieldDataEnalbed) {
-		supportedAggregationOperations = scalarTypeMap[fieldType].AggregateFunctions
+	if internal.IsAggregateSupported(fieldType, fieldDataEnalbed) {
+		supportedAggregationOperations = internal.ScalarTypeMap[fieldType].AggregateFunctions
 	}
 	if fieldType == "wildcard" {
 		unstructuredTextSupported = true
@@ -189,34 +173,4 @@ func appendAggregationOperations(supersetAggOps schema.ScalarTypeAggregateFuncti
 		supersetAggOps[aggFuncName] = aggFuncDefinition
 	}
 	return supersetAggOps
-}
-
-// isSortSupported checks if a field type is supported for sorting
-// based on fielddata and unsupported sort data types.
-func isSortSupported(fieldType string, fieldDataEnalbed bool) bool {
-	if fieldDataEnalbed {
-		return true
-	}
-	for _, unSupportedType := range unsupportedSortDataTypes {
-		if fieldType == unSupportedType {
-			return false
-		}
-	}
-	return true
-}
-
-// isAggregateSupported checks if a field type is supported for aggregation
-// based on fielddata and unsupported aggregate data types.
-func isAggregateSupported(fieldType string, fieldDataEnalbed bool) bool {
-	if fieldDataEnalbed {
-		return true
-	}
-
-	for _, unSupportedType := range unSupportedAggregateTypes {
-		if fieldType == unSupportedType {
-			return false
-		}
-	}
-
-	return true
 }
