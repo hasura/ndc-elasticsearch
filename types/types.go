@@ -1,9 +1,12 @@
 package types
 
 import (
+	"fmt"
+
 	"github.com/hasura/ndc-elasticsearch/elasticsearch"
 	"github.com/hasura/ndc-sdk-go/connector"
 	"github.com/hasura/ndc-sdk-go/schema"
+	"github.com/hasura/ndc-elasticsearch/internal"
 )
 
 // State is the global state which is shared for every connector request.
@@ -22,6 +25,57 @@ type State struct {
 type Configuration struct {
 	Indices map[string]interface{} `json:"indices"`
 	Queries map[string]NativeQuery `json:"queries"`
+}
+
+func (c *Configuration) GetIndex(indexName string) (map[string]interface{}, error) {
+	index, ok := c.Indices[indexName].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unable to find index: %s", indexName)
+	}
+
+	return index, nil
+}
+
+func (c *Configuration) GetFieldMap(indexName, fieldName string) (map[string]interface{}, error) {
+	index, err := c.GetIndex(indexName)
+	if err != nil {
+		return nil, err
+	}
+
+	mapping, ok := index["mappings"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unable to find mapping in index: %s", indexName)
+	}
+
+	properties, ok := mapping["properties"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unable to find properties in index: %s", indexName)
+	}
+
+	fieldMap, ok := properties[fieldName].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unable to find field `%s` in index `%s` ", fieldName, indexName)
+	}
+
+	return fieldMap, nil
+
+}
+
+func (c *Configuration) GetFieldProperties(indexName, fieldName string) (fieldType string, fieldSubTypes []string, fieldDataEnabled bool, err error) {
+	fieldMap, err := c.GetFieldMap(indexName, fieldName)
+	if err != nil {
+		return "", nil, false, err
+	}
+
+	fieldsAndSubfields := internal.ExtractTypes(fieldMap)
+
+	fieldDataEnabled = internal.IsFieldDtaEnabled(fieldMap)
+
+	if (len(fieldsAndSubfields) == 1) {
+		return fieldsAndSubfields[0], make([]string, 0), fieldDataEnabled, nil
+	}
+
+	return fieldsAndSubfields[0], fieldsAndSubfields[1:], fieldDataEnabled, nil
 }
 
 // NativeQuery contains the definition of the native query.
