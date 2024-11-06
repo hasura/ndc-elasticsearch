@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hasura/ndc-elasticsearch/types"
 )
 
 const (
@@ -108,14 +107,15 @@ func DeepEqual(v1, v2 any) bool {
 	return reflect.DeepEqual(x1, x2)
 }
 
-// validateFieldOperation checks if the given field is supported for the specified operation in the given collection.
-// It returns the valid field name if it is supported, otherwise an empty string.
-func ValidateFieldOperation(state *types.State, operation, collection, field string) string {
-	supportedFields := state.SupportedSortFields
-	if operation == "aggregate" {
-		supportedFields = state.SupportedAggregateFields
-	}
+func ValidateAggregateOperation(supportedFields map[string]interface{}, collection, field string) string {
+	return validateOperation(supportedFields, collection, field)
+}
 
+func ValidateSortOperation(supportedFields map[string]interface{}, collection, field string) string {
+	return validateOperation(supportedFields, collection, field)
+}
+
+func validateOperation(supportedFields map[string]interface{}, collection, field string) string {
 	supportedFieldsMap, ok := supportedFields[collection].(map[string]string)
 	if !ok {
 		return field
