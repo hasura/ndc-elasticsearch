@@ -2,11 +2,12 @@ package types
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hasura/ndc-elasticsearch/elasticsearch"
+	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-sdk-go/connector"
 	"github.com/hasura/ndc-sdk-go/schema"
-	"github.com/hasura/ndc-elasticsearch/internal"
 )
 
 // State is the global state which is shared for every connector request.
@@ -47,14 +48,28 @@ func (c *Configuration) GetFieldMap(indexName, fieldName string) (map[string]int
 		return nil, fmt.Errorf("unable to find mapping in index: %s", indexName)
 	}
 
-	properties, ok := mapping["properties"].(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("unable to find properties in index: %s", indexName)
-	}
+	fieldPath := strings.Split(fieldName, ".")
+	curFieldPath := ""
 
-	fieldMap, ok := properties[fieldName].(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("unable to find field `%s` in index `%s` ", fieldName, indexName)
+	fieldMap := make(map[string]interface{})
+
+	for i, curFieldName := range fieldPath {
+		if i == 0 {
+			curFieldPath = curFieldName
+		} else {
+			curFieldPath = fmt.Sprintf("%s.%s", curFieldPath, curFieldName)
+		}
+
+		properties, ok := mapping["properties"].(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("unable to find properties in index `%s` for field `%s`", indexName, curFieldPath)
+		}
+	
+		fieldMap, ok = properties[curFieldName].(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("unable to find field `%s` in index `%s` ", curFieldPath, indexName)
+		}
+		mapping = fieldMap
 	}
 
 	return fieldMap, nil
