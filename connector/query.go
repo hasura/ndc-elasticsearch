@@ -43,7 +43,7 @@ func executeQuery(ctx context.Context, configuration *types.Configuration, state
 	prepareContext, prepareSpan := state.Tracer.Start(ctx, "prepare_elasticsearch_query")
 	defer prepareSpan.End()
 
-	dslQuery, err := prepareElasticsearchQuery(prepareContext, request, state, index)
+	dslQuery, err := prepareElasticsearchQuery(prepareContext, request, state, index, configuration)
 	if err != nil {
 		prepareSpan.SetStatus(codes.Error, err.Error())
 		return nil, err
@@ -114,7 +114,7 @@ func executeQuery(ctx context.Context, configuration *types.Configuration, state
 }
 
 // prepareElasticsearchQuery prepares an Elasticsearch query based on the provided query request.
-func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest, state *types.State, index string) (map[string]interface{}, error) {
+func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest, state *types.State, index string, configuration *types.Configuration) (map[string]interface{}, error) {
 	// Set the user configured default result size in ctx
 	ctx = context.WithValue(ctx, elasticsearch.DEFAULT_RESULT_SIZE_KEY, elasticsearch.GetDefaultResultSize())
 
@@ -155,7 +155,7 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 	span.AddEvent("prepare_sort_query")
 	// Order by
 	if request.Query.OrderBy != nil && len(request.Query.OrderBy.Elements) != 0 {
-		sort, err := prepareSortQuery(request.Query.OrderBy, state, index)
+		sort, err := prepareSortQuery(request.Query.OrderBy, state, index, configuration)
 		if err != nil {
 			return nil, err
 		}

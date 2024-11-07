@@ -31,7 +31,7 @@ func prepareAggregateQuery(ctx context.Context, aggregates schema.QueryAggregate
 		if ok {
 			aggregationColumn, path = joinFieldPath(state, fieldPath, aggregationColumn, collection)
 		}
-		validField := internal.ValidateFieldOperation(state, "aggregate", collection, aggregationColumn)
+		validField := internal.ValidateAggregateOperation(state.SupportedAggregateFields, collection, aggregationColumn)
 
 		if validField == "" {
 			return nil, schema.UnprocessableContentError("aggregation not supported on this field", map[string]any{
@@ -106,7 +106,7 @@ func prepareAggregateColumnCount(ctx context.Context, field string, path string,
 // If the field is nested, it generates a nested query to perform the specified function on the field in the nested document.
 func prepareAggregateSingleColumn(ctx context.Context, function, field string, path string, aggName string) (map[string]interface{}, error) {
 	// Validate the function
-	if !internal.Contains(validFunctions, function) {
+	if !internal.Contains(internal.ValidFunctions, function) {
 		return nil, schema.UnprocessableContentError("invalid aggregate function", map[string]any{
 			"value": function,
 		})

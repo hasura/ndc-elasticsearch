@@ -1,4 +1,4 @@
-package connector
+package internal
 
 import (
 	"slices"
@@ -7,11 +7,11 @@ import (
 	"github.com/hasura/ndc-sdk-go/utils"
 )
 
-var numericFields = []string{"integer", "long", "short", "byte", "halft_float", "unsigned_long", "float", "double", "scaled_float"}
+var NumericFields = []string{"integer", "long", "short", "byte", "halft_float", "unsigned_long", "float", "double", "scaled_float"}
 
-var validFunctions = []string{"sum", "min", "max", "avg", "value_count", "cardinality", "stats", "string_stats"}
+var ValidFunctions = []string{"sum", "min", "max", "avg", "value_count", "cardinality", "stats", "string_stats"}
 
-var scalarTypeMap = map[string]schema.ScalarType{
+var ScalarTypeMap = map[string]schema.ScalarType{
 	"integer": {
 		AggregateFunctions:  getAggregationFunctions([]string{"max", "min", "sum", "avg", "value_count", "cardinality", "stats"}, "integer"),
 		ComparisonOperators: getComparisonOperatorDefinition("integer"),
@@ -139,7 +139,7 @@ var scalarTypeMap = map[string]schema.ScalarType{
 // It means can a type represent another type or not.
 //
 // For example, 'string' is a higher priority than float, because every float can be represented as a string, but not vice versa.
-var typePriorityMap = map[string]int{
+var TypePriorityMap = map[string]int{
 	"binary":  1,
 	"boolean": 2,
 
@@ -167,15 +167,15 @@ var typePriorityMap = map[string]int{
 	"_id":              20,
 }
 
-var requiredScalarTypes = map[string]schema.ScalarType{
-	"double":  scalarTypeMap["double"],
-	"integer": scalarTypeMap["integer"],
-	"float":   scalarTypeMap["float"],
-	"keyword": scalarTypeMap["keyword"],
-	"long":    scalarTypeMap["long"],
+var RequiredScalarTypes = map[string]schema.ScalarType{
+	"double":  ScalarTypeMap["double"],
+	"integer": ScalarTypeMap["integer"],
+	"float":   ScalarTypeMap["float"],
+	"keyword": ScalarTypeMap["keyword"],
+	"long":    ScalarTypeMap["long"],
 }
 
-var requiredObjectTypes = map[string]schema.ObjectType{
+var RequiredObjectTypes = map[string]schema.ObjectType{
 	"stats": {
 		Fields: schema.ObjectTypeFields{
 			"count": schema.ObjectField{
@@ -240,7 +240,7 @@ var requiredObjectTypes = map[string]schema.ObjectType{
 	},
 }
 
-var objectTypeMap = map[string]schema.ObjectType{
+var ObjectTypeMap = map[string]schema.ObjectType{
 	"sparse_vector": {
 		Fields: schema.ObjectTypeFields{},
 	},
@@ -332,7 +332,7 @@ var objectTypeMap = map[string]schema.ObjectType{
 	},
 }
 
-var unsupportedRangeQueryScalars = []string{"binary", "completion", "_id", "wildcard", "match_only_text", "search_as_you_type"}
+var UnsupportedRangeQueryScalars = []string{"binary", "completion", "_id", "wildcard", "match_only_text", "search_as_you_type"}
 
 // getComparisonOperatorDefinition generates and returns a map of comparison operators based on the provided data type.
 func getComparisonOperatorDefinition(dataType string) map[string]schema.ComparisonOperatorDefinition {
@@ -343,12 +343,12 @@ func getComparisonOperatorDefinition(dataType string) map[string]schema.Comparis
 		"terms":        schema.NewComparisonOperatorCustom(schema.NewArrayType(schema.NewNamedType(dataType))).Encode(),
 	}
 
-	if !slices.Contains(unsupportedRangeQueryScalars, dataType) {
+	if !slices.Contains(UnsupportedRangeQueryScalars, dataType) {
 		comparisonOperators["range"] = schema.NewComparisonOperatorCustom(schema.NewNamedType("range")).Encode()
 	}
 
 	if dataType == "date" {
-		requiredObjectTypes["date_range_query"] = objectTypeMap["date_range_query"]
+		RequiredObjectTypes["date_range_query"] = ObjectTypeMap["date_range_query"]
 		comparisonOperators["range"] = schema.NewComparisonOperatorCustom(schema.NewNamedType("date_range_query")).Encode()
 	}
 
@@ -388,12 +388,12 @@ func getAggregationFunctions(functions []string, typeName string) schema.ScalarT
 	return aggregationFunctions
 }
 
-func sortTypesByPriority(types []string) {
+func SortTypesByPriority(types []string) {
 	for i := 0; i < len(types); i++ {
 		for j := i + 1; j < len(types); j++ {
-			if typePriorityMap[types[i]] > typePriorityMap[types[j]] {
+			if TypePriorityMap[types[i]] > TypePriorityMap[types[j]] {
 				types[i], types[j] = types[j], types[i]
-			} else if typePriorityMap[types[i]] == typePriorityMap[types[j]] {
+			} else if TypePriorityMap[types[i]] == TypePriorityMap[types[j]] {
 				// priority is same, sort alphabetically
 				if types[i] > types[j] {
 					types[i], types[j] = types[j], types[i]
@@ -404,7 +404,7 @@ func sortTypesByPriority(types []string) {
 }
 
 // unSupportedAggregateTypes are lists of data types that do not support aggregation in elasticsearch.
-var unSupportedAggregateTypes = []string{
+var UnSupportedAggregateTypes = []string{
 	"text",
 	"search_as_you_type",
 	"completion",
@@ -412,8 +412,8 @@ var unSupportedAggregateTypes = []string{
 	"binary",
 }
 
-// unsupportedSortDataTypes are lists of data types that do not support sorting in elasticsearch.
-var unsupportedSortDataTypes = []string{
+// unSupportedSortDataTypes are lists of data types that do not support sorting in elasticsearch.
+var UnSupportedSortDataTypes = []string{
 	"text",
 	"search_as_you_type",
 	"binary",
