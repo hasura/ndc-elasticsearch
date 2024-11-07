@@ -44,10 +44,11 @@ func prepareSortElement(element *schema.OrderByElement, state *types.State, coll
 			return nil, schema.InternalServerError("failed to get field types", map[string]any{"error": err.Error()})
 		}
 
-		if internal.IsSortSupported(fieldType, fieldDataEnabled) {
-			fieldPath = validField
-		} else {
-			for _, subType := range fieldSubTypes {
+		if !internal.IsSortSupported(fieldType, fieldDataEnabled) {
+			// we iterate over the fieldSubTypes in reverse because the subtypes are sorted by priority. 
+			// We want to use the highest priority subType that is supported for sorting.
+			for i := len(fieldSubTypes) - 1; i >= 0; i-- {
+				subType := fieldSubTypes[i]
 				if internal.IsSortSupported(subType, fieldDataEnabled) {
 					validField = fmt.Sprintf("%s.%s", validField, subType)
 					break
