@@ -30,7 +30,15 @@ func executeQueryWithVariables(variableSets []schema.QueryRequestVariablesElem, 
 	topHits["_source"] = body["_source"]
 	topHits["size"] = 10
 	if size, ok := body["size"]; ok {
-		topHits["size"] = size
+		if (size.(int)) > 100 {
+			// 100 is the default max result size limit (per bucket) for top_hits aggregation
+			// This limit can be set by changing the [index.max_inner_result_window] index level setting. 
+			// TODO: we should read this setting and set the limit accordingly
+			// A `bucket` here refers to a group of documents that match a certain clause/perdicate, and the top_hits aggregation can have multiple clauses/predicates
+			topHits["size"] = 100
+		} else {
+			topHits["size"] = size
+		}
 	}
 	if limit, ok := body["limit"]; ok {
 		topHits["from"] = limit
