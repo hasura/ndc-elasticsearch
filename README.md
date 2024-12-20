@@ -43,6 +43,9 @@ Below, you'll find a matrix of all supported features for the Elasticsearch conn
 | Nested Sorting                  | ❌        |       |
 | Nested Relationships            | ❌        |       |
 
+> [!Note]
+> Remote Relationships are currently implemented via `top_hits` operator. That operator has a default maximum result size limit of 100 rows. This is what the connector operates on. If you give the connector a higher limit, it will change that to 100 for compliance with the database. Also, since the returned result will contain only 100 rows per bucket, it may not represent the whole result.
+
 ## Before you get Started
 
 1. Create a [Hasura Cloud account](https://console.hasura.io)
