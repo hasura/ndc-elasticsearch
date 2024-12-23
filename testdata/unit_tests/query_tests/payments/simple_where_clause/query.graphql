@@ -1,0 +1,7 @@
+query MyQuery {
+  customers(where: {email: {prefix: "j"}}) {
+    name
+    customerId
+    email
+  }
+}

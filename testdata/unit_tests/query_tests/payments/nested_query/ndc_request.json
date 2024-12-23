@@ -1,0 +1,57 @@
+{
+  "arguments": {},
+  "collection": "transactions",
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "customerId": {
+        "column": "customer_id",
+        "type": "column"
+      },
+      "id": {
+        "column": "_id",
+        "type": "column"
+      },
+      "timestamp": {
+        "column": "timestamp",
+        "type": "column"
+      },
+      "transactionDetails": {
+        "column": "transaction_details",
+        "fields": {
+          "fields": {
+            "fields": {
+              "currency": {
+                "column": "currency",
+                "type": "column"
+              },
+              "itemId": {
+                "column": "item_id",
+                "type": "column"
+              },
+              "itemName": {
+                "column": "item_name",
+                "type": "column"
+              },
+              "price": {
+                "column": "price",
+                "type": "column"
+              },
+              "quantity": {
+                "column": "quantity",
+                "type": "column"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "type": "column"
+      },
+      "transactionId": {
+        "column": "transaction_id",
+        "type": "column"
+      }
+    }
+  }
+}

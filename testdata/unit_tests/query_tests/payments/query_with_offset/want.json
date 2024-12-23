@@ -1,0 +1,10 @@
+{
+  "_source": [
+    "_id",
+    "customer_id",
+    "email",
+    "name"
+  ],
+  "from": 2,
+  "size": 1
+}

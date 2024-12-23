@@ -1,0 +1,86 @@
+{
+  "arguments": {},
+  "collection": "transactions",
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "customerId": {
+        "column": "customer_id",
+        "type": "column"
+      },
+      "id": {
+        "column": "_id",
+        "type": "column"
+      },
+      "timestamp": {
+        "column": "timestamp",
+        "type": "column"
+      },
+      "transactionDetails": {
+        "column": "transaction_details",
+        "fields": {
+          "fields": {
+            "fields": {
+              "currency": {
+                "column": "currency",
+                "type": "column"
+              },
+              "itemId": {
+                "column": "item_id",
+                "type": "column"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "type": "column"
+      },
+      "transactionId": {
+        "column": "transaction_id",
+        "type": "column"
+      }
+    },
+    "predicate": {
+      "column": {
+        "type": "column",
+        "name": "customer_id"
+      },
+      "operator": "term",
+      "type": "binary_comparison_operator",
+      "value": {
+        "name": "$customer_id",
+        "type": "variable"
+      }
+    }
+  },
+  "variables": [
+    {
+      "$customer_id": "CUST006"
+    },
+    {
+      "$customer_id": "CUST007"
+    },
+    {
+      "$customer_id": "CUST003"
+    },
+    {
+      "$customer_id": "CUST005"
+    },
+    {
+      "$customer_id": "CUST001"
+    },
+    {
+      "$customer_id": "CUST004"
+    },
+    {
+      "$customer_id": "CUST002"
+    },
+    {
+      "$customer_id": "CUST008"
+    },
+    {
+      "$customer_id": "CUST009"
+    }
+  ]
+}

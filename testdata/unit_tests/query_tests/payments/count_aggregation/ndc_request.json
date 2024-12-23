@@ -1,0 +1,12 @@
+{
+  "arguments": {},
+  "collection": "metrics",
+  "collection_relationships": {},
+  "query": {
+    "aggregates": {
+      "_count": {
+        "type": "star_count"
+      }
+    }
+  }
+}

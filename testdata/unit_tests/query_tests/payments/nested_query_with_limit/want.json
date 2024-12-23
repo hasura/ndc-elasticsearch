@@ -1,0 +1,14 @@
+{
+  "_source": [
+    "_id",
+    "customer_id",
+    "timestamp",
+    "transaction_details.currency",
+    "transaction_details.item_id",
+    "transaction_details.item_name",
+    "transaction_details.price",
+    "transaction_details.quantity",
+    "transaction_id"
+  ],
+  "size": 20
+}
