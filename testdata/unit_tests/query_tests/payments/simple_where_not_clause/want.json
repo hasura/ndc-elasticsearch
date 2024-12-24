@@ -1,0 +1,17 @@
+{
+  "_source": [
+    "customer_id",
+    "email",
+    "name"
+  ],
+  "query": {
+    "bool": {
+      "must_not": {
+        "prefix": {
+          "email": "j"
+        }
+      }
+    }
+  },
+  "size": 10000
+}

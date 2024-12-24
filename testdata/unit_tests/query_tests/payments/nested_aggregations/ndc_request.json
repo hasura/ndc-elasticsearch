@@ -1,0 +1,37 @@
+{
+  "arguments": {},
+  "collection": "metrics",
+  "collection_relationships": {},
+  "query": {
+    "aggregates": {
+      "_count": {
+        "type": "star_count"
+      },
+      "metricValue__count_distinct": {
+        "column": "metric_value",
+        "distinct": true,
+        "type": "column_count"
+      },
+      "metricValue_max": {
+        "column": "metric_value",
+        "function": "max",
+        "type": "single_column"
+      },
+      "metricValue_min": {
+        "column": "metric_value",
+        "function": "min",
+        "type": "single_column"
+      },
+      "metricValue_stats": {
+        "column": "metric_value",
+        "function": "stats",
+        "type": "single_column"
+      },
+      "metricValue_sum": {
+        "column": "metric_value",
+        "function": "sum",
+        "type": "single_column"
+      }
+    }
+  }
+}

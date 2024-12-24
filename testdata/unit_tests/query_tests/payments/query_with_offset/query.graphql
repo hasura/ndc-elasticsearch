@@ -1,0 +1,8 @@
+query MyQuery {
+  customers(limit: 1, offset: 2) {
+    email
+    customerId
+    id
+    name
+  }
+}

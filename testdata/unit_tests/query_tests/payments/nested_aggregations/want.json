@@ -1,0 +1,35 @@
+{
+  "_source": {
+    "excludes": [
+      "*"
+    ]
+  },
+  "aggs": {
+    "metricValue__count_distinct": {
+      "cardinality": {
+        "field": "metric_value"
+      }
+    },
+    "metricValue_max": {
+      "max": {
+        "field": "metric_value"
+      }
+    },
+    "metricValue_min": {
+      "min": {
+        "field": "metric_value"
+      }
+    },
+    "metricValue_stats": {
+      "stats": {
+        "field": "metric_value"
+      }
+    },
+    "metricValue_sum": {
+      "sum": {
+        "field": "metric_value"
+      }
+    }
+  },
+  "size": 10000
+}

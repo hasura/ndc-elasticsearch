@@ -1,0 +1,38 @@
+{
+  "indices": {
+    "my_book_index": {
+      "mappings": {
+        "properties": {
+          "author": {
+            "type": "keyword"
+          },
+          "description": {
+            "type": "text"
+          },
+          "genre": {
+            "type": "keyword"
+          },
+          "pages": {
+            "type": "integer"
+          },
+          "published_date": {
+            "format": "yyyy-MM-dd",
+            "type": "date"
+          },
+          "rating": {
+            "type": "float"
+          },
+          "title": {
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              }
+            },
+            "type": "text"
+          }
+        }
+      }
+    }
+  },
+  "queries": {}
+}

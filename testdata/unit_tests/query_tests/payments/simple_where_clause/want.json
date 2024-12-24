@@ -1,0 +1,13 @@
+{
+  "_source": [
+    "customer_id",
+    "email",
+    "name"
+  ],
+  "query": {
+    "prefix": {
+      "email": "j"
+    }
+  },
+  "size": 10000
+}

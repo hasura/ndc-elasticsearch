@@ -1,0 +1,13 @@
+{
+  "_source": [
+    "name"
+  ],
+  "size": 10000,
+  "sort": [
+    {
+      "email": {
+        "order": "asc"
+      }
+    }
+  ]
+}

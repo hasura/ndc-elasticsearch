@@ -1,0 +1,27 @@
+{
+  "indices": {
+    "indentification": {
+      "mappings": {
+        "properties": {
+          "address": {
+            "properties": {
+              "city": {
+                "type": "text"
+              },
+              "zip": {
+                "type": "integer"
+              }
+            }
+          },
+          "age": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  },
+  "queries": {}
+}

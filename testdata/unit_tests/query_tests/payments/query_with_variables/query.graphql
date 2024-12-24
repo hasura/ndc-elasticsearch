@@ -1,0 +1,14 @@
+query MyQuery {
+  customers {
+    transactions {
+      customerId
+      id
+      timestamp
+      transactionDetails {
+        currency
+        itemId
+      }
+      transactionId
+    }
+  }
+}

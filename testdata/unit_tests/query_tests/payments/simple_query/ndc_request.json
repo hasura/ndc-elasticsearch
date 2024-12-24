@@ -1,0 +1,17 @@
+{
+  "arguments": {},
+  "collection": "customers",
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "id": {
+        "column": "_id",
+        "type": "column"
+      },
+      "name": {
+        "column": "name",
+        "type": "column"
+      }
+    }
+  }
+}

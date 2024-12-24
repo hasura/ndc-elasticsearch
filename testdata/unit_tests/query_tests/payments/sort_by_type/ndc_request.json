@@ -1,0 +1,25 @@
+{
+  "arguments": {},
+  "collection": "customers",
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "name": {
+        "column": "name",
+        "type": "column"
+      }
+    },
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "name": "email",
+            "path": [],
+            "type": "column"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "aggs": {
+    "result": {
+      "aggs": {
+        "docs": {
+          "top_hits": {
+            "_source": [
+              "_id",
+              "customer_id",
+              "timestamp",
+              "transaction_details.currency",
+              "transaction_details.item_id",
+              "transaction_id"
+            ],
+            "size": 100
+          }
+        }
+      },
+      "filters": {
+        "filters": [
+          {
+            "term": {
+              "customer_id": "CUST006"
+            }
+          },
+          {
+            "term": {
+              "customer_id": "CUST007"
+            }
+          },
+          {
+            "term": {
+              "customer_id": "CUST003"
+            }
+          },
+          {
+            "term": {
+              "customer_id": "CUST005"
+            }
+          },
+          {
+            "term": {
+              "customer_id": "CUST001"
+            }
+          },
+          {
+            "term": {
+              "customer_id": "CUST004"
+            }
+          },
+          {
+            "term": {
+              "customer_id": "CUST002"
+            }
+          },
+          {
+            "term": {
+              "customer_id": "CUST008"
+            }
+          },
+          {
+            "term": {
+              "customer_id": "CUST009"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "size": 0
+}
