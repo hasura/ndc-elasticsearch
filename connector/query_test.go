@@ -74,6 +74,10 @@ var tests = []test{
 		group: "payments",
 		name:  "simple_where_not_clause",
 	},
+	{
+		group: "payments",
+		name:  "simple_subtype_where_clause",
+	},
 }
 
 func TestPrepareElasticsearchQuery(t *testing.T) {

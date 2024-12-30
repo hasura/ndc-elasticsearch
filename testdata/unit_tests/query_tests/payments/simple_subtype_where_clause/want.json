@@ -1,0 +1,13 @@
+{
+  "_source": [
+    "_id",
+    "customer_id",
+    "name"
+  ],
+  "query": {
+    "prefix": {
+      "name.keyword": "J"
+    }
+  },
+  "size": 10000
+}
