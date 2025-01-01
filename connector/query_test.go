@@ -82,6 +82,10 @@ var tests = []test{
 		group: "payments",
 		name:  "simple_or_clause",
 	},
+	{
+		group: "payments",
+		name:  "simple_terms_clause",
+	},
 }
 
 func TestPrepareElasticsearchQuery(t *testing.T) {
