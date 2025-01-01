@@ -1,0 +1,13 @@
+query MyQuery {
+  customers(
+    where: {
+      _and: [
+        { customerId: {term: "CUST005"} },
+        { email: {match: "charlie.d@example.com"} }
+      ]   
+  }) {
+    customerId
+    name
+    email
+  }
+}
