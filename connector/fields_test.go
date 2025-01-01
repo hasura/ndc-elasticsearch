@@ -14,10 +14,9 @@ import (
 const testsPath = "../testdata/unit_tests/fields_tests/"
 
 type test struct {
-	name          string
-	configuration *types.Configuration
-	wantSchema    []byte
-	state         *types.State
+	name       string
+	wantSchema []byte
+	state      *types.State
 }
 
 var tests = []test{
@@ -35,9 +34,9 @@ func TestSchema(t *testing.T) {
 			initTest(t, &tt)
 
 			assert.NotNil(t, tt.state, "State is nil")
-			assert.NotNil(t, tt.configuration, "Configuration is nil")
+			assert.NotNil(t, tt.state.Configuration, "Configuration is nil")
 
-			schema := connector.ParseConfigurationToSchema(tt.configuration, tt.state)
+			schema := connector.ParseConfigurationToSchema(tt.state.Configuration, tt.state)
 
 			jsonData, err := json.MarshalIndent(schema, "", "  ")
 			assert.NoError(t, err, "Error marshalling schema")
@@ -52,6 +51,13 @@ func TestSchema(t *testing.T) {
 }
 
 func initTest(t *testing.T, testCase *test) {
+	configurationB, err := os.ReadFile(filepath.Join(testsPath, testCase.name, "configuration.json"))
+	assert.NoError(t, err, "Error reading configuration file")
+
+	var configuration types.Configuration
+	err = json.Unmarshal(configurationB, &configuration)
+	assert.NoError(t, err, "Error unmarshalling configuration")
+
 	testCase.state = &types.State{
 		TelemetryState:           nil,
 		Client:                   nil,
@@ -60,13 +66,8 @@ func initTest(t *testing.T, testCase *test) {
 		SupportedFilterFields:    make(map[string]interface{}),
 		NestedFields:             make(map[string]interface{}),
 		ElasticsearchInfo:        nil,
+		Configuration:            &configuration,
 	}
-
-	configurationB, err := os.ReadFile(filepath.Join(testsPath, testCase.name, "configuration.json"))
-	assert.NoError(t, err, "Error reading configuration file")
-
-	err = json.Unmarshal(configurationB, &testCase.configuration)
-	assert.NoError(t, err, "Error unmarshalling configuration")
 
 	testCase.wantSchema, err = os.ReadFile(filepath.Join(testsPath, testCase.name, "want_schema.json"))
 	assert.NoError(t, err, "Error reading want_schema file")

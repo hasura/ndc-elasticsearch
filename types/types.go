@@ -20,6 +20,7 @@ type State struct {
 	ElasticsearchInfo        map[string]interface{}
 	Schema                   *schema.SchemaResponse
 	NestedFields             map[string]interface{}
+	Configuration            *Configuration
 }
 
 // Configuration contains required settings for the connector.
@@ -64,7 +65,7 @@ func (c *Configuration) GetFieldMap(indexName, fieldName string) (map[string]int
 		if !ok {
 			return nil, fmt.Errorf("unable to find properties in index `%s` for field `%s`", indexName, curFieldPath)
 		}
-	
+
 		fieldMap, ok = properties[curFieldName].(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("unable to find field `%s` in index `%s` ", curFieldPath, indexName)
@@ -86,7 +87,7 @@ func (c *Configuration) GetFieldProperties(indexName, fieldName string) (fieldTy
 
 	fieldDataEnabled = internal.IsFieldDtaEnabled(fieldMap)
 
-	if (len(fieldsAndSubfields) == 1) {
+	if len(fieldsAndSubfields) == 1 {
 		return fieldsAndSubfields[0], make([]string, 0), fieldDataEnabled, nil
 	}
 
