@@ -1,0 +1,12 @@
+query MyQuery {
+  customers(where: {
+  _or: [
+    { customerId: {term: "CUST005"} },
+    { customerId: {term: "CUST006"} }
+  ]
+}) {
+    customerId
+    name
+    email
+  }
+}

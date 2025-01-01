@@ -76,6 +76,18 @@ var tests = []test{
 	},
 	{
 		group: "payments",
+		name:  "simple_and_clause",
+	},
+	{
+		group: "payments",
+		name:  "simple_or_clause",
+	},
+	{
+		group: "payments",
+		name:  "simple_terms_clause",
+	},
+	{
+		group: "payments",
 		name:  "simple_subtype_where_clause",
 	},
 }

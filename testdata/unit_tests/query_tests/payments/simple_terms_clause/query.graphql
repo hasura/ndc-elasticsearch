@@ -1,0 +1,7 @@
+query MyQuery {
+  customers(where: {customerId: {terms: [ "CUST001", "CUST002" ]}}) {
+    email
+    customerId
+    name
+  }
+}
