@@ -9,10 +9,10 @@ import (
 )
 
 // prepareSortQuery prepares the sort query.
-func prepareSortQuery(orderBy *schema.OrderBy, state *types.State, collection string, configuration *types.Configuration) ([]map[string]interface{}, error) {
+func prepareSortQuery(orderBy *schema.OrderBy, state *types.State, collection string) ([]map[string]interface{}, error) {
 	sort := make([]map[string]interface{}, len(orderBy.Elements))
 	for i, element := range orderBy.Elements {
-		sortElmnt, err := prepareSortElement(&element, state, collection, configuration)
+		sortElmnt, err := prepareSortElement(&element, state, collection)
 		if err != nil {
 			return nil, err
 		}
@@ -25,7 +25,7 @@ func prepareSortQuery(orderBy *schema.OrderBy, state *types.State, collection st
 //
 // It takes in the OrderByElement, state, and collection as parameters.
 // It returns the prepared sort element and an error if any.
-func prepareSortElement(element *schema.OrderByElement, state *types.State, collection string, configuration *types.Configuration) (map[string]interface{}, error) {
+func prepareSortElement(element *schema.OrderByElement, state *types.State, collection string) (map[string]interface{}, error) {
 	sort := make(map[string]interface{})
 	switch target := element.Target.Interface().(type) {
 	case *schema.OrderByColumn:
@@ -39,13 +39,13 @@ func prepareSortElement(element *schema.OrderByElement, state *types.State, coll
 			})
 		}
 
-		fieldType, fieldSubTypes, fieldDataEnabled, err := configuration.GetFieldProperties(collection, fieldPath)
+		fieldType, fieldSubTypes, fieldDataEnabled, err := state.Configuration.GetFieldProperties(collection, fieldPath)
 		if err != nil {
 			return nil, schema.InternalServerError("failed to get field types", map[string]any{"error": err.Error()})
 		}
 
 		if !internal.IsSortSupported(fieldType, fieldDataEnabled) {
-			// we iterate over the fieldSubTypes in reverse because the subtypes are sorted by priority. 
+			// we iterate over the fieldSubTypes in reverse because the subtypes are sorted by priority.
 			// We want to use the highest priority subType that is supported for sorting.
 			for i := len(fieldSubTypes) - 1; i >= 0; i-- {
 				subType := fieldSubTypes[i]
