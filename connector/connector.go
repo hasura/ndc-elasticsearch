@@ -33,6 +33,7 @@ func (c *Connector) TryInitState(ctx context.Context, configuration *types.Confi
 		SupportedFilterFields:    make(map[string]interface{}),
 		NestedFields:             make(map[string]interface{}),
 		ElasticsearchInfo:        elasticsearchInfo.(map[string]interface{}),
+		Configuration:            configuration,
 	}
 
 	schema := ParseConfigurationToSchema(configuration, state)

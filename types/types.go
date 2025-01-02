@@ -20,6 +20,7 @@ type State struct {
 	ElasticsearchInfo        map[string]interface{}
 	Schema                   *schema.SchemaResponse
 	NestedFields             map[string]interface{}
+	Configuration            *Configuration
 }
 
 // Configuration contains required settings for the connector.
@@ -37,7 +38,8 @@ func (c *Configuration) GetIndex(indexName string) (map[string]interface{}, erro
 	return index, nil
 }
 
-func (c *Configuration) GetFieldMap(indexName, fieldName string) (map[string]interface{}, error) {
+// returns the field object for the given field path from configuration
+func (c *Configuration) GetFieldMap(indexName, fieldPath string) (map[string]interface{}, error) {
 	index, err := c.GetIndex(indexName)
 	if err != nil {
 		return nil, err
@@ -48,12 +50,12 @@ func (c *Configuration) GetFieldMap(indexName, fieldName string) (map[string]int
 		return nil, fmt.Errorf("unable to find mapping in index: %s", indexName)
 	}
 
-	fieldPath := strings.Split(fieldName, ".")
+	splitFieldPath := strings.Split(fieldPath, ".")
 	curFieldPath := ""
 
 	fieldMap := make(map[string]interface{})
 
-	for i, curFieldName := range fieldPath {
+	for i, curFieldName := range splitFieldPath {
 		if i == 0 {
 			curFieldPath = curFieldName
 		} else {
@@ -64,7 +66,7 @@ func (c *Configuration) GetFieldMap(indexName, fieldName string) (map[string]int
 		if !ok {
 			return nil, fmt.Errorf("unable to find properties in index `%s` for field `%s`", indexName, curFieldPath)
 		}
-	
+
 		fieldMap, ok = properties[curFieldName].(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("unable to find field `%s` in index `%s` ", curFieldPath, indexName)
@@ -76,8 +78,9 @@ func (c *Configuration) GetFieldMap(indexName, fieldName string) (map[string]int
 
 }
 
-func (c *Configuration) GetFieldProperties(indexName, fieldName string) (fieldType string, fieldSubTypes []string, fieldDataEnabled bool, err error) {
-	fieldMap, err := c.GetFieldMap(indexName, fieldName)
+// GetFieldProperties returns the field type, subtypes and field data enabled for the given field path.
+func (c *Configuration) GetFieldProperties(indexName, fieldPath string) (fieldType string, fieldSubTypes []string, fieldDataEnabled bool, err error) {
+	fieldMap, err := c.GetFieldMap(indexName, fieldPath)
 	if err != nil {
 		return "", nil, false, err
 	}
@@ -86,7 +89,7 @@ func (c *Configuration) GetFieldProperties(indexName, fieldName string) (fieldTy
 
 	fieldDataEnabled = internal.IsFieldDtaEnabled(fieldMap)
 
-	if (len(fieldsAndSubfields) == 1) {
+	if len(fieldsAndSubfields) == 1 {
 		return fieldsAndSubfields[0], make([]string, 0), fieldDataEnabled, nil
 	}
 

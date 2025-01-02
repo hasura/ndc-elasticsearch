@@ -17,12 +17,11 @@ import (
 const testsPath = "../testdata/unit_tests/query_tests/"
 
 type test struct {
-	group         string
-	name          string
-	ndcRequest    *schema.QueryRequest
-	state         *types.State
-	configuration *types.Configuration
-	wantQuery     []byte
+	group      string
+	name       string
+	ndcRequest *schema.QueryRequest
+	state      *types.State
+	wantQuery  []byte
 }
 
 var tests = []test{
@@ -96,12 +95,12 @@ func TestPrepareElasticsearchQuery(t *testing.T) {
 			initTest(t, &tt)
 
 			assert.NotNil(t, tt.state, "state is nil")
-			assert.NotNil(t, tt.configuration, "configuration is nil")
+			assert.NotNil(t, tt.state.Configuration, "configuration is nil")
 			assert.NotNil(t, tt.ndcRequest, "ndcRequest is nil")
 
-			ParseConfigurationToSchema(tt.configuration, tt.state)
+			ParseConfigurationToSchema(tt.state.Configuration, tt.state)
 
-			query, err := prepareElasticsearchQuery(ctx, tt.ndcRequest, tt.state, tt.ndcRequest.Collection, tt.configuration)
+			query, err := prepareElasticsearchQuery(ctx, tt.ndcRequest, tt.state, tt.ndcRequest.Collection)
 			// this correction is added because sometimes the order of _source array would change which resulted in the tests being flaky
 			assert.NoError(t, err, "Error preparing query")
 			sortSourceArray(query)
@@ -126,6 +125,13 @@ func TestPrepareElasticsearchQuery(t *testing.T) {
 }
 
 func initTest(t *testing.T, testCase *test) {
+	configurationB, err := os.ReadFile(filepath.Join(testsPath, testCase.group, "configuration.json"))
+	assert.NoError(t, err, "Error reading configuration file")
+
+	var configuration types.Configuration
+	err = json.Unmarshal(configurationB, &configuration)
+	assert.NoError(t, err, "Error unmarshalling configuration")
+
 	testCase.state = &types.State{
 		Client:                   nil,
 		SupportedSortFields:      make(map[string]interface{}),
@@ -134,13 +140,8 @@ func initTest(t *testing.T, testCase *test) {
 		ElasticsearchInfo:        make(map[string]interface{}),
 		NestedFields:             make(map[string]interface{}),
 		Schema:                   nil, // Assuming Tracer is an interface, set to nil or an empty implementation
+		Configuration:            &configuration,
 	}
-
-	configurationB, err := os.ReadFile(filepath.Join(testsPath, testCase.group, "configuration.json"))
-	assert.NoError(t, err, "Error reading configuration file")
-
-	err = json.Unmarshal(configurationB, &testCase.configuration)
-	assert.NoError(t, err, "Error unmarshalling configuration")
 
 	ndcReqeustB, err := os.ReadFile(filepath.Join(testsPath, testCase.group, testCase.name, "ndc_request.json"))
 	assert.NoError(t, err, "Error reading ndc_request file")

@@ -88,14 +88,14 @@ func TestConfigurationGetFieldMap(t *testing.T) {
 		name          string
 		configuration string
 		indexName     string
-		fieldName     string
+		fieldPath     string
 		want          string
 	}{
 		{
 			name:          "transaction_customers_name",
 			configuration: configurationTransactions,
 			indexName:     "customers",
-			fieldName:     "name",
+			fieldPath:     "name",
 			want: `{
   "fields": {
     "keyword": {
@@ -110,7 +110,7 @@ func TestConfigurationGetFieldMap(t *testing.T) {
 			name:          "transaction_payments_paymentStatus",
 			configuration: configurationTransactions,
 			indexName:     "payments",
-			fieldName:     "payment_status",
+			fieldPath:     "payment_status",
 			want: `{
   "type": "keyword"
 }`,
@@ -119,7 +119,7 @@ func TestConfigurationGetFieldMap(t *testing.T) {
 			name:          "transaction_transactions_transactionDetails",
 			configuration: configurationTransactions,
 			indexName:     "transactions",
-			fieldName:     "transaction_details",
+			fieldPath:     "transaction_details",
 			want: `{
   "properties": {
     "currency": {
@@ -150,7 +150,7 @@ func TestConfigurationGetFieldMap(t *testing.T) {
 			name:          "transaction_transactions_transactionDetails_itemName",
 			configuration: configurationTransactions,
 			indexName:     "transactions",
-			fieldName:     "transaction_details.item_name",
+			fieldPath:     "transaction_details.item_name",
 			want: `{
   "fields": {
     "keyword": {
@@ -165,7 +165,7 @@ func TestConfigurationGetFieldMap(t *testing.T) {
 			name:          "transaction_transactions_transactionDetails_currency",
 			configuration: configurationTransactions,
 			indexName:     "transactions",
-			fieldName:     "transaction_details.currency",
+			fieldPath:     "transaction_details.currency",
 			want: `{
   "type": "keyword"
 }`,
@@ -176,7 +176,7 @@ func TestConfigurationGetFieldMap(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			config := getConfiguration(tt.configuration)
 
-			got, err := config.GetFieldMap(tt.indexName, tt.fieldName)
+			got, err := config.GetFieldMap(tt.indexName, tt.fieldPath)
 			assert.NoError(t, err)
 
 			gotJson, err := json.MarshalIndent(got, "", "  ")
@@ -192,7 +192,7 @@ func TestConfigurationGetFieldProperties(t *testing.T) {
 		name                 string
 		configuration        string
 		indexName            string
-		fieldName            string
+		fieldPath            string
 		wantFieldType        string
 		wantSubtypes         []string
 		wantFieldDataEnabled bool
@@ -201,7 +201,7 @@ func TestConfigurationGetFieldProperties(t *testing.T) {
 			name:                 "transaction_customers_name",
 			configuration:        configurationTransactions,
 			indexName:            "customers",
-			fieldName:            "name",
+			fieldPath:            "name",
 			wantFieldType:        "text",
 			wantSubtypes:         []string{"keyword"},
 			wantFieldDataEnabled: false,
@@ -210,7 +210,7 @@ func TestConfigurationGetFieldProperties(t *testing.T) {
 			name:                 "transaction_logs_log_level",
 			configuration:        configurationTransactions,
 			indexName:            "logs",
-			fieldName:            "log_level",
+			fieldPath:            "log_level",
 			wantFieldType:        "keyword",
 			wantSubtypes:         []string{},
 			wantFieldDataEnabled: false,
@@ -219,7 +219,7 @@ func TestConfigurationGetFieldProperties(t *testing.T) {
 			name:                 "transaction_transactions_transactionDetails_itemName",
 			configuration:        configurationTransactions,
 			indexName:            "transactions",
-			fieldName:            "transaction_details.item_name",
+			fieldPath:            "transaction_details.item_name",
 			wantFieldType:        "text",
 			wantSubtypes:         []string{"keyword"},
 			wantFieldDataEnabled: false,
@@ -228,7 +228,7 @@ func TestConfigurationGetFieldProperties(t *testing.T) {
 			name:                 "transaction_user_behavior_actions",
 			configuration:        configurationTransactions,
 			indexName:            "user_behavior",
-			fieldName:            "actions",
+			fieldPath:            "actions",
 			wantFieldType:        "nested",
 			wantSubtypes:         []string{},
 			wantFieldDataEnabled: false,
@@ -239,7 +239,7 @@ func TestConfigurationGetFieldProperties(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			config := getConfiguration(tt.configuration)
 
-			gotFieldType, gotFieldSubTypes, gotFieldDataEnabled, err := config.GetFieldProperties(tt.indexName, tt.fieldName)
+			gotFieldType, gotFieldSubTypes, gotFieldDataEnabled, err := config.GetFieldProperties(tt.indexName, tt.fieldPath)
 			assert.NoError(t, err)
 
 			assert.Equal(t, tt.wantFieldType, gotFieldType)
