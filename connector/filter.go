@@ -1,8 +1,10 @@
 package connector
 
 import (
+	"fmt"
 	"strings"
 
+	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-elasticsearch/types"
 	"github.com/hasura/ndc-sdk-go/schema"
 )
@@ -85,24 +87,34 @@ func handleExpressionBinaryComparisonOperator(
 	collection string,
 ) (map[string]interface{}, error) {
 	fieldPath, nestedPath := joinFieldPath(state, expr.Column.FieldPath, expr.Column.Name, collection)
-	var bestSubField string
+	fieldType, fieldSubTypes, _, err := state.Configuration.GetFieldProperties(collection, fieldPath)
+	if err != nil {
+		return nil, schema.UnprocessableContentError("unable to get field types", map[string]any{
+			"fieldPath": fieldPath,
+			"index":     collection,
+		})
+	}
 
-	switch expr.Operator {
-	case "match", "match_phrase", "match_phrase_prefix", "match_bool_prefix":
-		bestSubField = getTextFieldFromState(state, fieldPath, collection)
-	case "term", "prefix", "terms":
-		bestSubField = getKeywordFieldFromState(state, fieldPath, collection)
-	case "wildcard", "regexp":
-		bestSubField = getWildcardFieldFromState(state, fieldPath, collection)
-	case "range":
-		bestSubField = getNumericFieldFromState(state, fieldPath, collection)
-	default:
+	bestFieldOrSubFieldFound := false
+	var bestFieldOrSubField string
+
+	// we need to check what type or subtype is best optimized for the operator, and use that type or subtype of the field
+	if internal.NumericalQuery[expr.Operator] {
+		// this is a numerical query, optimized for numeric types
+		bestFieldOrSubField, bestFieldOrSubFieldFound = getCorrectFieldForOperator(fieldPath, fieldType, fieldSubTypes, internal.NumericFamilyOfTypes)
+	} else if internal.TermLevelQueries[expr.Operator] && !bestFieldOrSubFieldFound {
+		// this a term level query, optimized for keyword types
+		bestFieldOrSubField, bestFieldOrSubFieldFound = getCorrectFieldForOperator(fieldPath, fieldType, fieldSubTypes, internal.KeywordFamilyOfTypes)
+	} else if internal.FullTextQueries[expr.Operator] && !bestFieldOrSubFieldFound {
+		// this is a full text query, optimized for text types
+		bestFieldOrSubField, bestFieldOrSubFieldFound = getCorrectFieldForOperator(fieldPath, fieldType, fieldSubTypes, internal.TextFamilyOfTypes)
+	} else {
 		return nil, schema.UnprocessableContentError("invalid binary comaparison operator", map[string]any{
 			"expression": expr.Operator,
 		})
 	}
 
-	value, err := evalComparisonValue(expr.Value, bestSubField, expr.Operator)
+	value, err := evalComparisonValue(expr.Value, bestFieldOrSubField, expr.Operator)
 	if err != nil {
 		return nil, err
 	}
@@ -186,80 +198,24 @@ func prepareNestedQuery(
 	return query
 }
 
-// getKeywordFieldFromState retrieves the best matching field for term level queries
-// from the state. If the field is found, it returns the corresponding field
-// name; otherwise, it returns the original columnName.
-func getKeywordFieldFromState(state *types.State, columnName string, collection string) string {
-	if collectionFields, ok := state.SupportedFilterFields[collection]; ok {
-		if keywordFields, ok := collectionFields.(map[string]interface{})["term_level_queries"].(map[string]string); ok {
-			if keywordField, ok := keywordFields[columnName]; ok {
-				return keywordField
-			}
-		}
-		if wildcardFields, ok := collectionFields.(map[string]interface{})["unstructured_text"].(map[string]string); ok {
-			if wildcardField, ok := wildcardFields[columnName]; ok {
-				return wildcardField
-			}
-		}
-	}
-	return columnName
-}
-
-// getTextFieldFromState retrieves the best matching field for full text queries
-// from the state. If the field is found, it returns the corresponding field
-// name; otherwise, it returns the original columnName.
-func getTextFieldFromState(state *types.State, columnName string, collection string) string {
-	if collectionField, ok := state.SupportedFilterFields[collection]; ok {
-		if textFields, ok := collectionField.(map[string]interface{})["full_text_queries"].(map[string]string); ok {
-			if textField, ok := textFields[columnName]; ok {
-				return textField
+// getCorrectFieldForOperator returns the best field or the `field.subtype` for the given operator.
+func getCorrectFieldForOperator(fieldPath, fieldType string, fieldSubTypes []string, bestTypesFamily map[string]bool) (bestField string, typeFound bool) {
+	if bestTypesFamily[fieldType] {
+		// if the field type is in the best types family, return the field path
+		return fieldPath, true
+	} else if len(fieldSubTypes) == 0 {
+		// if the field has no subtypes, return the field path
+		return fieldPath, false
+	} else if len(fieldSubTypes) > 0 {
+		// if the field has subtypes, return the first matching subfield appended to field path
+		for _, subType := range fieldSubTypes {
+			if bestTypesFamily[subType] {
+				return fmt.Sprintf("%s.%s", fieldPath, subType), true
 			}
 		}
 	}
-	return columnName
-}
-
-// getNumericFieldFromState retrieves the best matching field for range queries
-// from the state. If the field is found, it returns the corresponding field
-// name; otherwise, it returns the original columnName.
-func getNumericFieldFromState(state *types.State, columnName string, collection string) string {
-	if collectionField, ok := state.SupportedFilterFields[collection]; ok {
-		if numericFields, ok := collectionField.(map[string]interface{})["range_queries"].(map[string]string); ok {
-			if numericField, ok := numericFields[columnName]; ok {
-				return numericField
-			}
-		}
-		if keywordFields, ok := collectionField.(map[string]interface{})["term_level_queries"].(map[string]string); ok {
-			if keywordField, ok := keywordFields[columnName]; ok {
-				return keywordField
-			}
-		}
-		if wildcardFields, ok := collectionField.(map[string]interface{})["unstructured_text"].(map[string]string); ok {
-			if wildcardField, ok := wildcardFields[columnName]; ok {
-				return wildcardField
-			}
-		}
-	}
-	return columnName
-}
-
-// getWildcardFieldFromState retrieves the best matching field for wildcard and regexp
-// queries from the state. If the field is found, it returns the corresponding field
-// name; otherwise, it returns the original columnName.
-func getWildcardFieldFromState(state *types.State, columnName string, collection string) string {
-	if collectionFields, ok := state.SupportedFilterFields[collection]; ok {
-		if wildcardFields, ok := collectionFields.(map[string]interface{})["unstructured_text"].(map[string]string); ok {
-			if wildcardField, ok := wildcardFields[columnName]; ok {
-				return wildcardField
-			}
-		}
-		if keywordFields, ok := collectionFields.(map[string]interface{})["term_level_queries"].(map[string]string); ok {
-			if keywordField, ok := keywordFields[columnName]; ok {
-				return keywordField
-			}
-		}
-	}
-	return columnName
+	// nothing found, return the field path
+	return fieldPath, false
 }
 
 // evalComparisonValue evaluates the comparison value for scalar and variable type.
