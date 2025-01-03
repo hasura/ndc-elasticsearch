@@ -79,21 +79,16 @@ func (c *Configuration) GetFieldMap(indexName, fieldPath string) (map[string]int
 }
 
 // GetFieldProperties returns the field type, subtypes and field data enabled for the given field path.
-func (c *Configuration) GetFieldProperties(indexName, fieldPath string) (fieldType string, fieldSubTypes []string, fieldDataEnabled bool, err error) {
+func (c *Configuration) GetFieldProperties(indexName, fieldPath string) (fieldType string, subFieldMap map[string]string, fieldDataEnabled bool, err error) {
 	fieldMap, err := c.GetFieldMap(indexName, fieldPath)
 	if err != nil {
 		return "", nil, false, err
 	}
 
-	fieldsAndSubfields, _, _ := internal.ExtractTypes(fieldMap)
-
+	_, fieldType, subFieldMap = internal.ExtractTypes(fieldMap)
 	fieldDataEnabled = internal.IsFieldDtaEnabled(fieldMap)
 
-	if len(fieldsAndSubfields) == 1 {
-		return fieldsAndSubfields[0], make([]string, 0), fieldDataEnabled, nil
-	}
-
-	return fieldsAndSubfields[0], fieldsAndSubfields[1:], fieldDataEnabled, nil
+	return fieldType, subFieldMap, fieldDataEnabled, nil
 }
 
 // NativeQuery contains the definition of the native query.
