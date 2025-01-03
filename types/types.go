@@ -85,7 +85,7 @@ func (c *Configuration) GetFieldProperties(indexName, fieldPath string) (fieldTy
 		return "", nil, false, err
 	}
 
-	fieldsAndSubfields := internal.ExtractTypes(fieldMap)
+	fieldsAndSubfields, _, _ := internal.ExtractTypes(fieldMap)
 
 	fieldDataEnabled = internal.IsFieldDtaEnabled(fieldMap)
 
