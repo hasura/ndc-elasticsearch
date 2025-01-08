@@ -194,7 +194,7 @@ func TestConfigurationGetFieldProperties(t *testing.T) {
 		indexName            string
 		fieldPath            string
 		wantFieldType        string
-		wantSubtypes         []string
+		wantSubtypes         map[string]string
 		wantFieldDataEnabled bool
 	}{
 		{
@@ -203,7 +203,7 @@ func TestConfigurationGetFieldProperties(t *testing.T) {
 			indexName:            "customers",
 			fieldPath:            "name",
 			wantFieldType:        "text",
-			wantSubtypes:         []string{"keyword"},
+			wantSubtypes:         map[string]string{"keyword": "keyword"},
 			wantFieldDataEnabled: false,
 		},
 		{
@@ -212,7 +212,7 @@ func TestConfigurationGetFieldProperties(t *testing.T) {
 			indexName:            "logs",
 			fieldPath:            "log_level",
 			wantFieldType:        "keyword",
-			wantSubtypes:         []string{},
+			wantSubtypes:         map[string]string{},
 			wantFieldDataEnabled: false,
 		},
 		{
@@ -221,7 +221,7 @@ func TestConfigurationGetFieldProperties(t *testing.T) {
 			indexName:            "transactions",
 			fieldPath:            "transaction_details.item_name",
 			wantFieldType:        "text",
-			wantSubtypes:         []string{"keyword"},
+			wantSubtypes:         map[string]string{"keyword":"keyword"},
 			wantFieldDataEnabled: false,
 		},
 		{
@@ -230,7 +230,7 @@ func TestConfigurationGetFieldProperties(t *testing.T) {
 			indexName:            "user_behavior",
 			fieldPath:            "actions",
 			wantFieldType:        "nested",
-			wantSubtypes:         []string{},
+			wantSubtypes:         map[string]string{},
 			wantFieldDataEnabled: false,
 		},
 	}

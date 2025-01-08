@@ -49,7 +49,7 @@ func handleFieldTypeAggregateMetricDouble(fieldMap map[string]interface{}) {
 // This compound scalar type supports a superset of comparison and aggregation operations of all its subtypes and the actualType
 // This compund scalar type is added to the scalarTypeMap before being returned
 func GetFieldType(fieldMap map[string]interface{}, state *types.State, indexName string, fieldName string) string {
-	fieldTypes := internal.ExtractTypes(fieldMap)
+	fieldTypes, _, _ := internal.ExtractTypes(fieldMap)
 	actualFieldType := fieldTypes[0] // actualFieldType is the type type of the field that the db has. It is the main type, not the subtype
 
 	if len(fieldTypes) > 1 {
