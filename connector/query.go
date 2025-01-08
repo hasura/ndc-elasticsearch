@@ -32,6 +32,13 @@ func executeQuery(ctx context.Context, state *types.State, request *schema.Query
 	rowSets := make([]schema.RowSet, 0)
 	index := request.Collection
 
+	requestJson, err := json.MarshalIndent(request, "", "  ")
+    if err != nil {
+        fmt.Printf("Error marshalling ndc request to JSON: %v\n", err)
+    } else {
+        fmt.Printf("NDC Request: %s\n", string(requestJson))
+    }
+
 	// Identify the index from configuration
 	nativeQueries := state.Configuration.Queries
 	queryConfig, ok := nativeQueries[request.Collection]

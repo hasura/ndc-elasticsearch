@@ -1,0 +1,5 @@
+query MyQuery {
+  customers(where: {name: {term: "John"}}) {
+    name
+  }
+}

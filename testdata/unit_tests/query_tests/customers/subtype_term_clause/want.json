@@ -1,0 +1,11 @@
+{
+  "_source": [
+    "name"
+  ],
+  "query": {
+    "term": {
+      "name.raw": "John"
+    }
+  },
+  "size": 10000
+}
