@@ -1,0 +1,13 @@
+{
+  "_source": [
+    "_id",
+    "customer_id",
+    "name"
+  ],
+  "query": {
+    "prefix": {
+      "name.raw": "J"
+    }
+  },
+  "size": 10000
+}
