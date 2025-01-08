@@ -434,3 +434,72 @@ var UnSupportedSortDataTypes = []string{
 	"range",
 	"_id",
 }
+
+// TermLevelQueries queries in elasticsearch for keyword family of types
+// more reading: https://www.elastic.co/guide/en/elasticsearch/reference/current/term-level-queries.html
+var TermLevelQueries = map[string]bool{
+	"exists":   true,
+	"fuzzy":    true,
+	"ids":      true,
+	"prefix":   true,
+	"range":    true,
+	"regexp":   true,
+	"term":     true,
+	"terms":    true,
+	"term_set": true,
+	"wildcard": true,
+}
+
+// range operations are optimzed for numeric types
+var NumericalQueries = map[string]bool{
+	"range": true,
+}
+
+// FullTextQueries queries in elasticsearch for text family of types
+// more reading: https://www.elastic.co/guide/en/elasticsearch/reference/current/full-text-queries.html
+var FullTextQueries = map[string]bool{
+	"intervals":           true,
+	"match":               true,
+	"match_bool_prefix":   true,
+	"match_phrase":        true,
+	"match_phrase_prefix": true,
+	"multi_match":         true,
+	"combined_fields":     true,
+	"query_string":        true,
+	"simple_query_string": true,
+}
+
+// Used for unstructured text, like the body of an email
+// more reading: https://www.elastic.co/guide/en/elasticsearch/reference/current/text.html
+var TextFamilyOfTypes = map[string]bool{
+	"text":            true,
+	"match_only_text": true,
+	"ip":              true,
+}
+
+// Used for structured content like email addresses, hostnames, status codes, zip codes or tags.
+// https://www.elastic.co/guide/en/elasticsearch/reference/current/keyword.html
+var KeywordFamilyOfTypes = map[string]bool{
+	"keyword":          true,
+	"constant_keyword": true,
+	"wildcard":         true,
+	"date":             true,
+	"date_nanos":       true,
+	"ip":               true,
+	"version":          true,
+}
+
+// https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html
+var NumericFamilyOfTypes = map[string]bool{
+	"integer":       true,
+	"long":          true,
+	"short":         true,
+	"byte":          true,
+	"double":        true,
+	"float":         true,
+	"half_float":    true,
+	"unsigned_long": true,
+	"scaled_float":  true,
+	"date":          true,
+	"date_nanos":    true,
+}

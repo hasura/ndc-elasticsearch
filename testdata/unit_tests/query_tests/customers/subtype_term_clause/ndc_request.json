@@ -1,0 +1,25 @@
+{
+  "arguments": {},
+  "collection": "customers",
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "name": {
+        "column": "name",
+        "type": "column"
+      }
+    },
+    "predicate": {
+      "column": {
+        "type": "column",
+        "name": "name"
+      },
+      "operator": "term",
+      "type": "binary_comparison_operator",
+      "value": {
+        "type": "scalar",
+        "value": "John"
+      }
+    }
+  }
+}
