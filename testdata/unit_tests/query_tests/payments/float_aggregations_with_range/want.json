@@ -1,0 +1,65 @@
+{
+  "_source": {
+    "excludes": [
+      "*"
+    ]
+  },
+  "aggs": {
+    "metricValue__count": {
+      "filter": {
+        "exists": {
+          "field": "metric_value"
+        }
+      }
+    },
+    "metricValue__count_distinct": {
+      "cardinality": {
+        "field": "metric_value"
+      }
+    },
+    "metricValue_avg": {
+      "avg": {
+        "field": "metric_value"
+      }
+    },
+    "metricValue_cardinality": {
+      "cardinality": {
+        "field": "metric_value"
+      }
+    },
+    "metricValue_max": {
+      "max": {
+        "field": "metric_value"
+      }
+    },
+    "metricValue_min": {
+      "min": {
+        "field": "metric_value"
+      }
+    },
+    "metricValue_stats": {
+      "stats": {
+        "field": "metric_value"
+      }
+    },
+    "metricValue_sum": {
+      "sum": {
+        "field": "metric_value"
+      }
+    },
+    "metricValue_value_count": {
+      "value_count": {
+        "field": "metric_value"
+      }
+    }
+  },
+  "from": 1,
+  "query": {
+    "range": {
+      "metric_value": {
+        "lt": "75"
+      }
+    }
+  },
+  "size": 4
+}

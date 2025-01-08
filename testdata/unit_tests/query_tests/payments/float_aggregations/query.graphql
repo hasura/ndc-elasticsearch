@@ -1,0 +1,21 @@
+query MyQuery {
+  metricsAggregate {
+    metricValue {
+      _count
+      _count_distinct
+      avg
+      cardinality
+      max
+      min
+      stats {
+        sum
+        max
+        min
+        count
+        avg
+      }
+      sum
+      value_count
+    }
+  }
+}

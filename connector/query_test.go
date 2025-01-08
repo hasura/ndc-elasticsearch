@@ -89,6 +89,22 @@ var tests = []test{
 		group: "customers",
 		name:  "sort_by_subtype",
 	},
+	{
+		group: "payments",
+		name:  "multiple_aggregations",
+	},
+	{
+		group: "payments",
+		name:  "multiple_aggregations_with_where_clause",
+	},
+	{
+		group: "payments",
+		name:  "float_aggregations",
+	},
+	{
+		group: "payments",
+		name:  "float_aggregations_with_range",
+	},
 }
 
 func TestPrepareElasticsearchQuery(t *testing.T) {

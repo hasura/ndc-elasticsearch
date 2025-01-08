@@ -1,0 +1,23 @@
+query MyQuery {
+  metricsAggregate(
+    filter_input: {limit: 4, offset: 1, where: {metricValue: {range: {boost: "", gt: "", gte: "", lt: "75", lte: ""}}}}
+  ) {
+    metricValue {
+      _count
+      _count_distinct
+      avg
+      cardinality
+      max
+      min
+      stats {
+        sum
+        max
+        min
+        count
+        avg
+      }
+      sum
+      value_count
+    }
+  }
+}

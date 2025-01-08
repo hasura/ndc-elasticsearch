@@ -1,0 +1,33 @@
+query MyQuery {
+  customersAggregate(
+    filter_input: {limit: 2, where: {customerId: {prefix: "CUST"}}}
+  ) {
+    _count
+    customerId {
+      _count
+      _count_distinct
+      cardinality
+      string_stats {
+        avgLength
+        count
+        entropy
+        maxLength
+        minLength
+      }
+      value_count
+    }
+    email {
+      _count
+      _count_distinct
+      cardinality
+      string_stats {
+        avgLength
+        count
+        entropy
+        maxLength
+        minLength
+      }
+      value_count
+    }
+  }
+}
