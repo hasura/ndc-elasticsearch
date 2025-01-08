@@ -1,0 +1,69 @@
+{
+  "_source": {
+    "excludes": [
+      "*"
+    ]
+  },
+  "aggs": {
+    "customerId__count": {
+      "filter": {
+        "exists": {
+          "field": "customer_id"
+        }
+      }
+    },
+    "customerId__count_distinct": {
+      "cardinality": {
+        "field": "customer_id"
+      }
+    },
+    "customerId_cardinality": {
+      "cardinality": {
+        "field": "customer_id"
+      }
+    },
+    "customerId_string_stats": {
+      "string_stats": {
+        "field": "customer_id"
+      }
+    },
+    "customerId_value_count": {
+      "value_count": {
+        "field": "customer_id"
+      }
+    },
+    "email__count": {
+      "filter": {
+        "exists": {
+          "field": "email"
+        }
+      }
+    },
+    "email__count_distinct": {
+      "cardinality": {
+        "field": "email"
+      }
+    },
+    "email_cardinality": {
+      "cardinality": {
+        "field": "email"
+      }
+    },
+    "email_string_stats": {
+      "string_stats": {
+        "field": "email"
+      }
+    },
+    "email_value_count": {
+      "value_count": {
+        "field": "email"
+      }
+    }
+  },
+  "query": {
+    "prefix": {
+      "customer_id": "CUST"
+    }
+  },
+  "size": 2
+}
