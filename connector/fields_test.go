@@ -26,6 +26,9 @@ var tests = []test{
 	{
 		name: "books",
 	},
+	{
+		name: "books_2",
+	},
 }
 
 func TestSchema(t *testing.T) {

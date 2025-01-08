@@ -85,11 +85,15 @@ var tests = []test{
 		group: "payments",
 		name:  "simple_terms_clause",
 	},
+	{
+		group: "customers",
+		name:  "sort_by_subtype",
+	},
 }
 
 func TestPrepareElasticsearchQuery(t *testing.T) {
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.group + "." + tt.name, func(t *testing.T) {
 			ctx := context.Background()
 			ctx = context.WithValue(ctx, "postProcessor", &types.PostProcessor{})
 			initTest(t, &tt)
