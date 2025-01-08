@@ -199,7 +199,7 @@ func prepareNestedQuery(
 }
 
 // getCorrectFieldForOperator returns the best field or the `field.subtype` for the given operator.
-func getCorrectFieldForOperator(fieldPath, fieldType string, fieldSubTypes []string, bestTypesFamily map[string]bool) (bestField string, typeFound bool) {
+func getCorrectFieldForOperator(fieldPath, fieldType string, fieldSubTypes map[string]string, bestTypesFamily map[string]bool) (bestField string, typeFound bool) {
 	if bestTypesFamily[fieldType] {
 		// if the field type is in the best types family, return the field path
 		return fieldPath, true
@@ -208,9 +208,9 @@ func getCorrectFieldForOperator(fieldPath, fieldType string, fieldSubTypes []str
 		return fieldPath, false
 	} else if len(fieldSubTypes) > 0 {
 		// if the field has subtypes, return the first matching subfield appended to field path
-		for _, subType := range fieldSubTypes {
+		for subType, subField := range fieldSubTypes {
 			if bestTypesFamily[subType] {
-				return fmt.Sprintf("%s.%s", fieldPath, subType), true
+				return fmt.Sprintf("%s.%s", fieldPath, subField), true
 			}
 		}
 	}
