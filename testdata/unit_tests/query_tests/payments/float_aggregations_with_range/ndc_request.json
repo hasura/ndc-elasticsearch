@@ -1,0 +1,74 @@
+{
+  "arguments": {},
+  "collection": "metrics",
+  "collection_relationships": {},
+  "query": {
+    "aggregates": {
+      "metricValue__count": {
+        "column": "metric_value",
+        "distinct": false,
+        "type": "column_count"
+      },
+      "metricValue__count_distinct": {
+        "column": "metric_value",
+        "distinct": true,
+        "type": "column_count"
+      },
+      "metricValue_avg": {
+        "column": "metric_value",
+        "function": "avg",
+        "type": "single_column"
+      },
+      "metricValue_cardinality": {
+        "column": "metric_value",
+        "function": "cardinality",
+        "type": "single_column"
+      },
+      "metricValue_max": {
+        "column": "metric_value",
+        "function": "max",
+        "type": "single_column"
+      },
+      "metricValue_min": {
+        "column": "metric_value",
+        "function": "min",
+        "type": "single_column"
+      },
+      "metricValue_stats": {
+        "column": "metric_value",
+        "function": "stats",
+        "type": "single_column"
+      },
+      "metricValue_sum": {
+        "column": "metric_value",
+        "function": "sum",
+        "type": "single_column"
+      },
+      "metricValue_value_count": {
+        "column": "metric_value",
+        "function": "value_count",
+        "type": "single_column"
+      }
+    },
+    "limit": 4,
+    "offset": 1,
+    "predicate": {
+      "column": {
+        "type": "column",
+        "name": "metric_value"
+      },
+      "operator": "range",
+      "type": "binary_comparison_operator",
+      "value": {
+        "type": "scalar",
+        "value": {
+          "boost": "",
+          "gt": "",
+          "gte": "",
+          "lt": "75",
+          "lte": ""
+        }
+      }
+    }
+  }
+}

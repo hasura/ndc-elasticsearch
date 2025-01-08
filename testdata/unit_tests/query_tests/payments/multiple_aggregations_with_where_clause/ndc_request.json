@@ -1,0 +1,75 @@
+{
+  "arguments": {},
+  "collection": "customers",
+  "collection_relationships": {},
+  "query": {
+    "aggregates": {
+      "_count": {
+        "type": "star_count"
+      },
+      "customerId__count": {
+        "column": "customer_id",
+        "distinct": false,
+        "type": "column_count"
+      },
+      "customerId__count_distinct": {
+        "column": "customer_id",
+        "distinct": true,
+        "type": "column_count"
+      },
+      "customerId_cardinality": {
+        "column": "customer_id",
+        "function": "cardinality",
+        "type": "single_column"
+      },
+      "customerId_string_stats": {
+        "column": "customer_id",
+        "function": "string_stats",
+        "type": "single_column"
+      },
+      "customerId_value_count": {
+        "column": "customer_id",
+        "function": "value_count",
+        "type": "single_column"
+      },
+      "email__count": {
+        "column": "email",
+        "distinct": false,
+        "type": "column_count"
+      },
+      "email__count_distinct": {
+        "column": "email",
+        "distinct": true,
+        "type": "column_count"
+      },
+      "email_cardinality": {
+        "column": "email",
+        "function": "cardinality",
+        "type": "single_column"
+      },
+      "email_string_stats": {
+        "column": "email",
+        "function": "string_stats",
+        "type": "single_column"
+      },
+      "email_value_count": {
+        "column": "email",
+        "function": "value_count",
+        "type": "single_column"
+      }
+    },
+    "limit": 2,
+    "predicate": {
+      "column": {
+        "type": "column",
+        "name": "customer_id"
+      },
+      "operator": "prefix",
+      "type": "binary_comparison_operator",
+      "value": {
+        "type": "scalar",
+        "value": "CUST"
+      }
+    }
+  }
+}

@@ -94,6 +94,22 @@ var tests = []test{
 		name:  "sort_by_subtype",
 	},
 	{
+		group: "payments",
+		name:  "multiple_aggregations",
+	},
+	{
+		group: "payments",
+		name:  "multiple_aggregations_with_where_clause",
+	},
+	{
+		group: "payments",
+		name:  "float_aggregations",
+	},
+	{
+		group: "payments",
+		name:  "float_aggregations_with_range",
+	},
+	{
 		group: "customers",
 		name:  "simple_subtype_where_clause",
 	},

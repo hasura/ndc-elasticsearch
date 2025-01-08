@@ -1,0 +1,31 @@
+query MyQuery {
+  customersAggregate {
+    _count
+    customerId {
+      _count
+      _count_distinct
+      cardinality
+      string_stats {
+        avgLength
+        count
+        entropy
+        maxLength
+        minLength
+      }
+      value_count
+    }
+    email {
+      _count
+      _count_distinct
+      cardinality
+      string_stats {
+        avgLength
+        count
+        entropy
+        maxLength
+        minLength
+      }
+      value_count
+    }
+  }
+}
