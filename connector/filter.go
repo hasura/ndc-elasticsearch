@@ -99,7 +99,7 @@ func handleExpressionBinaryComparisonOperator(
 	var bestFieldOrSubField string
 
 	// we need to check what type or subtype is best optimized for the operator, and use that type or subtype of the field
-	if internal.NumericalQuery[expr.Operator] {
+	if internal.NumericalQueries[expr.Operator] {
 		// this is a numerical query, optimized for numeric types
 		bestFieldOrSubField, bestFieldOrSubFieldFound = getCorrectFieldForOperator(fieldPath, fieldType, fieldSubTypes, internal.NumericFamilyOfTypes)
 	} else if internal.TermLevelQueries[expr.Operator] && !bestFieldOrSubFieldFound {

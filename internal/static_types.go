@@ -451,7 +451,7 @@ var TermLevelQueries = map[string]bool{
 }
 
 // range operations are optimzed for numeric types
-var NumericalQuery = map[string]bool{
+var NumericalQueries = map[string]bool{
 	"range": true,
 }
 
