@@ -87,6 +87,40 @@ func IsFieldDtaEnabled(fieldMap map[string]interface{}) bool {
 	return fieldDataEnalbed
 }
 
+// GetBestFieldOrSubFieldForAggregation returns the best field or subfield for the given aggregation operator
+func GetBestFieldOrSubFieldForAggregation(fieldPath, fieldType string, subFieldMap map[string]string, operator string) (bestFieldOrSubField string, operatorFound bool) {
+	// call the getBestFieldOrSubFieldForOperators function with the aggregation operators
+	return getBestFieldOrSubFieldForOperators(fieldPath, fieldType, subFieldMap, operator, NumericalAggregations, TermLevelAggregations, FullTextAggregations)
+}
+
+// GetBestFieldOrSubFieldForQuery returns the best field or subfield for the given query operator
+func GetBestFieldOrSubFieldForQuery(fieldPath, fieldType string, subFieldMap map[string]string, operator string) (bestFieldOrSubField string, operatorFound bool) {
+	// call the getBestFieldOrSubFieldForOperators function with the query operators
+	return getBestFieldOrSubFieldForOperators(fieldPath, fieldType, subFieldMap, operator, NumericalQueries, TermLevelQueries, FullTextQueries)
+}
+
+// getBestFieldOrSubFieldForOperators returns the best field or subfield for the given operator
+func getBestFieldOrSubFieldForOperators(fieldPath, fieldType string, subFieldMap map[string]string, operator string, numericOperators, termLevelOperators, fullTextOperators map[string]bool) (bestFieldOrSubField string, operatorFound bool) {
+	bestFieldOrSubFieldFound := false
+
+	if numericOperators[operator] {
+		// if the operator is a numeric operator, get the best field or subfield from the numeric family
+		bestFieldOrSubField, bestFieldOrSubFieldFound = GetBestFieldOrSubFieldForFamily(fieldPath, fieldType, subFieldMap, NumericFamilyOfTypes)
+		operatorFound = true
+	}
+	if termLevelOperators[operator] && !bestFieldOrSubFieldFound {
+		// if the operator is a term level operator, get the best field or subfield from the keyword family
+		bestFieldOrSubField, bestFieldOrSubFieldFound = GetBestFieldOrSubFieldForFamily(fieldPath, fieldType, subFieldMap, KeywordFamilyOfTypes)
+		operatorFound = true
+	}
+	if fullTextOperators[operator] && !bestFieldOrSubFieldFound {
+		// if the operator is a full text operator, get the best field or subfield from the text family
+		bestFieldOrSubField, _ = GetBestFieldOrSubFieldForFamily(fieldPath, fieldType, subFieldMap, TextFamilyOfTypes)
+		operatorFound = true
+	}
+	return bestFieldOrSubField, operatorFound
+}
+
 // GetBestFieldOrSubFieldForFamily returns the best field or the `field.subtype` match found in bestTypesFamily
 func GetBestFieldOrSubFieldForFamily(fieldPath, fieldType string, fieldSubTypes map[string]string, bestTypesFamily map[string]bool) (bestField string, typeFound bool) {
 	if bestTypesFamily[fieldType] {

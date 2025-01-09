@@ -94,20 +94,8 @@ func handleExpressionBinaryComparisonOperator(
 		})
 	}
 
-	bestFieldOrSubFieldFound := false
-	var bestFieldOrSubField string
-
-	// we need to check what type or subtype is best optimized for the operator, and use that type or subtype of the field
-	if internal.NumericalQueries[expr.Operator] {
-		// this is a numerical query, optimized for numeric types
-		bestFieldOrSubField, bestFieldOrSubFieldFound = internal.GetBestFieldOrSubFieldForFamily(fieldPath, fieldType, fieldSubTypes, internal.NumericFamilyOfTypes)
-	} else if internal.TermLevelQueries[expr.Operator] && !bestFieldOrSubFieldFound {
-		// this a term level query, optimized for keyword types
-		bestFieldOrSubField, bestFieldOrSubFieldFound = internal.GetBestFieldOrSubFieldForFamily(fieldPath, fieldType, fieldSubTypes, internal.KeywordFamilyOfTypes)
-	} else if internal.FullTextQueries[expr.Operator] && !bestFieldOrSubFieldFound {
-		// this is a full text query, optimized for text types
-		bestFieldOrSubField, bestFieldOrSubFieldFound = internal.GetBestFieldOrSubFieldForFamily(fieldPath, fieldType, fieldSubTypes, internal.TextFamilyOfTypes)
-	} else {
+	bestFieldOrSubField, operatorFound := internal.GetBestFieldOrSubFieldForQuery(fieldPath, fieldType, fieldSubTypes, expr.Operator)
+	if !operatorFound {
 		return nil, schema.UnprocessableContentError("invalid binary comaparison operator", map[string]any{
 			"expression": expr.Operator,
 		})

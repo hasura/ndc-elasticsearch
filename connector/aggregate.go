@@ -97,6 +97,7 @@ func prepareAggregateColumnCount(ctx context.Context, state *types.State, collec
 		aggregation = map[string]interface{}{
 			"filter": map[string]interface{}{
 				"exists": map[string]interface{}{
+					// we don't need to find a suitable subfield for exists, it works for all types
 					"field": field,
 				},
 			},
@@ -142,23 +143,8 @@ func prepareAggregateSingleColumn(ctx context.Context, state *types.State, funct
 
 func getCorrectFieldOrSubFieldForFunction(state *types.State, collection, field string, function string) (string, error) {
 	fType, subFieldMap, _, _ := state.Configuration.GetFieldProperties(collection, field)
+	bestFieldOrSubField, operatorFound := internal.GetBestFieldOrSubFieldForAggregation(field, fType, subFieldMap, function)
 
-	bestFieldOrSubFieldFound := false
-	var bestFieldOrSubField string
-	operatorFound := false
-
-	if internal.NumericalAggregations[function] {
-		bestFieldOrSubField, bestFieldOrSubFieldFound = internal.GetBestFieldOrSubFieldForFamily(field, fType, subFieldMap, internal.NumericFamilyOfTypes)
-		operatorFound = true
-	}
-	if internal.TermLevelAggregations[function] && !bestFieldOrSubFieldFound {
-		bestFieldOrSubField, bestFieldOrSubFieldFound = internal.GetBestFieldOrSubFieldForFamily(field, fType, subFieldMap, internal.KeywordFamilyOfTypes)
-		operatorFound = true
-	}
-	if internal.FullTextAggregations[function] && !bestFieldOrSubFieldFound {
-		bestFieldOrSubField, _ = internal.GetBestFieldOrSubFieldForFamily(field, fType, subFieldMap, internal.TextFamilyOfTypes)
-		operatorFound = true
-	}
 	if !operatorFound {
 		return "", schema.UnprocessableContentError("invalid aggregation function", map[string]any{
 			"function": function,
