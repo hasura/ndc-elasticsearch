@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Aggregation functions using subfields ([#46](https://github.com/hasura/ndc-elasticsearch/pull/46))
+
 - Query clauses using subfields ([#44](https://github.com/hasura/ndc-elasticsearch/pull/44))
 
 ## [1.1.2]
