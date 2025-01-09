@@ -117,6 +117,14 @@ var tests = []test{
 		group: "customers",
 		name:  "subtype_term_clause",
 	},
+	{
+		group: "payments",
+		name:  "cardinality_aggregation",
+	},
+	{
+		group: "payments",
+		name:  "count_distinct_aggregation",
+	},
 }
 
 func TestPrepareElasticsearchQuery(t *testing.T) {
