@@ -450,9 +450,25 @@ var TermLevelQueries = map[string]bool{
 	"wildcard": true,
 }
 
+var TermLevelAggregations = map[string]bool{
+	"value_count":  true,
+	"cardinality":  true,
+	"string_stats": true,
+}
+
 // range operations are optimzed for numeric types
 var NumericalQueries = map[string]bool{
 	"range": true,
+}
+
+var NumericalAggregations = map[string]bool{
+	"max":         true,
+	"min":         true,
+	"sum":         true,
+	"avg":         true,
+	"value_count": true,
+	"cardinality": true,
+	"stats":       true,
 }
 
 // FullTextQueries queries in elasticsearch for text family of types
@@ -468,6 +484,8 @@ var FullTextQueries = map[string]bool{
 	"query_string":        true,
 	"simple_query_string": true,
 }
+
+var FullTextAggregations = map[string]bool{}
 
 // Used for unstructured text, like the body of an email
 // more reading: https://www.elastic.co/guide/en/elasticsearch/reference/current/text.html
