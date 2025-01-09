@@ -1,8 +1,6 @@
 package connector
 
 import (
-	"fmt"
-
 	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-elasticsearch/types"
 	"github.com/hasura/ndc-sdk-go/schema"
@@ -45,13 +43,8 @@ func prepareSortElement(element *schema.OrderByElement, state *types.State, coll
 		}
 
 		if !internal.IsSortSupported(fieldType, fieldDataEnabled) {
-			// since the type does not support sorting, we iterate over the subfields to find a subfield that does
-			for subFieldType, subField := range subFieldMap {
-				if internal.IsSortSupported(subFieldType, fieldDataEnabled) {
-					validField = fmt.Sprintf("%s.%s", validField, subField)
-					break
-				}
-			}
+			// since the type does not support sorting, we need to find the best subfield to sort on
+			validField, _ = internal.GetBestFieldOrSubFieldForQuery(fieldPath, fieldType, subFieldMap, "__sort")
 		}
 
 		fieldPath = validField
