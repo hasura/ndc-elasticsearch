@@ -86,3 +86,23 @@ func IsFieldDtaEnabled(fieldMap map[string]interface{}) bool {
 	}
 	return fieldDataEnalbed
 }
+
+// GetBestFieldOrSubFieldForFamily returns the best field or the `field.subtype` match found in bestTypesFamily
+func GetBestFieldOrSubFieldForFamily(fieldPath, fieldType string, fieldSubTypes map[string]string, bestTypesFamily map[string]bool) (bestField string, typeFound bool) {
+	if bestTypesFamily[fieldType] {
+		// if the field type is in the best types family, return the field path
+		return fieldPath, true
+	} else if len(fieldSubTypes) == 0 {
+		// if the field has no subtypes, return the field path
+		return fieldPath, false
+	} else if len(fieldSubTypes) > 0 {
+		// if the field has subtypes, return the first matching subfield appended to field path
+		for subType, subField := range fieldSubTypes {
+			if bestTypesFamily[subType] {
+				return fieldPath + "." + subField, true
+			}
+		}
+	}
+	// nothing found, return the field path
+	return fieldPath, false
+}
