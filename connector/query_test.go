@@ -125,6 +125,10 @@ var tests = []test{
 		group: "payments",
 		name:  "count_distinct_aggregation",
 	},
+	{
+		group: "payments",
+		name:  "subfield_cardinality_aggregation",
+	},
 }
 
 func TestPrepareElasticsearchQuery(t *testing.T) {

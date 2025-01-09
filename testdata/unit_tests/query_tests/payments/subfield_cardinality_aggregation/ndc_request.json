@@ -1,0 +1,14 @@
+{
+  "arguments": {},
+  "collection": "customers",
+  "collection_relationships": {},
+  "query": {
+    "aggregates": {
+      "name_cardinality": {
+        "column": "name",
+        "function": "cardinality",
+        "type": "single_column"
+      }
+    }
+  }
+}
