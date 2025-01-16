@@ -1,0 +1,14 @@
+{
+  "arguments": {},
+  "collection": "customers",
+  "collection_relationships": {},
+  "query": {
+    "aggregates": {
+      "customerId__count_distinct": {
+        "column": "customer_id",
+        "distinct": true,
+        "type": "column_count"
+      }
+    }
+  }
+}

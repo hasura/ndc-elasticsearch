@@ -1,7 +1,6 @@
 package connector
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/hasura/ndc-elasticsearch/internal"
@@ -95,20 +94,8 @@ func handleExpressionBinaryComparisonOperator(
 		})
 	}
 
-	bestFieldOrSubFieldFound := false
-	var bestFieldOrSubField string
-
-	// we need to check what type or subtype is best optimized for the operator, and use that type or subtype of the field
-	if internal.NumericalQueries[expr.Operator] {
-		// this is a numerical query, optimized for numeric types
-		bestFieldOrSubField, bestFieldOrSubFieldFound = getCorrectFieldForOperator(fieldPath, fieldType, fieldSubTypes, internal.NumericFamilyOfTypes)
-	} else if internal.TermLevelQueries[expr.Operator] && !bestFieldOrSubFieldFound {
-		// this a term level query, optimized for keyword types
-		bestFieldOrSubField, bestFieldOrSubFieldFound = getCorrectFieldForOperator(fieldPath, fieldType, fieldSubTypes, internal.KeywordFamilyOfTypes)
-	} else if internal.FullTextQueries[expr.Operator] && !bestFieldOrSubFieldFound {
-		// this is a full text query, optimized for text types
-		bestFieldOrSubField, bestFieldOrSubFieldFound = getCorrectFieldForOperator(fieldPath, fieldType, fieldSubTypes, internal.TextFamilyOfTypes)
-	} else {
+	bestFieldOrSubField, operatorFound := internal.GetBestFieldOrSubFieldForQuery(fieldPath, fieldType, fieldSubTypes, expr.Operator)
+	if !operatorFound {
 		return nil, schema.UnprocessableContentError("invalid binary comaparison operator", map[string]any{
 			"expression": expr.Operator,
 		})
@@ -196,26 +183,6 @@ func prepareNestedQuery(
 	}
 
 	return query
-}
-
-// getCorrectFieldForOperator returns the best field or the `field.subtype` for the given operator.
-func getCorrectFieldForOperator(fieldPath, fieldType string, fieldSubTypes map[string]string, bestTypesFamily map[string]bool) (bestField string, typeFound bool) {
-	if bestTypesFamily[fieldType] {
-		// if the field type is in the best types family, return the field path
-		return fieldPath, true
-	} else if len(fieldSubTypes) == 0 {
-		// if the field has no subtypes, return the field path
-		return fieldPath, false
-	} else if len(fieldSubTypes) > 0 {
-		// if the field has subtypes, return the first matching subfield appended to field path
-		for subType, subField := range fieldSubTypes {
-			if bestTypesFamily[subType] {
-				return fmt.Sprintf("%s.%s", fieldPath, subField), true
-			}
-		}
-	}
-	// nothing found, return the field path
-	return fieldPath, false
 }
 
 // evalComparisonValue evaluates the comparison value for scalar and variable type.

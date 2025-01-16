@@ -41,7 +41,7 @@ func prepareAggregateQuery(ctx context.Context, aggregates schema.QueryAggregate
 		aggregationColumn = validField
 
 		postProcessor.ColumnAggregate[aggregationName] = false
-		aggregation, err := prepareAggregate(ctx, aggregationName, aggregation, aggregationColumn, path)
+		aggregation, err := prepareAggregate(ctx, state, aggregationName, aggregation, collection, aggregationColumn, path)
 		if err != nil {
 			return nil, err
 		}
@@ -53,14 +53,17 @@ func prepareAggregateQuery(ctx context.Context, aggregates schema.QueryAggregate
 }
 
 // prepareAggregate prepares the columnCount and SingleColumn query based on the aggregates in the query request.
-func prepareAggregate(ctx context.Context, aggName string, agg schema.Aggregate, column string, path string) (map[string]interface{}, error) {
+func prepareAggregate(ctx context.Context, state *types.State, aggName string, agg schema.Aggregate, collection string, column string, path string) (map[string]interface{}, error) {
 	var aggregation map[string]interface{}
+	var err error
 	switch a := agg.Interface().(type) {
 	case *schema.AggregateColumnCount:
-		aggregation = prepareAggregateColumnCount(ctx, column, path, a.Distinct, aggName)
+		aggregation, err = prepareAggregateColumnCount(ctx, state, collection, column, path, a.Distinct, aggName)
+		if err != nil {
+			return nil, err
+		}
 	case *schema.AggregateSingleColumn:
-		var err error
-		aggregation, err = prepareAggregateSingleColumn(ctx, a.Function, column, path, aggName)
+		aggregation, err = prepareAggregateSingleColumn(ctx, state, a.Function, collection, column, path, aggName)
 		if err != nil {
 			return nil, err
 		}
@@ -74,22 +77,29 @@ func prepareAggregate(ctx context.Context, aggName string, agg schema.Aggregate,
 
 // prepareAggregateColumnCount prepares the column count query based on the aggregates in the query request.
 // If the field is nested, it generates a nested query to count the occurrences of the field in the nested document.
-func prepareAggregateColumnCount(ctx context.Context, field string, path string, isDistinct bool, aggName string) map[string]interface{} {
-	// Prepare the base aggregation query
-	aggregation := map[string]interface{}{
-		"field": field,
-	}
+func prepareAggregateColumnCount(ctx context.Context, state *types.State, collection string, field string, path string, isDistinct bool, aggName string) (map[string]interface{}, error) {
+	// the aggregation query
+	var aggregation map[string]interface{}
 
 	// If distinct flag is set, count distinct values
 	if isDistinct {
+		bestFieldOrSubField, err := getCorrectFieldOrSubFieldForFunction(state, collection, field, "cardinality")
+		if err != nil {
+			return nil, err
+		}
 		aggregation = map[string]interface{}{
-			"cardinality": aggregation,
+			"cardinality": map[string]interface{}{
+				"field": bestFieldOrSubField,
+			},
 		}
 	} else {
 		// Otherwise, count all occurrences
 		aggregation = map[string]interface{}{
 			"filter": map[string]interface{}{
-				"exists": aggregation,
+				"exists": map[string]interface{}{
+					// we don't need to find a suitable subfield for exists, it works for all types
+					"field": field,
+				},
 			},
 		}
 	}
@@ -99,12 +109,12 @@ func prepareAggregateColumnCount(ctx context.Context, field string, path string,
 		aggregation = prepareNestedAggregate(ctx, aggName, aggregation, path)
 	}
 
-	return aggregation
+	return aggregation, nil
 }
 
 // prepareAggregateSingleColumn prepares the single column query based on the aggregates in the query request.
 // If the field is nested, it generates a nested query to perform the specified function on the field in the nested document.
-func prepareAggregateSingleColumn(ctx context.Context, function, field string, path string, aggName string) (map[string]interface{}, error) {
+func prepareAggregateSingleColumn(ctx context.Context, state *types.State, function, collection, field string, path string, aggName string) (map[string]interface{}, error) {
 	// Validate the function
 	if !internal.Contains(internal.ValidFunctions, function) {
 		return nil, schema.UnprocessableContentError("invalid aggregate function", map[string]any{
@@ -112,10 +122,14 @@ func prepareAggregateSingleColumn(ctx context.Context, function, field string, p
 		})
 	}
 
+	bestFieldOrSubField, err := getCorrectFieldOrSubFieldForFunction(state, collection, field, function)
+	if err != nil {
+		return nil, err
+	}
 	// Prepare the aggregation query
 	aggregation := map[string]interface{}{
 		function: map[string]interface{}{
-			"field": field,
+			"field": bestFieldOrSubField,
 		},
 	}
 
@@ -125,6 +139,18 @@ func prepareAggregateSingleColumn(ctx context.Context, function, field string, p
 	}
 
 	return aggregation, nil
+}
+
+func getCorrectFieldOrSubFieldForFunction(state *types.State, collection, field string, function string) (string, error) {
+	fType, subFieldMap, _, _ := state.Configuration.GetFieldProperties(collection, field)
+	bestFieldOrSubField, operatorFound := internal.GetBestFieldOrSubFieldForAggregation(field, fType, subFieldMap, function)
+
+	if !operatorFound {
+		return "", schema.UnprocessableContentError("invalid aggregation function", map[string]any{
+			"function": function,
+		})
+	}
+	return bestFieldOrSubField, nil
 }
 
 // prepareNestedAggregate generates a nested query to perform the specified function on the field in the nested document.

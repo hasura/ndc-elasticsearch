@@ -1,0 +1,15 @@
+{
+  "_source": {
+    "excludes": [
+      "*"
+    ]
+  },
+  "aggs": {
+    "customerId_cardinality": {
+      "cardinality": {
+        "field": "customer_id"
+      }
+    }
+  },
+  "size": 0
+}

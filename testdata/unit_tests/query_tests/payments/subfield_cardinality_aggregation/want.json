@@ -1,0 +1,15 @@
+{
+  "_source": {
+    "excludes": [
+      "*"
+    ]
+  },
+  "aggs": {
+    "name_cardinality": {
+      "cardinality": {
+        "field": "name.keyword"
+      }
+    }
+  },
+  "size": 0
+}
