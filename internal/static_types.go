@@ -448,6 +448,7 @@ var TermLevelQueries = map[string]bool{
 	"terms":    true,
 	"term_set": true,
 	"wildcard": true,
+	"__sort":   true, // __sort is a custom operator that represents sorting operation (this is *NOT* an elasticsearch operator)
 }
 
 var TermLevelAggregations = map[string]bool{
@@ -458,7 +459,8 @@ var TermLevelAggregations = map[string]bool{
 
 // range operations are optimzed for numeric types
 var NumericalQueries = map[string]bool{
-	"range": true,
+	"range":  true,
+	"__sort": true, // __sort is a custom operator that represents sorting operation (this is *NOT* an elasticsearch operator)
 }
 
 var NumericalAggregations = map[string]bool{
