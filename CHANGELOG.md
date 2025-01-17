@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.3]
+
 ### Changed
 
 - Set query result size to 0 if it is an aggregation query ([#46](https://github.com/hasura/ndc-elasticsearch/pull/46))
