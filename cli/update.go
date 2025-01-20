@@ -35,6 +35,12 @@ func updateConfig(ctx context.Context, configDir string) error {
 		return err
 	}
 
+	// Get aliases for indices and add them to mappings.
+	_, err = client.GetAliases(ctx, mappings)
+	if err != nil {
+		return err
+	}
+
 	configPath := filepath.Join(configDir, ConfigFileName)
 
 	// Marshal the mappings into a JSON configuration file.
