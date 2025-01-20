@@ -17,8 +17,18 @@ See also: [development instructions](./development.md)
 
 ## Index mappings
 
-Index mappings are added by introspecting the Elasticsearch provided during update of the configuration directory.
+Index mappings are added by introspecting the Elasticsearch database provided during update of the configuration directory.
 These mappings are similar to what we get in [Elasticsearch's mappings API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html).
+
+## Index aliases
+
+Index aliases are added by intropsecting the Elasticsearch database during the update of the configuration directory. Aliases for an index are added as separate indexes in the `indices` key of the `configuration.json` file, with the mappings of the original index copied to them.
+
+More reading on Elasticsearch index aliases: https://www.elastic.co/guide/en/elasticsearch/reference/current/aliases.html
+
+> **NOTE** 
+>
+> If you change an alias in a way that changes its underlying mappings, please re-introspect the datasource to get the updated mappings for the alias.
 
 ## Native Queries
 
