@@ -120,11 +120,11 @@ func (e *Client) GetIndices(ctx context.Context) ([]string, error) {
 	return result, nil
 }
 
-// GetAliases Returns aliases for comma seperated list of indices.
-func (e *Client) GetAliases(ctx context.Context, mappings interface{}) (interface{}, error) {
+// GetAliases Returns aliases for all indices.
+func (e *Client) GetAliases(ctx context.Context) (aliasToIndexMap map[string]string, err error) {
 	// Get aliases for all indices
 	req := esapi.CatAliasesRequest{
-		Name:  []string{},
+		Name:   []string{},
 		Format: "json",
 	}
 
@@ -145,37 +145,37 @@ func (e *Client) GetAliases(ctx context.Context, mappings interface{}) (interfac
 	}
 
 	// Parse alias result to get alias to index mapping
-	unmarshalledResult := make([]map[string]string, 0)
-	err = json.Unmarshal(resultJson, &unmarshalledResult)
+	unmarshalledJsonArray := make([]map[string]string, 0)
+	err = json.Unmarshal(resultJson, &unmarshalledJsonArray)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling alias result: %s", err)
 	}
 
-	aliasToIndexMap := make(map[string]string)
+	aliasToIndexMap = make(map[string]string)
 
-	for _, obj := range unmarshalledResult {
-		aliasToIndexMap[obj["alias"]] = obj["index"]
+	for _, jsonObj := range unmarshalledJsonArray {
+		aliasToIndexMap[jsonObj["alias"]] = jsonObj["index"]
 	}
 
+	return aliasToIndexMap, nil
+}
+
+// AddAliasesToMappings adds aliases to mappings
+// Each alias is added as a separate index
+// The mappings of original index are copied to alias index
+func (e *Client) AddAliasesToMappings(ctx context.Context, aliasToIndexMap map[string]string, mappings map[string]interface{}) {
 	// Add aliases to mappings
-	mappingsMap, ok := mappings.(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("failed to convert mappings to map[string]interface{}")
-	}
-
 	for alias, index := range aliasToIndexMap {
-		if mappingsMap[index] == nil {
+		if mappings[index] == nil {
 			// index not present in mappings, don't add alias
 			continue
 		}
-		mappingsMap[alias] = mappingsMap[index]
+		mappings[alias] = mappings[index]
 	}
-
-	return result, nil
 }
 
 // GetMappings Returns mappings for comma seperated list of indices.
-func (e *Client) GetMappings(ctx context.Context, indices []string) (interface{}, error) {
+func (e *Client) GetMappings(ctx context.Context, indices []string) (mappings map[string]interface{}, err error) {
 	req := esapi.IndicesGetMappingRequest{
 		Index: indices,
 	}
@@ -191,7 +191,12 @@ func (e *Client) GetMappings(ctx context.Context, indices []string) (interface{}
 		return nil, err
 	}
 
-	return result, nil
+	mappings, ok := result.(map[string]interface{})
+	if !ok {
+		return nil, errors.New("failed to convert mappings to map[string]interface{}")
+	}
+
+	return mappings, nil
 
 }
 
