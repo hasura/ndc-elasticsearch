@@ -26,6 +26,15 @@ func (c *Connector) Query(ctx context.Context, configuration *types.Configuratio
 
 // executeQuery prepares equivalent elasticsearch query, executes it and returns the ndc response.
 func executeQuery(ctx context.Context, state *types.State, request *schema.QueryRequest, span trace.Span) (schema.QueryResponse, error) {
+
+	// uncomment to pretty print the query as JSON
+	// requestJson, err := json.MarshalIndent(request, "", "  ")
+	// if err != nil {
+	// 	fmt.Printf("Error marshalling request to JSON: %v\n", err)
+	// } else {
+	// 	fmt.Printf("request: %s\n\n", string(requestJson))
+	// }
+
 	// Set the postProcessor in ctx
 	ctx = context.WithValue(ctx, "postProcessor", &types.PostProcessor{})
 	logger := connector.GetLogger(ctx)
