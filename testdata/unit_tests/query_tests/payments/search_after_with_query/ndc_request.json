@@ -1,0 +1,48 @@
+{
+  "arguments": {
+    "search_after": {
+      "type": "literal",
+      "value": [
+        72.5
+      ]
+    }
+  },
+  "collection": "metrics",
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "metricType": {
+        "column": "metric_type",
+        "type": "column"
+      },
+      "metricValue": {
+        "column": "metric_value",
+        "type": "column"
+      }
+    },
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "name": "metric_value",
+            "path": [],
+            "type": "column"
+          }
+        }
+      ]
+    },
+    "predicate": {
+      "column": {
+        "type": "column",
+        "name": "metric_type"
+      },
+      "operator": "prefix",
+      "type": "binary_comparison_operator",
+      "value": {
+        "type": "scalar",
+        "value": "CPU"
+      }
+    }
+  }
+}

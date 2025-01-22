@@ -1,0 +1,32 @@
+{
+  "_source": [
+    "_id",
+    "metric_type",
+    "metric_unit",
+    "metric_value",
+    "timestamp"
+  ],
+  "search_after": [
+    78.1,
+    "CPU Usage",
+    "%"
+  ],
+  "size": 3,
+  "sort": [
+    {
+      "metric_value": {
+        "order": "asc"
+      }
+    },
+    {
+      "metric_type": {
+        "order": "asc"
+      }
+    },
+    {
+      "metric_unit": {
+        "order": "asc"
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "_source": [
+    "metric_type",
+    "metric_value"
+  ],
+  "query": {
+    "prefix": {
+      "metric_type": "CPU"
+    }
+  },
+  "search_after": [
+    72.5
+  ],
+  "size": 10000,
+  "sort": [
+    {
+      "metric_value": {
+        "order": "asc"
+      }
+    }
+  ]
+}

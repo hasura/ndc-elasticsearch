@@ -1,0 +1,36 @@
+{
+  "arguments": {
+    "search_after": {
+      "type": "literal",
+      "value": [
+        102.4
+      ]
+    }
+  },
+  "collection": "metrics",
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "metricType": {
+        "column": "metric_type",
+        "type": "column"
+      },
+      "metricValue": {
+        "column": "metric_value",
+        "type": "column"
+      }
+    },
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "name": "metric_value",
+            "path": [],
+            "type": "column"
+          }
+        }
+      ]
+    }
+  }
+}
