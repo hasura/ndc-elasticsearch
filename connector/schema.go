@@ -3,9 +3,9 @@ package connector
 import (
 	"context"
 
+	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-elasticsearch/types"
 	"github.com/hasura/ndc-sdk-go/schema"
-	"github.com/hasura/ndc-elasticsearch/internal"
 )
 
 // GetSchema returns the schema by parsing the configuration.
@@ -53,7 +53,7 @@ func ParseConfigurationToSchema(configuration *types.Configuration, state *types
 
 		ndcSchema.Collections = append(ndcSchema.Collections, schema.CollectionInfo{
 			Name:                  indexName,
-			Arguments:             schema.CollectionInfoArguments{},
+			Arguments:             internal.CollectionArgumentsMap,
 			Type:                  indexName,
 			UniquenessConstraints: schema.CollectionInfoUniquenessConstraints{},
 			ForeignKeys:           schema.CollectionInfoForeignKeys{},
