@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Add support for `search_after` in pagination ([#52](https://github.com/hasura/ndc-elasticsearch/pull/52))
+
 ## [1.2.0]
 
 ### Changed
