@@ -3,7 +3,6 @@ package cli
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"path/filepath"
 
 	"github.com/hasura/ndc-elasticsearch/connector"
@@ -35,6 +34,15 @@ func updateConfig(ctx context.Context, configDir string) error {
 		return err
 	}
 
+	// Get aliases for indices and add them to mappings.
+	aliasToIndexMap, err := client.GetAliases(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Add aliases to mappings.
+	client.AddAliasesToMappings(ctx, aliasToIndexMap, mappings)
+
 	configPath := filepath.Join(configDir, ConfigFileName)
 
 	// Marshal the mappings into a JSON configuration file.
@@ -56,7 +64,7 @@ func updateConfig(ctx context.Context, configDir string) error {
 // It reads the existing configuration file if it exists, or creates a new one with an empty "queries" field.
 // It then overwrites the "indices" field with the provided mappings.
 // Returns the JSON data as a byte array and any error encountered.
-func marshalMappings(configPath string, mappings interface{}) ([]byte, error) {
+func marshalMappings(configPath string, mappings map[string]interface{}) ([]byte, error) {
 	// Define the initial configuration template.
 	configuration := &types.Configuration{
 		Indices: make(map[string]interface{}),
@@ -72,11 +80,7 @@ func marshalMappings(configPath string, mappings interface{}) ([]byte, error) {
 		}
 	}
 	// Overwrite the "indices" field with the provided mappings.
-	indices, ok := mappings.(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("failed to convert mappings to map[string]interface{}")
-	}
-	configuration.Indices = indices
+	configuration.Indices = mappings
 
 	// Marshal the configuration data into a JSON byte array with indentation.
 	return json.MarshalIndent(configuration, "", "  ")
