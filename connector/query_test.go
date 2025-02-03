@@ -129,6 +129,18 @@ var tests = []test{
 		group: "payments",
 		name:  "subfield_cardinality_aggregation",
 	},
+	{
+		group: "payments",
+		name:  "search_after",
+	},
+	{
+		group: "payments",
+		name:  "search_after_with_query",
+	},
+	{
+		group: "payments",
+		name:  "search_after_multiple_sorts",
+	},
 }
 
 func TestPrepareElasticsearchQuery(t *testing.T) {

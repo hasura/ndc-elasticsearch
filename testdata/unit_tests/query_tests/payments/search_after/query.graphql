@@ -1,0 +1,6 @@
+query MyQuery {
+  metrics(args: {searchAfter: [102.4]}, order_by: {metricValue: Asc}) {
+    metricType
+    metricValue
+  }
+}

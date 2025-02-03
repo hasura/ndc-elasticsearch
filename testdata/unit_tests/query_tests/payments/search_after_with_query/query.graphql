@@ -1,0 +1,10 @@
+query MyQuery {
+  metrics(
+    args: {searchAfter: [72.5]}
+    order_by: {metricValue: Asc}
+    where: {metricType: {prefix: "CPU"}}
+  ) {
+    metricType
+    metricValue
+  }
+}

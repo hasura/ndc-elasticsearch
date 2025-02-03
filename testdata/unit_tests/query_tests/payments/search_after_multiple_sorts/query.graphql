@@ -1,0 +1,12 @@
+query MyQuery {
+  metrics(
+    args: {searchAfter: [78.1, "CPU Usage", "%"]}
+    order_by: [{metricValue: Asc}, {metricType: Asc}, {metricUnit: Asc}]
+  ) {
+    id
+    metricType
+    metricUnit
+    metricValue
+    timestamp
+  }
+}

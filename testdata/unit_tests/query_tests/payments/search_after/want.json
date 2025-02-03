@@ -1,0 +1,17 @@
+{
+  "_source": [
+    "metric_type",
+    "metric_value"
+  ],
+  "search_after": [
+    102.4
+  ],
+  "size": 10000,
+  "sort": [
+    {
+      "metric_value": {
+        "order": "asc"
+      }
+    }
+  ]
+}

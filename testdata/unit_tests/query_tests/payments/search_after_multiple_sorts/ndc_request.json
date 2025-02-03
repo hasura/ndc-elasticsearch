@@ -1,0 +1,67 @@
+{
+  "arguments": {
+    "search_after": {
+      "type": "literal",
+      "value": [
+        78.1,
+        "CPU Usage",
+        "%"
+      ]
+    }
+  },
+  "collection": "metrics",
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "id": {
+        "column": "_id",
+        "type": "column"
+      },
+      "metricType": {
+        "column": "metric_type",
+        "type": "column"
+      },
+      "metricUnit": {
+        "column": "metric_unit",
+        "type": "column"
+      },
+      "metricValue": {
+        "column": "metric_value",
+        "type": "column"
+      },
+      "timestamp": {
+        "column": "timestamp",
+        "type": "column"
+      }
+    },
+    "limit": 3,
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "name": "metric_value",
+            "path": [],
+            "type": "column"
+          }
+        },
+        {
+          "order_direction": "asc",
+          "target": {
+            "name": "metric_type",
+            "path": [],
+            "type": "column"
+          }
+        },
+        {
+          "order_direction": "asc",
+          "target": {
+            "name": "metric_unit",
+            "path": [],
+            "type": "column"
+          }
+        }
+      ]
+    }
+  }
+}

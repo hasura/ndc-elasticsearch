@@ -1,7 +1,18 @@
 {
   "collections": [
     {
-      "arguments": {},
+      "arguments": {
+        "search_after": {
+          "description": "(Optional) The 'search_after' operator in Elasticsearch, used for paginating more than 10,000 results.",
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "name": "json",
+              "type": "named"
+            }
+          }
+        }
+      },
       "foreign_keys": {},
       "name": "my_book_index",
       "type": "my_book_index",
@@ -598,6 +609,13 @@
       },
       "representation": {
         "type": "integer"
+      }
+    },
+    "json": {
+      "aggregate_functions": {},
+      "comparison_operators": {},
+      "representation": {
+        "type": "json"
       }
     },
     "keyword": {

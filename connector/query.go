@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 
 	"github.com/hasura/ndc-elasticsearch/elasticsearch"
 	"github.com/hasura/ndc-elasticsearch/types"
@@ -26,6 +27,15 @@ func (c *Connector) Query(ctx context.Context, configuration *types.Configuratio
 
 // executeQuery prepares equivalent elasticsearch query, executes it and returns the ndc response.
 func executeQuery(ctx context.Context, state *types.State, request *schema.QueryRequest, span trace.Span) (schema.QueryResponse, error) {
+
+	// uncomment to pretty print the query as JSON
+	// requestJson, err := json.MarshalIndent(request, "", "  ")
+	// if err != nil {
+	// 	fmt.Printf("Error marshalling request to JSON: %v\n", err)
+	// } else {
+	// 	fmt.Printf("request: %s\n\n", string(requestJson))
+	// }
+
 	// Set the postProcessor in ctx
 	ctx = context.WithValue(ctx, "postProcessor", &types.PostProcessor{})
 	logger := connector.GetLogger(ctx)
@@ -86,7 +96,9 @@ func executeQuery(ctx context.Context, state *types.State, request *schema.Query
 	res, err := state.Client.Search(searchContext, index, dslQuery)
 	if err != nil {
 		searchSpan.SetStatus(codes.Error, err.Error())
-		return nil, err
+		return nil, schema.UnprocessableContentError("failed to execute query", map[string]any{
+			"error": err.Error(),
+		})
 	}
 	searchSpan.End()
 
@@ -152,6 +164,13 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 		query["from"] = *request.Query.Offset
 	}
 
+	// Check if the request has collection arguments
+	if hasCollectionArguments(request) {
+		// Arguments
+		args := handleCollectionArguments(request.Arguments)
+		maps.Copy(query, args)
+	}
+
 	span.AddEvent("prepare_sort_query")
 	// Order by
 	if request.Query.OrderBy != nil && len(request.Query.OrderBy.Elements) != 0 {
@@ -171,7 +190,7 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 		}
 		if len(aggs) != 0 {
 			query["aggs"] = aggs
-			
+
 			// set query size to 0 if aggregation is present
 			// this is because, by default, an aggregation query returns both the aggregation result and the hit documents
 			// we only want the aggregation result
@@ -197,4 +216,23 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 	fmt.Println(string(queryJSON))
 
 	return query, nil
+}
+
+// check whether the request has collection arguments
+func hasCollectionArguments(request *schema.QueryRequest) bool {
+	return len(request.Arguments) != 0
+}
+
+func handleCollectionArguments(arguments map[string]schema.Argument) map[string]interface{} {
+	query := map[string]interface{}{}
+
+	// Handle search_after
+	if arg, ok := arguments["search_after"]; ok {
+		query["search_after"] = arg.Value
+
+		// TODO: disable track_total_hits speeds up the query
+		// https://www.elastic.co/guide/en/elasticsearch/reference/current/paginate-search-results.html
+		// query["track_total_hits"] = false
+	}
+	return query
 }

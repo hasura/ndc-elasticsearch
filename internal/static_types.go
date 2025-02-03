@@ -132,6 +132,11 @@ var ScalarTypeMap = map[string]schema.ScalarType{
 		ComparisonOperators: getComparisonOperatorDefinition("token_count"),
 		Representation:      schema.NewTypeRepresentationInteger().Encode(),
 	},
+	"json": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
 }
 
 // typePriorityMap is a map of data types and their priority for sorting.
@@ -173,6 +178,7 @@ var RequiredScalarTypes = map[string]schema.ScalarType{
 	"float":   ScalarTypeMap["float"],
 	"keyword": ScalarTypeMap["keyword"],
 	"long":    ScalarTypeMap["long"],
+	"json":    ScalarTypeMap["json"],
 }
 
 var RequiredObjectTypes = map[string]schema.ObjectType{
@@ -333,6 +339,15 @@ var ObjectTypeMap = map[string]schema.ObjectType{
 }
 
 var UnsupportedRangeQueryScalars = []string{"binary", "completion", "_id", "wildcard", "match_only_text", "search_as_you_type"}
+
+var CollectionArgumentsMap = map[string]schema.ArgumentInfo{
+	// used for paginating more than 10,000 results
+	// https://www.elastic.co/guide/en/elasticsearch/reference/current/paginate-search-results.html#search-after
+	"search_after": {
+		Type:        schema.NewNullableNamedType("json").Encode(),
+		Description: utils.ToPtr(`(Optional) The 'search_after' operator in Elasticsearch, used for paginating more than 10,000 results.`),
+	},
+}
 
 // getComparisonOperatorDefinition generates and returns a map of comparison operators based on the provided data type.
 func getComparisonOperatorDefinition(dataType string) map[string]schema.ComparisonOperatorDefinition {
