@@ -96,7 +96,9 @@ func executeQuery(ctx context.Context, state *types.State, request *schema.Query
 	res, err := state.Client.Search(searchContext, index, dslQuery)
 	if err != nil {
 		searchSpan.SetStatus(codes.Error, err.Error())
-		return nil, err
+		return nil, schema.UnprocessableContentError("failed to execute query", map[string]any{
+			"error": err.Error(),
+		})
 	}
 	searchSpan.End()
 
