@@ -110,6 +110,10 @@ ddn connector-link add-resources <connector-name>
 
 This command will track all the indices in your Elasticsearch DB as [Models](https://hasura.io/docs/3.0/supergraph-modeling/models).
 
+## Detailed Documentation
+
+Please checkout out the [detailed documentation](./docs/documentation.md).
+
 ## Contributing
 
 Check out our [contributing guide](./docs/contributing.md) for more details.
