@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
 - Add support for `search_after` in pagination ([#52](https://github.com/hasura/ndc-elasticsearch/pull/52))
+
+### Changed
+
+- Surface query errors in GraphQL Query response ([#52](https://github.com/hasura/ndc-elasticsearch/pull/52))
 
 ## [1.2.0]
 
