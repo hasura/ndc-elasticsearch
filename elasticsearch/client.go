@@ -62,12 +62,69 @@ func (e *Client) Search(ctx context.Context, index string, body map[string]inter
 	if err := json.NewEncoder(&buf).Encode(body); err != nil {
 		return nil, err
 	}
+
+	// TODO: use search() helper function
 	req := esapi.SearchRequest{
 		Index: []string{index},
 		Body:  &buf,
 	}
 
 	res, err := req.Do(ctx, es)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := parseResponse(ctx, res)
+	if err != nil {
+		return nil, err
+	}
+
+	return result.(map[string]interface{}), nil
+}
+
+// search is a helper function to perform a search operation in elastic search.
+func (e *Client) search(o ...func(*esapi.SearchRequest)) (*esapi.Response, error) {
+	req := &esapi.SearchRequest{}
+	es := e.client
+
+	for _, opt := range o {
+		opt(req)
+	}
+
+	res, err := req.Do(context.TODO(), es)
+	return res, err
+}
+
+// Explain performs a search with explain operation in elastic search.
+//
+// Since the Explain API requires document ID, we can't use it. 
+// Explain API: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-explain.html
+//
+// We instead use the Profile API to implement query explain functionality.
+// To use the Profile API, we need to add `profile=true` to the query.
+// Profile API: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-profile.html
+func (e *Client) ExplainSearch(ctx context.Context, index string, query map[string]interface{}) (map[string]interface{}, error) {
+	
+	// Add `profile=true` to the query to get profiling query information
+	query["profile"] = true
+	
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(query); err != nil {
+		return nil, err
+	}
+
+	// `profile=true` is added to the query in the Buffer
+	// We can safely remove it from the query map, so that the original var remains unchanged
+	delete(query, "profile")
+
+	search := esapi.Search(e.search)
+
+	res, err := search(
+		search.WithContext(ctx), 
+		search.WithIndex(index), 
+		search.WithBody(&buf), 
+		search.WithExplain(true), // set explain to true
+	)
 	if err != nil {
 		return nil, err
 	}

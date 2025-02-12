@@ -40,3 +40,7 @@ args: {
   ]
 }
 ```
+
+## `/query/explain`
+
+NDC Elasticsearch supports the [`/query/explain` endpoint from the NDC Spec](https://hasura.github.io/ndc-spec/specification/explain.html) using Elasticsearch's [Search Profile API](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-profile.html). Elasticsearch's [Search Explain API](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-explain.html) is not used because it requires a document ID, which is not avaialble at the time of query.

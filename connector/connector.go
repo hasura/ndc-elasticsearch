@@ -68,11 +68,6 @@ func (c *Connector) GetCapabilities(configuration *types.Configuration) schema.C
 	}
 }
 
-// QueryExplain explains a query by creating an execution plan.
-func (c *Connector) QueryExplain(ctx context.Context, configuration *types.Configuration, state *types.State, request *schema.QueryRequest) (*schema.ExplainResponse, error) {
-	return nil, schema.NotSupportedError("query explain has not been supported yet", nil)
-}
-
 // MutationExplain explains a mutation by creating an execution plan.
 func (c *Connector) MutationExplain(ctx context.Context, configuration *types.Configuration, state *types.State, request *schema.MutationRequest) (*schema.ExplainResponse, error) {
 	return nil, schema.NotSupportedError("mutation explain has not been supported yet", nil)
