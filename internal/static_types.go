@@ -15,12 +15,12 @@ var ScalarTypeMap = map[string]schema.ScalarType{
 	"integer": {
 		AggregateFunctions:  getAggregationFunctions([]string{"max", "min", "sum", "avg", "value_count", "cardinality", "stats"}, "integer"),
 		ComparisonOperators: getComparisonOperatorDefinition("integer"),
-		Representation:      schema.NewTypeRepresentationInteger().Encode(),
+		Representation:      schema.NewTypeRepresentationInt32().Encode(),
 	},
 	"long": {
 		AggregateFunctions:  getAggregationFunctions([]string{"max", "min", "sum", "avg", "value_count", "cardinality", "stats"}, "long"),
 		ComparisonOperators: getComparisonOperatorDefinition("long"),
-		Representation:      schema.NewTypeRepresentationInteger().Encode(),
+		Representation:      schema.NewTypeRepresentationInt64().Encode(),
 	},
 	"text": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
@@ -45,12 +45,19 @@ var ScalarTypeMap = map[string]schema.ScalarType{
 	"half_float": {
 		AggregateFunctions:  getAggregationFunctions([]string{"max", "min", "sum", "avg", "value_count", "cardinality", "stats"}, "half_float"),
 		ComparisonOperators: getComparisonOperatorDefinition("half_float"),
-		Representation:      schema.NewTypeRepresentationNumber().Encode(),
+
+		// `half_float` is a 16-bit floating point number in [Elasticsearch Scalars](1),
+		// but since we don't have a `float16` in [Scalar Representations in NDC Spec](2),
+		// `float32` is used instead
+		//
+		// 1. Elasticsearch Scalars: https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html
+		// 2. Scalar Representations in NDC Spec: https://hasura.github.io/ndc-spec/specification/schema/scalar-types.html#supported-representations
+		Representation: schema.NewTypeRepresentationFloat32().Encode(),
 	},
 	"byte": {
 		AggregateFunctions:  getAggregationFunctions([]string{"max", "min", "sum", "avg", "value_count", "cardinality", "stats"}, "byte"),
 		ComparisonOperators: getComparisonOperatorDefinition("byte"),
-		Representation:      schema.NewTypeRepresentationInteger().Encode(),
+		Representation:      schema.NewTypeRepresentationInt8().Encode(),
 	},
 	"boolean": {
 		AggregateFunctions:  getAggregationFunctions([]string{"max", "min", "sum", "avg", "value_count", "cardinality", "stats"}, "integer"),
@@ -75,27 +82,29 @@ var ScalarTypeMap = map[string]schema.ScalarType{
 	"short": {
 		AggregateFunctions:  getAggregationFunctions([]string{"max", "min", "sum", "avg", "value_count", "cardinality", "stats"}, "short"),
 		ComparisonOperators: getComparisonOperatorDefinition("short"),
-		Representation:      schema.NewTypeRepresentationInteger().Encode(),
+		Representation:      schema.NewTypeRepresentationInt16().Encode(),
 	},
 	"unsigned_long": {
 		AggregateFunctions:  getAggregationFunctions([]string{"max", "min", "sum", "avg", "value_count", "cardinality", "stats"}, "unsigned_long"),
 		ComparisonOperators: getComparisonOperatorDefinition("unsigned_long"),
-		Representation:      schema.NewTypeRepresentationInteger().Encode(),
+		Representation:      schema.NewTypeRepresentationBigInteger().Encode(),
 	},
 	"float": {
 		AggregateFunctions:  getAggregationFunctions([]string{"max", "min", "sum", "avg", "value_count", "cardinality", "stats"}, "float"),
 		ComparisonOperators: getComparisonOperatorDefinition("float"),
-		Representation:      schema.NewTypeRepresentationNumber().Encode(),
+		Representation:      schema.NewTypeRepresentationFloat32().Encode(),
 	},
 	"double": {
 		AggregateFunctions:  getAggregationFunctions([]string{"max", "min", "sum", "avg", "value_count", "cardinality", "stats"}, "double"),
 		ComparisonOperators: getComparisonOperatorDefinition("double"),
-		Representation:      schema.NewTypeRepresentationNumber().Encode(),
+		Representation:      schema.NewTypeRepresentationFloat64().Encode(),
 	},
 	"scaled_float": {
+		// A floating point number that is backed by a long, scaled by a fixed double scaling factor.
+		// https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html
 		AggregateFunctions:  getAggregationFunctions([]string{"max", "min", "sum", "avg", "value_count", "cardinality", "stats"}, "scaled_float"),
 		ComparisonOperators: getComparisonOperatorDefinition("scaled_float"),
-		Representation:      schema.NewTypeRepresentationNumber().Encode(),
+		Representation:      schema.NewTypeRepresentationFloat64().Encode(),
 	},
 	"match_only_text": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},

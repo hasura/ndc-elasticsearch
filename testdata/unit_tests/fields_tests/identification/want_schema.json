@@ -348,7 +348,7 @@
         }
       },
       "representation": {
-        "type": "number"
+        "type": "float64"
       }
     },
     "float": {
@@ -433,7 +433,7 @@
         }
       },
       "representation": {
-        "type": "number"
+        "type": "float32"
       }
     },
     "integer": {
@@ -518,7 +518,7 @@
         }
       },
       "representation": {
-        "type": "integer"
+        "type": "int32"
       }
     },
     "json": {
@@ -699,7 +699,7 @@
         }
       },
       "representation": {
-        "type": "integer"
+        "type": "int64"
       }
     },
     "text": {
