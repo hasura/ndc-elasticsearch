@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1]
+
+### Changed
+
+- Replace deprecated scalar types Integer, Number with ranged types ([#58](https://github.com/hasura/ndc-elasticsearch/pull/58))
+
+- Go version and dependencies update ([#51](https://github.com/hasura/ndc-elasticsearch/pull/51))
+
+- Update to NDC Spec v0.1.6 ([#51](https://github.com/hasura/ndc-elasticsearch/pull/51))
+
 ### Added
 
 - Implement `/query/explain` endpoint ([#57](https://github.com/hasura/ndc-elasticsearch/pull/57))
@@ -24,9 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.0]
 
 ### Changed
+
 - Remove Native Queries from feature matrix([#54](https://github.com/hasura/ndc-elasticsearch/pull/54))
 
 ### Added
+
 - Add index alias support ([#50](https://github.com/hasura/ndc-elasticsearch/pull/50))
 
 ## [1.1.3]
@@ -44,15 +56,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.2]
 
 ### Changed
+
 - Added documentation in README about limitations on queries with variables([#37](https://github.com/hasura/ndc-elasticsearch/pull/37))
 
 ### Fixed
+
 - Added size correction to quries with variables ([#36](https://github.com/hasura/ndc-elasticsearch/pull/36))
 
 ## [1.1.1]
 
 ### Fixed
-- Sorting not working for fields that enable it via subtypes ([#33](https://github.com/hasura/ndc-elasticsearch/pull/33)) 
+
+- Sorting not working for fields that enable it via subtypes ([#33](https://github.com/hasura/ndc-elasticsearch/pull/33))
 
 ## [1.1.0]
 
@@ -61,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.3]
 
 ### Changed
+
 - Added compound scalar types ([#27](https://github.com/hasura/ndc-elasticsearch/pull/27))
 - Added support for the range operator ([#29](https://github.com/hasura/ndc-elasticsearch/pull/29))
 
@@ -69,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Set term as the default equality operator across scalar types
-- Eliminated _id as the default uniqueness constraint
+- Eliminated \_id as the default uniqueness constraint
 
 ## [1.0.1]
 
