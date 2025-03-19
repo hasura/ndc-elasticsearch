@@ -6,7 +6,7 @@ toolchain go1.23.5
 
 require (
 	github.com/elastic/go-elasticsearch/v8 v8.17.1
-	github.com/hasura/ndc-sdk-go v1.9.0
+	github.com/hasura/ndc-sdk-go v1.9.1
 	github.com/stretchr/testify v1.10.0
 	go.opentelemetry.io/otel v1.35.0
 	go.opentelemetry.io/otel/trace v1.35.0
