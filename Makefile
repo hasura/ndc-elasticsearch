@@ -18,3 +18,8 @@ lint:
 .PHONY: generate
 generate:
 	$(SHELL) ./scripts/generate.sh
+
+.PHONY: update-deps
+update-deps:
+	go get -u ./...
+	go mod tidy
