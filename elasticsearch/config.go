@@ -1,6 +1,7 @@
 package elasticsearch
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -8,10 +9,23 @@ import (
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/hasura/ndc-sdk-go/credentials"
 )
 
 const esMaxResultSize = 10000
 const DEFAULT_RESULT_SIZE_KEY = "esDefaultResultSize"
+
+var (
+	credentailsProviderKeyEnvVar       = "ELASTICSEARCH_CREDENTIALS_PROVIDER_KEY"
+	credentailsProviderMechanismEnvVar = "ELASTICSEARCH_CREDENTIALS_PROVIDER_MECHANISM"
+	credentialsProviderUri             = "HASURA_CREDENTIALS_PROVIDER_URI"
+)
+
+var (
+	errCredentialProviderKeyNotSet        = fmt.Errorf("%s is not set", credentailsProviderKeyEnvVar)
+	errCredentialProviderMechanismNotSet  = fmt.Errorf("%s is not set", credentailsProviderMechanismEnvVar)
+	errCredentialProviderMechanismInvalid = fmt.Errorf("invalid value for %s, should be either \"api-key\" or \"service-token\"", credentailsProviderMechanismEnvVar)
+)
 
 // getConfigFromEnv retrieves elastic search configuration from environment variables.
 func getConfigFromEnv() (*elasticsearch.Config, error) {
@@ -51,6 +65,41 @@ func getConfigFromEnv() (*elasticsearch.Config, error) {
 		esConfig.CACert = cert
 	}
 
+	return &esConfig, nil
+}
+
+func shouldUseCredentialsProvider() bool {
+	return os.Getenv(credentialsProviderUri) != ""
+}
+
+func getConfigFromCredentialsProvider(ctx context.Context, forceRefresh bool) (*elasticsearch.Config, error) {
+	key := os.Getenv(credentailsProviderKeyEnvVar)
+	mechanism := os.Getenv(credentailsProviderMechanismEnvVar)
+	return useCredentialsProvider(ctx, key, mechanism, forceRefresh)
+}
+
+func useCredentialsProvider(ctx context.Context, key string, mechanism string, forceRefresh bool) (*elasticsearch.Config, error) {
+	if key == "" {
+		return nil, errCredentialProviderKeyNotSet
+	}
+	if mechanism == "" {
+		return nil, errCredentialProviderMechanismNotSet
+	}
+	if mechanism != "api-key" && mechanism != "service-token" {
+		return nil, errCredentialProviderMechanismInvalid
+	}
+
+	credential, err := credentials.AcquireCredentials(ctx, key, forceRefresh)
+	if err != nil {
+		return nil, err
+	}
+
+	esConfig := elasticsearch.Config{}
+	if mechanism == "api-key" {
+		esConfig.APIKey = credential
+	} else {
+		esConfig.ServiceToken = credential
+	}
 	return &esConfig, nil
 }
 

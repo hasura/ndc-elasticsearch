@@ -7,6 +7,7 @@ import (
 	"github.com/hasura/ndc-elasticsearch/types"
 	"github.com/hasura/ndc-sdk-go/connector"
 	"github.com/hasura/ndc-sdk-go/schema"
+	"go.opentelemetry.io/otel/codes"
 )
 
 var configFileName = "configuration.json"
@@ -16,12 +17,19 @@ type Connector struct{}
 
 // TryInitState initializes the connector's in-memory state.
 func (c *Connector) TryInitState(ctx context.Context, configuration *types.Configuration, metrics *connector.TelemetryState) (*types.State, error) {
-	client, err := elasticsearch.NewClient()
+	connectionContext, connectionSpan := metrics.Tracer.Start(ctx, "connect_to_database")
+	defer connectionSpan.End()
+
+	client, err := elasticsearch.NewClient(connectionContext)
 	if err != nil {
+		connectionSpan.RecordError(err)
+		connectionSpan.SetStatus(codes.Error, "failed to connect to elasticsearch")
 		return nil, err
 	}
 	elasticsearchInfo, err := client.GetInfo(ctx)
 	if err != nil {
+		connectionSpan.RecordError(err)
+		connectionSpan.SetStatus(codes.Error, "failed to get elasticsearch info")
 		return nil, err
 	}
 
