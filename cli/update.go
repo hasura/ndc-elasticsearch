@@ -17,7 +17,7 @@ import (
 // configuration to disk atomically.
 func updateConfig(ctx context.Context, configDir string) error {
 	// Create a new Elasticsearch client.
-	client, err := elasticsearch.NewClient()
+	client, err := elasticsearch.NewClient(ctx)
 	if err != nil {
 		return err
 	}

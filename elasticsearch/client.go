@@ -18,12 +18,43 @@ type Client struct {
 }
 
 // NewClient creates a new client with configuration from cfg.
-func NewClient() (*Client, error) {
-	config, err := getConfigFromEnv()
+func NewClient(ctx context.Context) (*Client, error) {
+	var config *elasticsearch.Config
+	var err error
+
+	if shouldUseCredentialsProvider() {
+		config, err = getConfigFromCredentialsProvider(ctx, false)
+		if err != nil {
+			return nil, err
+		}
+
+		client, err := initClient(config)
+		if err != nil {
+
+			// the error might be that the credentials have expired
+			// try with forceRefresh = true to get the credentials again
+			config, err = getConfigFromCredentialsProvider(ctx, true)
+			if err != nil {
+				return nil, err
+			}
+
+			client, err = initClient(config)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return client, nil
+	}
+
+	config, err = getConfigFromEnv()
 	if err != nil {
 		return nil, err
 	}
 
+	return initClient(config)
+}
+
+func initClient(config *elasticsearch.Config) (*Client, error) {
 	c, err := elasticsearch.NewClient(*config)
 	if err != nil {
 		return nil, err
