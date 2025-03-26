@@ -1,0 +1,145 @@
+{
+  "indices": {
+    "customers": {
+      "mappings": {
+        "properties": {
+          "customer_id": {
+            "type": "keyword"
+          },
+          "email": {
+            "type": "keyword"
+          },
+          "location": {
+            "type": "geo_point"
+          },
+          "name": {
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              }
+            },
+            "type": "text"
+          }
+        }
+      }
+    },
+    "logs": {
+      "mappings": {
+        "properties": {
+          "application": {
+            "type": "keyword"
+          },
+          "log_level": {
+            "type": "keyword"
+          },
+          "message": {
+            "type": "text"
+          },
+          "timestamp": {
+            "type": "date"
+          }
+        }
+      }
+    },
+    "metrics": {
+      "mappings": {
+        "properties": {
+          "metric_type": {
+            "type": "keyword"
+          },
+          "metric_unit": {
+            "type": "keyword"
+          },
+          "metric_value": {
+            "type": "float"
+          },
+          "timestamp": {
+            "type": "date"
+          }
+        }
+      }
+    },
+    "payments": {
+      "mappings": {
+        "properties": {
+          "payment_method": {
+            "type": "keyword"
+          },
+          "payment_status": {
+            "type": "keyword"
+          },
+          "transaction_id": {
+            "type": "keyword"
+          }
+        }
+      }
+    },
+    "transactions": {
+      "mappings": {
+        "properties": {
+          "customer_id": {
+            "type": "keyword"
+          },
+          "timestamp": {
+            "type": "date"
+          },
+          "transaction_details": {
+            "properties": {
+              "currency": {
+                "type": "keyword"
+              },
+              "item_id": {
+                "type": "keyword"
+              },
+              "item_name": {
+                "fields": {
+                  "keyword": {
+                    "ignore_above": 256,
+                    "type": "keyword"
+                  }
+                },
+                "type": "text"
+              },
+              "price": {
+                "type": "float"
+              },
+              "quantity": {
+                "type": "integer"
+              }
+            }
+          },
+          "transaction_id": {
+            "type": "keyword"
+          }
+        }
+      }
+    },
+    "user_behavior": {
+      "mappings": {
+        "properties": {
+          "actions": {
+            "properties": {
+              "action_time": {
+                "type": "date"
+              },
+              "action_type": {
+                "type": "keyword"
+              },
+              "metadata": {
+                "type": "text"
+              }
+            },
+            "type": "nested"
+          },
+          "customer_id": {
+            "type": "keyword"
+          },
+          "session_id": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  },
+  "queries": {}
+}

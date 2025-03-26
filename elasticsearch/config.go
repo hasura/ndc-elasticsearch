@@ -19,28 +19,22 @@ var (
 	credentailsProviderKeyEnvVar       = "ELASTICSEARCH_CREDENTIALS_PROVIDER_KEY"
 	credentailsProviderMechanismEnvVar = "ELASTICSEARCH_CREDENTIALS_PROVIDER_MECHANISM"
 	credentialsProviderUri             = "HASURA_CREDENTIALS_PROVIDER_URI"
+	elasticsearchUrl                   = "ELASTICSEARCH_URL"
 )
 
 var (
 	errCredentialProviderKeyNotSet        = fmt.Errorf("%s is not set", credentailsProviderKeyEnvVar)
 	errCredentialProviderMechanismNotSet  = fmt.Errorf("%s is not set", credentailsProviderMechanismEnvVar)
 	errCredentialProviderMechanismInvalid = fmt.Errorf("invalid value for %s, should be either \"api-key\" or \"service-token\"", credentailsProviderMechanismEnvVar)
+	errElasticsearchUrlNotSet             = fmt.Errorf("%s is not set", elasticsearchUrl)
 )
 
 // getConfigFromEnv retrieves elastic search configuration from environment variables.
 func getConfigFromEnv() (*elasticsearch.Config, error) {
-	esConfig := elasticsearch.Config{}
-
-	// Read the address
-	address := os.Getenv("ELASTICSEARCH_URL")
-	if address == "" {
-		return nil, errors.New("ELASTICSEARCH_URL is not set")
+	esConfig, err := getBaseConfig()
+	if err != nil {
+		return nil, err
 	}
-
-	// Split the address by comma
-	addresses := make([]string, 0)
-	addresses = append(addresses, strings.Split(address, ",")...)
-	esConfig.Addresses = addresses
 
 	// Read the credentials if provided
 	username := os.Getenv("ELASTICSEARCH_USERNAME")
@@ -65,7 +59,7 @@ func getConfigFromEnv() (*elasticsearch.Config, error) {
 		esConfig.CACert = cert
 	}
 
-	return &esConfig, nil
+	return esConfig, nil
 }
 
 func shouldUseCredentialsProvider() bool {
@@ -73,34 +67,44 @@ func shouldUseCredentialsProvider() bool {
 }
 
 func getConfigFromCredentialsProvider(ctx context.Context, forceRefresh bool) (*elasticsearch.Config, error) {
-	key := os.Getenv(credentailsProviderKeyEnvVar)
-	mechanism := os.Getenv(credentailsProviderMechanismEnvVar)
-	return useCredentialsProvider(ctx, key, mechanism, forceRefresh)
-}
-
-func useCredentialsProvider(ctx context.Context, key string, mechanism string, forceRefresh bool) (*elasticsearch.Config, error) {
-	if key == "" {
-		return nil, errCredentialProviderKeyNotSet
-	}
-	if mechanism == "" {
-		return nil, errCredentialProviderMechanismNotSet
-	}
-	if mechanism != "api-key" && mechanism != "service-token" {
-		return nil, errCredentialProviderMechanismInvalid
-	}
-
-	credential, err := credentials.AcquireCredentials(ctx, key, forceRefresh)
+	esConfig, err := getBaseConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	esConfig := elasticsearch.Config{}
+	key := os.Getenv(credentailsProviderKeyEnvVar)
+	mechanism := os.Getenv(credentailsProviderMechanismEnvVar)
+	err = setupCredentailsUsingCredentialsProvider(ctx, esConfig, key, mechanism, forceRefresh)
+	if err != nil {
+		return nil, err
+	}
+	return esConfig, nil
+}
+
+// setupCredentailsUsingCredentialsProvider sets up the credentials in the elasticsearch config.
+// It returns the updated config.
+func setupCredentailsUsingCredentialsProvider(ctx context.Context, esConfig *elasticsearch.Config, key string, mechanism string, forceRefresh bool) error {
+	if key == "" {
+		return errCredentialProviderKeyNotSet
+	}
+	if mechanism == "" {
+		return errCredentialProviderMechanismNotSet
+	}
+	if mechanism != "api-key" && mechanism != "service-token" {
+		return errCredentialProviderMechanismInvalid
+	}
+
+	credential, err := credentials.AcquireCredentials(ctx, key, forceRefresh)
+	if err != nil {
+		return err
+	}
+
 	if mechanism == "api-key" {
 		esConfig.APIKey = credential
 	} else {
 		esConfig.ServiceToken = credential
 	}
-	return &esConfig, nil
+	return nil
 }
 
 func GetDefaultResultSize() int {
@@ -115,4 +119,24 @@ func GetDefaultResultSize() int {
 	}
 
 	return size
+}
+
+// getBaseConfig returns a new elasticsearch client with only the address set.
+// This function should be used to setup the config with properties
+// that will be common across all configs (credentials provieder based configs or env based configs).
+func getBaseConfig() (*elasticsearch.Config, error) {
+	esConfig := elasticsearch.Config{}
+
+	// Read the address
+	address := os.Getenv(elasticsearchUrl)
+	if address == "" {
+		return nil, errElasticsearchUrlNotSet
+	}
+
+	// Split the address by comma
+	addresses := make([]string, 0)
+	addresses = append(addresses, strings.Split(address, ",")...)
+	esConfig.Addresses = addresses
+
+	return &esConfig, nil
 }
