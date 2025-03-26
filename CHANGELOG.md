@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.1]
+
 - Show error if ELASTICSEARCH_URL is not set when using credentials provider ([#68](https://github.com/hasura/ndc-elasticsearch/pull/68))
 
 ## [1.5.0]
