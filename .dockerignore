@@ -1,0 +1,11 @@
+.test/**
+.github/**
+ci/**
+docs/**
+testdata/**
+Makefile
+README.md
+LICENSE.txt
+CHANGELOG.md
+Dockerfile
+docker-compose.yaml
