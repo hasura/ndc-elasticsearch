@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add support for a credentials provider service ([#65](https://github.com/hasura/ndc-elasticsearch/pull/65))
 
-## [1.3.1]
+## [1.4.1]
+
+- Patch for broken release `v1.4.1`
+
+## [1.4.0]
 
 ### Changed
 
