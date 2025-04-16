@@ -96,7 +96,10 @@ func setupCredentailsUsingCredentialsProvider(ctx context.Context, esConfig *ela
 
 	credential, err := credentials.AcquireCredentials(ctx, key, forceRefresh)
 	if err != nil {
-		return err
+		// this error may contain the auth service uri and the auth key
+		// we don't want to expose those in the error message
+		// it may contain sensitive information
+		return errors.New("internal error")
 	}
 
 	if mechanism == "api-key" {

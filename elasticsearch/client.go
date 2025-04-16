@@ -100,20 +100,18 @@ func (e *Client) Ping() error {
 
 // Search performs a search operation in elastic search.
 func (e *Client) Search(ctx context.Context, index string, body map[string]interface{}) (map[string]interface{}, error) {
-	es := e.client
-
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(body); err != nil {
 		return nil, err
 	}
 
-	// TODO: use search() helper function
-	req := esapi.SearchRequest{
-		Index: []string{index},
-		Body:  &buf,
-	}
+	search := esapi.Search(e.search)
 
-	res, err := req.Do(ctx, es)
+	res, err := e.search(
+		search.WithContext(ctx),
+		search.WithIndex(index),
+		search.WithBody(&buf),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -129,13 +127,28 @@ func (e *Client) Search(ctx context.Context, index string, body map[string]inter
 // search is a helper function to perform a search operation in elastic search.
 func (e *Client) search(o ...func(*esapi.SearchRequest)) (*esapi.Response, error) {
 	req := &esapi.SearchRequest{}
-	es := e.client
 
 	for _, opt := range o {
 		opt(req)
 	}
 
-	res, err := req.Do(context.TODO(), es)
+	res, err := req.Do(context.TODO(), e.client)
+
+	if res.IsError() {
+		if res.StatusCode == 401 {
+			// Unauthorized error, reauthenticate and retry
+			err = e.Reauthenticate(context.TODO())
+			if err != nil {
+				return nil, fmt.Errorf("error: %s", err)
+			}
+			res, err = req.Do(context.TODO(), e.client)
+			if err != nil {
+				return nil, fmt.Errorf("error: %s", err)
+			}
+		} else {
+			return nil, fmt.Errorf("error while querying: %s", res.String())
+		}
+	}
 	return res, err
 }
 
