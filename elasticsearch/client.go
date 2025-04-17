@@ -11,6 +11,10 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/hasura/ndc-sdk-go/connector"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type Client struct {
@@ -28,13 +32,25 @@ func NewClient(ctx context.Context) (*Client, error) {
 }
 
 func (e *Client) Authenticate(ctx context.Context) error {
+	ctx, span := otel.Tracer("es_client").Start(ctx, "authenticate_elasticsearch", trace.WithAttributes(
+		attribute.String("internal.visibility", "user"), // this attr makes the span visible in the hasura console
+	))
+	defer span.End()
+
+	// we'll set all auth related errors as internal errors
+	// so that we don't expose any sensitive information in the API response.
+	// actual errors are recorded in the span
 	esConfig, err := e.accquireAuthConfig(ctx, false)
 	if err != nil {
-		return fmt.Errorf("error getting elasticsearch auth config: %s", err)
+		span.SetStatus(codes.Error, err.Error())
+		span.RecordError(err)
+		return errors.New("internal error")
 	}
 	esClient, err := elasticsearch.NewClient(*esConfig)
 	if err != nil {
-		return fmt.Errorf("error creating elasticsearch client: %s", err)
+		span.SetStatus(codes.Error, err.Error())
+		span.RecordError(err)
+		return errors.New("internal error")
 	}
 	e.client = esClient
 	// Ping the client to check if the connection is successful
@@ -47,17 +63,23 @@ func (e *Client) Authenticate(ctx context.Context) error {
 	// if the ping fails, try to authenticate again with force refreshing the credentials
 	esConfig, err = e.accquireAuthConfig(ctx, true)
 	if err != nil {
-		return fmt.Errorf("error getting elasticsearch auth config: %s", err)
+		span.SetStatus(codes.Error, err.Error())
+		span.RecordError(err)
+		return errors.New("internal error")
 	}
 	esClient, err = elasticsearch.NewClient(*esConfig)
 	if err != nil {
-		return fmt.Errorf("error creating elasticsearch client: %s", err)
+		span.SetStatus(codes.Error, err.Error())
+		span.RecordError(err)
+		return errors.New("internal error")
 	}
 	e.client = esClient
 	// Ping the client to check if the connection is successful
 	err = e.Ping()
 	if err != nil {
-		return fmt.Errorf("error authenticating with elasticsearch: %s", err)
+		span.SetStatus(codes.Error, err.Error())
+		span.RecordError(err)
+		return errors.New("internal error")
 	}
 
 	return nil
@@ -87,7 +109,7 @@ func (e *Client) accquireAuthConfig(ctx context.Context, forceRefresh bool) (*el
 func (e *Client) Ping() error {
 	res, err := e.client.Ping()
 	if err != nil {
-		return fmt.Errorf("failed to ping elasticsearch: %s", err)
+		return fmt.Errorf("failed to ping elasticsearch: %w", err)
 	}
 	if res.IsError() {
 		return fmt.Errorf("failed to ping elasticsearch: %s", res.String())
@@ -105,9 +127,11 @@ func (e *Client) Search(ctx context.Context, index string, body map[string]inter
 		return nil, err
 	}
 
-	search := esapi.Search(e.search)
+	search := esapi.Search(func(o ...func(*esapi.SearchRequest)) (*esapi.Response, error) {
+		return e.search(ctx, o...)
+	})
 
-	res, err := e.search(
+	res, err := search(
 		search.WithContext(ctx),
 		search.WithIndex(index),
 		search.WithBody(&buf),
@@ -125,23 +149,23 @@ func (e *Client) Search(ctx context.Context, index string, body map[string]inter
 }
 
 // search is a helper function to perform a search operation in elastic search.
-func (e *Client) search(o ...func(*esapi.SearchRequest)) (*esapi.Response, error) {
+func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*esapi.Response, error) {
 	req := &esapi.SearchRequest{}
 
 	for _, opt := range o {
 		opt(req)
 	}
 
-	res, err := req.Do(context.TODO(), e.client)
+	res, err := req.Do(ctx, e.client)
 
 	if res.IsError() {
 		if res.StatusCode == 401 {
 			// Unauthorized error, reauthenticate and retry
-			err = e.Reauthenticate(context.TODO())
+			err = e.Reauthenticate(ctx)
 			if err != nil {
 				return nil, fmt.Errorf("error: %s", err)
 			}
-			res, err = req.Do(context.TODO(), e.client)
+			res, err = req.Do(ctx, e.client)
 			if err != nil {
 				return nil, fmt.Errorf("error: %s", err)
 			}
@@ -173,7 +197,9 @@ func (e *Client) ExplainSearch(ctx context.Context, index string, query map[stri
 	// We can safely remove it from the query map, so that the original var remains unchanged
 	delete(query, "profile")
 
-	search := esapi.Search(e.search)
+	search := esapi.Search(func(o ...func(*esapi.SearchRequest)) (*esapi.Response, error) {
+		return e.search(ctx, o...)
+	})
 
 	res, err := search(
 		search.WithContext(ctx),
