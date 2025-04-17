@@ -61,11 +61,12 @@ func (c *Connector) HealthCheck(ctx context.Context, configuration *types.Config
 // GetCapabilities get the connector's capabilities.
 func (c *Connector) GetCapabilities(configuration *types.Configuration) schema.CapabilitiesResponseMarshaler {
 	return &schema.CapabilitiesResponse{
-		Version: "0.1.4",
+		Version: "0.1.6",
 		Capabilities: schema.Capabilities{
 			Query: schema.QueryCapabilities{
 				Variables:  schema.LeafCapability{},
 				Aggregates: schema.LeafCapability{},
+				Explain:  schema.LeafCapability{},
 				NestedFields: schema.NestedFieldCapabilities{
 					OrderBy:    schema.LeafCapability{},
 					FilterBy:   schema.LeafCapability{},
