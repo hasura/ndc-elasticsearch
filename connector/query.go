@@ -190,13 +190,17 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 		}
 		if len(aggs) != 0 {
 			query["aggs"] = aggs
-
-			// set query size to 0 if aggregation is present
-			// this is because, by default, an aggregation query returns both the aggregation result and the hit documents
-			// we only want the aggregation result
-			// more reading: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html#return-only-agg-results
-			query["size"] = 0
 		}
+
+		// set query size to 0 if aggregation is present
+		// this is because, by default, an aggregation query returns both the aggregation result and the hit documents
+		// we only want the aggregation result
+		// more reading: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html#return-only-agg-results
+		query["size"] = 0
+
+		// set track_total_hits to true if aggregation is present
+		// this is because, by default, a count query will only return 10,000 hits
+		query["track_total_hits"] = true
 	}
 
 	span.AddEvent("prepare_filter_query")
