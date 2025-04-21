@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.2]
+
+- fix `_count` aggregation queries [#74](https://github.com/hasura/ndc-elasticsearch/pull/74)
+- add explain to capabilities and upgrade to version v0.1.6 [#73](https://github.com/hasura/ndc-elasticsearch/pull/73)
+- re-authenticate when elasticsearch returns a 401 error [#72](https://github.com/hasura/ndc-elasticsearch/pull/72)
+
 ## [1.5.1]
 
 - Show error if ELASTICSEARCH_URL is not set when using credentials provider ([#68](https://github.com/hasura/ndc-elasticsearch/pull/68))
