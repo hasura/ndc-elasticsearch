@@ -10,7 +10,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ndc-elasticsearch
 
 # Stage 2: Create a minimal image with the Go binary
-FROM alpine:3.18.3
+FROM alpine:3
 
 # Install necessary certificates for the application to run
 RUN apk --no-cache add ca-certificates
