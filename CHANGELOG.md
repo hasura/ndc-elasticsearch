@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0]
+
+- DDN workspace support
+
 ## [1.5.2]
 
 - fix `_count` aggregation queries [#74](https://github.com/hasura/ndc-elasticsearch/pull/74)
