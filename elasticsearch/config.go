@@ -16,16 +16,16 @@ const esMaxResultSize = 10000
 const DEFAULT_RESULT_SIZE_KEY = "esDefaultResultSize"
 
 var (
-	credentailsProviderKeyEnvVar       = "ELASTICSEARCH_CREDENTIALS_PROVIDER_KEY"
-	credentailsProviderMechanismEnvVar = "ELASTICSEARCH_CREDENTIALS_PROVIDER_MECHANISM"
+	credentialsProviderKeyEnvVar       = "ELASTICSEARCH_CREDENTIALS_PROVIDER_KEY"
+	credentialsProviderMechanismEnvVar = "ELASTICSEARCH_CREDENTIALS_PROVIDER_MECHANISM"
 	credentialsProviderUri             = "HASURA_CREDENTIALS_PROVIDER_URI"
 	elasticsearchUrl                   = "ELASTICSEARCH_URL"
 )
 
 var (
-	errCredentialProviderKeyNotSet        = fmt.Errorf("%s is not set", credentailsProviderKeyEnvVar)
-	errCredentialProviderMechanismNotSet  = fmt.Errorf("%s is not set", credentailsProviderMechanismEnvVar)
-	errCredentialProviderMechanismInvalid = fmt.Errorf("invalid value for %s, should be either \"api-key\" or \"service-token\" or \"bearer-token\"", credentailsProviderMechanismEnvVar)
+	errCredentialProviderKeyNotSet        = fmt.Errorf("%s is not set", credentialsProviderKeyEnvVar)
+	errCredentialProviderMechanismNotSet  = fmt.Errorf("%s is not set", credentialsProviderMechanismEnvVar)
+	errCredentialProviderMechanismInvalid = fmt.Errorf("invalid value for %s, should be either \"api-key\" or \"service-token\" or \"bearer-token\"", credentialsProviderMechanismEnvVar)
 	errElasticsearchUrlNotSet             = fmt.Errorf("%s is not set", elasticsearchUrl)
 )
 
@@ -72,18 +72,18 @@ func getConfigFromCredentialsProvider(ctx context.Context, forceRefresh bool) (*
 		return nil, err
 	}
 
-	key := os.Getenv(credentailsProviderKeyEnvVar)
-	mechanism := os.Getenv(credentailsProviderMechanismEnvVar)
-	err = setupCredentailsUsingCredentialsProvider(ctx, esConfig, key, mechanism, forceRefresh)
+	key := os.Getenv(credentialsProviderKeyEnvVar)
+	mechanism := os.Getenv(credentialsProviderMechanismEnvVar)
+	err = setupCredentialsUsingCredentialsProvider(ctx, esConfig, key, mechanism, forceRefresh)
 	if err != nil {
 		return nil, err
 	}
 	return esConfig, nil
 }
 
-// setupCredentailsUsingCredentialsProvider sets up the credentials in the elasticsearch config.
+// setupCredentialsUsingCredentialsProvider sets up the credentials in the elasticsearch config.
 // It returns the updated config.
-func setupCredentailsUsingCredentialsProvider(ctx context.Context, esConfig *elasticsearch.Config, key string, mechanism string, forceRefresh bool) error {
+func setupCredentialsUsingCredentialsProvider(ctx context.Context, esConfig *elasticsearch.Config, key string, mechanism string, forceRefresh bool) error {
 	if key == "" {
 		return errCredentialProviderKeyNotSet
 	}
