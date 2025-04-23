@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0]
+
 - Add support for Bearer Token in credentials provider ([#78](https://github.com/hasura/ndc-elasticsearch/pull/78))
 
 ## [1.6.0]
