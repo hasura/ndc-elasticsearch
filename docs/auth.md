@@ -16,4 +16,4 @@ To use credentials provider, only set the `ELASTICSEARCH_URL` env var when using
 | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | HASURA_CREDENTIALS_PROVIDER_URI              | The webhook URI for the auth service                                                                                         |
 | ELASTICSEARCH_CREDENTIALS_PROVIDER_KEY       | This is the key for the credentials provider                                                                                 |
-| ELASTICSEARCH_CREDENTIALS_PROVIDER_MECHANISM | This is the security credential that is expected from the credential provider service. Could be `api-key` or `service-token` |
+| ELASTICSEARCH_CREDENTIALS_PROVIDER_MECHANISM | This is the security credential that is expected from the credential provider service. Could be `api-key` or `service-token` or `bearer-token` |
