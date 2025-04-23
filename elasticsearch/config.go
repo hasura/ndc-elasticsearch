@@ -25,7 +25,7 @@ var (
 var (
 	errCredentialProviderKeyNotSet        = fmt.Errorf("%s is not set", credentailsProviderKeyEnvVar)
 	errCredentialProviderMechanismNotSet  = fmt.Errorf("%s is not set", credentailsProviderMechanismEnvVar)
-	errCredentialProviderMechanismInvalid = fmt.Errorf("invalid value for %s, should be either \"api-key\" or \"service-token\"", credentailsProviderMechanismEnvVar)
+	errCredentialProviderMechanismInvalid = fmt.Errorf("invalid value for %s, should be either \"api-key\" or \"service-token\" or \"bearer-token\"", credentailsProviderMechanismEnvVar)
 	errElasticsearchUrlNotSet             = fmt.Errorf("%s is not set", elasticsearchUrl)
 )
 
@@ -90,7 +90,7 @@ func setupCredentailsUsingCredentialsProvider(ctx context.Context, esConfig *ela
 	if mechanism == "" {
 		return errCredentialProviderMechanismNotSet
 	}
-	if mechanism != "api-key" && mechanism != "service-token" {
+	if mechanism != "api-key" && mechanism != "service-token" && mechanism != "bearer-token" {
 		return errCredentialProviderMechanismInvalid
 	}
 
@@ -101,8 +101,10 @@ func setupCredentailsUsingCredentialsProvider(ctx context.Context, esConfig *ela
 
 	if mechanism == "api-key" {
 		esConfig.APIKey = credential
-	} else {
+	} else if mechanism == "service-token" {
 		esConfig.ServiceToken = credential
+	} else {
+		esConfig.Header.Add("Authorization", fmt.Sprintf("Bearer %s", credential))
 	}
 	return nil
 }
