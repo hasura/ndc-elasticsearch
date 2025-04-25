@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0]
+
 - Add basic query (no operator) support for unsupported object types ([#83](https://github.com/hasura/ndc-elasticsearch/pull/83))
 
 ## [1.7.0]
