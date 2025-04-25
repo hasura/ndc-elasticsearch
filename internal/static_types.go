@@ -146,6 +146,96 @@ var ScalarTypeMap = map[string]schema.ScalarType{
 		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
 		Representation:      schema.NewTypeRepresentationJSON().Encode(),
 	},
+
+	// ********** NOTE: BEGIN OBJECT TYPES AS JSON SCALARS ***********
+	// the following types are object types, but their internal structure is flexible. Therefore, they are added a json scalar type.
+	"sparse_vector": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"dense_vector": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"rank_feature": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"rank_features": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"percolator": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"geo_point": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"geo_shape": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"join": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"integer_range": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"float_range": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"long_range": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"double_range": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"date_range": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"ip_range": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"point": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"shape": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	"alias": {
+		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
+		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
+		Representation:      schema.NewTypeRepresentationJSON().Encode(),
+	},
+	// ********** NOTE: END OBJECT TYPES AS JSON SCALARS ***********
+
 }
 
 // typePriorityMap is a map of data types and their priority for sorting.
@@ -256,62 +346,11 @@ var RequiredObjectTypes = map[string]schema.ObjectType{
 }
 
 var ObjectTypeMap = map[string]schema.ObjectType{
-	"sparse_vector": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"dense_vector": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"rank_feature": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"rank_features": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"percolator": {
-		Fields: schema.ObjectTypeFields{},
-	},
 	"histogram": {
 		Fields: schema.ObjectTypeFields{
 			"values": schema.ObjectField{Type: schema.NewNamedType("double").Encode()},
 			"counts": schema.ObjectField{Type: schema.NewNamedType("integer").Encode()},
 		},
-	},
-	"geo_point": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"geo_shape": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"join": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"integer_range": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"float_range": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"long_range": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"double_range": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"date_range": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"ip_range": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"point": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"shape": {
-		Fields: schema.ObjectTypeFields{},
-	},
-	"alias": {
-		Fields: schema.ObjectTypeFields{},
 	},
 	"date_range_query": {
 		Fields: schema.ObjectTypeFields{
