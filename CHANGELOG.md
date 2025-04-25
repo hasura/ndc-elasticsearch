@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Add basic query (no operator) support for unsupported object types ([#83](https://github.com/hasura/ndc-elasticsearch/pull/83))
+
 ## [1.7.0]
 
 - Add support for Bearer Token in credentials provider ([#78](https://github.com/hasura/ndc-elasticsearch/pull/78))
