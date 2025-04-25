@@ -148,7 +148,10 @@ var ScalarTypeMap = map[string]schema.ScalarType{
 	},
 
 	// ********** NOTE: BEGIN OBJECT TYPES AS JSON SCALARS ***********
-	// the following types are object types, but their internal structure is flexible. Therefore, they are added a json scalar type.
+	// the following types are object types, but,
+	// 1. either their internal structure is flexible, or,
+	// 2. they are not fully supported in the connector yet.
+	// therefore, they are added as json scalar types, to atleast allow them to be queryable, albeit without any operators.
 	"sparse_vector": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
 		ComparisonOperators: map[string]schema.ComparisonOperatorDefinition{},
