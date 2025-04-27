@@ -1,0 +1,23 @@
+query MyQuery {
+  flights(
+    args: {}
+    limit: 100
+    where: {
+      route: {
+        travelTime: {
+          range: { boost: "", gt: "", gte: "100", lt: "", lte: "200" }
+        }
+      }
+    }
+  ) {
+    route {
+      travelTime
+      arrivalAirport {
+        name
+      }
+      departureAirport {
+        name
+      }
+    }
+  }
+}

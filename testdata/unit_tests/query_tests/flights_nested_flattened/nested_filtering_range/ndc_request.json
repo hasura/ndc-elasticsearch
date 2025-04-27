@@ -1,0 +1,83 @@
+{
+  "arguments": {},
+  "collection": "flights",
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "route": {
+        "column": "route",
+        "fields": {
+          "fields": {
+            "fields": {
+              "arrivalAirport": {
+                "column": "arrival_airport",
+                "fields": {
+                  "fields": {
+                    "fields": {
+                      "name": {
+                        "column": "name",
+                        "type": "column"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "type": "column"
+              },
+              "departureAirport": {
+                "column": "departure_airport",
+                "fields": {
+                  "fields": {
+                    "fields": {
+                      "name": {
+                        "column": "name",
+                        "type": "column"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "type": "column"
+              },
+              "travelTime": {
+                "column": "travel_time",
+                "type": "column"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "type": "column"
+      }
+    },
+    "limit": 100,
+    "predicate": {
+      "in_collection": {
+        "column_name": "route",
+        "type": "nested_collection"
+      },
+      "predicate": {
+        "column": {
+          "type": "column",
+          "name": "travel_time"
+        },
+        "operator": "range",
+        "type": "binary_comparison_operator",
+        "value": {
+          "type": "scalar",
+          "value": {
+            "boost": "",
+            "gt": "",
+            "gte": "100",
+            "lt": "",
+            "lte": "200"
+          }
+        }
+      },
+      "type": "exists"
+    }
+  }
+}

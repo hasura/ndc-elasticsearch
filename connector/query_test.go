@@ -141,6 +141,22 @@ var tests = []test{
 		group: "payments",
 		name:  "search_after_multiple_sorts",
 	},
+	{
+		group: "flights_nested_flattened",
+		name: "nested_filtering",
+	},
+	{
+		group: "flights_nested_flattened",
+		name: "nested_filtering_and",
+	},
+	{
+		group: "flights_nested_flattened",
+		name: "nested_filtering_range",
+	},
+	{
+		group: "flights_nested_flattened",
+		name: "nested_filtering_or",
+	},
 }
 
 func TestPrepareElasticsearchQuery(t *testing.T) {

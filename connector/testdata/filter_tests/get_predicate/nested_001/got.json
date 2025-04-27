@@ -1,0 +1,33 @@
+{
+    "in_collection": {
+      "column_name": "route",
+      "type": "nested_collection"
+    },
+    "predicate": {
+      "in_collection": {
+        "column_name": "departure_airport",
+        "type": "nested_collection"
+      },
+      "predicate": {
+        "in_collection": {
+          "column_name": "location",
+          "type": "nested_collection"
+        },
+        "predicate": {
+          "column": {
+            "type": "column",
+            "name": "state"
+          },
+          "operator": "prefix",
+          "type": "binary_comparison_operator",
+          "value": {
+            "type": "scalar",
+            "value": "T"
+          }
+        },
+        "type": "exists"
+      },
+      "type": "exists"
+    },
+    "type": "exists"
+  }
