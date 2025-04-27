@@ -72,6 +72,9 @@ func (c *Connector) GetCapabilities(configuration *types.Configuration) schema.C
 					FilterBy:   schema.LeafCapability{},
 					Aggregates: schema.LeafCapability{},
 				},
+				Exists: schema.ExistsCapabilities{
+					NestedCollections: schema.LeafCapability{},
+				},
 			},
 		},
 	}

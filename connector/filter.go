@@ -1,6 +1,7 @@
 package connector
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/hasura/ndc-elasticsearch/internal"
@@ -11,10 +12,16 @@ import (
 // prepareFilterQuery prepares a filter query based on the given expression.
 func prepareFilterQuery(expression schema.Expression, state *types.State, collection string) (map[string]interface{}, error) {
 	filter := make(map[string]interface{})
-	switch expr := expression.Interface().(type) {
+	columnPath, predicate := getPredicate(expression)
+
+	switch expr := predicate.Interface().(type) {
 	case *schema.ExpressionUnaryComparisonOperator:
+		fieldPath := strings.Split(columnPath, ".")
+		expr.Column.FieldPath = fieldPath
 		return handleExpressionUnaryComparisonOperator(expr, state, collection)
 	case *schema.ExpressionBinaryComparisonOperator:
+		fieldPath := strings.Split(columnPath, ".")
+		expr.Column.FieldPath = fieldPath
 		return handleExpressionBinaryComparisonOperator(expr, state, collection)
 	case *schema.ExpressionAnd:
 		queries := make([]map[string]interface{}, 0)
@@ -59,10 +66,52 @@ func prepareFilterQuery(expression schema.Expression, state *types.State, collec
 	}
 }
 
+// getPredicate checks if a schema.Expression has nested filtering
+// if it does, it traverses the schema.Expression recursively until it finds a non-nested query predicate
+func getPredicate(expression schema.Expression) (string, schema.Expression) {
+	if nested, fieldName := requiresNestedFiltering(expression); nested {
+		expressionPredicate, ok := expression["predicate"].(schema.Expression)
+		if !ok {
+			return "", nil
+		}
+
+		columnPathPostfix, predicate := getPredicate(expressionPredicate)
+		return fmt.Sprintf("%s.%s", fieldName, columnPathPostfix), predicate
+	}
+	switch expr := expression.Interface().(type) {
+	case *schema.ExpressionUnaryComparisonOperator:
+		return expr.Column.Name, expression
+	case *schema.ExpressionBinaryComparisonOperator:
+		return expr.Column.Name, expression
+	}
+
+	return "", expression
+}
+
+func requiresNestedFiltering(predicate schema.Expression) (requiresNestedFiltering bool, nestedFieldName string) {
+	inCollection, ok := predicate["in_collection"].(schema.ExistsInCollection)
+	if !ok {
+		return false, ""
+	}
+	collection, err := inCollection.AsNestedCollection()
+	if err != nil {
+		return false, ""
+	}
+	if collection.Type == "nested_collection" {
+		return true, collection.ColumnName
+	}
+	return false, ""
+}
+
 // handleExpressionUnaryComparisonOperator processes the unary comparison operator expression.
 func handleExpressionUnaryComparisonOperator(expr *schema.ExpressionUnaryComparisonOperator, state *types.State, collection string) (map[string]interface{}, error) {
 	if expr.Operator == "is_null" {
-		fieldName, _ := joinFieldPath(state, expr.Column.FieldPath, expr.Column.Name, collection)
+		if len(expr.Column.FieldPath) == 0 || expr.Column.FieldPath[len(expr.Column.FieldPath)-1] != expr.Column.Name {
+			// if the column name is not the last element in fieldPath, we'll add it so that the fieldpath is complete
+			expr.Column.FieldPath = append(expr.Column.FieldPath, expr.Column.Name)
+		}
+
+		fieldName := strings.Join(expr.Column.FieldPath, ".")
 		value := map[string]interface{}{
 			"field": fieldName,
 		}
@@ -85,7 +134,12 @@ func handleExpressionBinaryComparisonOperator(
 	state *types.State,
 	collection string,
 ) (map[string]interface{}, error) {
-	fieldPath, nestedPath := joinFieldPath(state, expr.Column.FieldPath, expr.Column.Name, collection)
+	if len(expr.Column.FieldPath) == 0 || expr.Column.FieldPath[len(expr.Column.FieldPath)-1] != expr.Column.Name {
+		// if the column name is not the last element in fieldPath, we'll add it so that the fieldpath is complete
+		expr.Column.FieldPath = append(expr.Column.FieldPath, expr.Column.Name)
+	}
+
+	fieldPath := strings.Join(expr.Column.FieldPath, ".")
 	fieldType, fieldSubTypes, _, err := state.Configuration.GetFieldProperties(collection, fieldPath)
 	if err != nil {
 		return nil, schema.UnprocessableContentError("unable to get field types", map[string]any{
@@ -110,9 +164,10 @@ func handleExpressionBinaryComparisonOperator(
 		expr.Operator: value,
 	}
 
-	if nestedPath != "" {
-		filter = prepareNestedQuery(state, expr.Operator, value, fieldPath, len(expr.Column.FieldPath), collection)
-	}
+	// TOOD: re-enable
+	// if nestedPath != "" {
+	// 	filter = prepareNestedQuery(state, expr.Operator, value, fieldPath, len(expr.Column.FieldPath), collection)
+	// }
 
 	return filter, nil
 }
