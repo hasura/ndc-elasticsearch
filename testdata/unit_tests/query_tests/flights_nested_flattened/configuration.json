@@ -1,0 +1,105 @@
+{
+  "indices": {
+    "flights": {
+      "mappings": {
+        "properties": {
+          "aircraft": {
+            "type": "keyword"
+          },
+          "code": {
+            "type": "keyword"
+          },
+          "passengers": {
+            "type": "integer"
+          },
+          "route": {
+            "properties": {
+              "arrival_airport": {
+                "properties": {
+                  "code": {
+                    "type": "keyword"
+                  },
+                  "location": {
+                    "properties": {
+                      "coordinates": {
+                        "properties": {
+                          "elevation": {
+                            "type": "float"
+                          },
+                          "latitude": {
+                            "type": "float"
+                          },
+                          "longitude": {
+                            "type": "float"
+                          }
+                        }
+                      },
+                      "country": {
+                        "type": "keyword"
+                      },
+                      "state": {
+                        "type": "keyword"
+                      }
+                    }
+                  },
+                  "name": {
+                    "type": "text"
+                  },
+                  "runways": {
+                    "type": "integer"
+                  },
+                  "terminals": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "departure_airport": {
+                "properties": {
+                  "code": {
+                    "type": "keyword"
+                  },
+                  "location": {
+                    "properties": {
+                      "coordinates": {
+                        "properties": {
+                          "elevation": {
+                            "type": "float"
+                          },
+                          "latitude": {
+                            "type": "float"
+                          },
+                          "longitude": {
+                            "type": "float"
+                          }
+                        }
+                      },
+                      "country": {
+                        "type": "keyword"
+                      },
+                      "state": {
+                        "type": "keyword"
+                      }
+                    }
+                  },
+                  "name": {
+                    "type": "text"
+                  },
+                  "runways": {
+                    "type": "integer"
+                  },
+                  "terminals": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "travel_time": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "queries": {}
+}

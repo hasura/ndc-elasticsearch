@@ -1,0 +1,18 @@
+{
+    "column": {
+      "type": "column",
+      "name": "elevation"
+    },
+    "operator": "range",
+    "type": "binary_comparison_operator",
+    "value": {
+      "type": "scalar",
+      "value": {
+        "boost": "",
+        "gt": "",
+        "gte": "200",
+        "lt": "",
+        "lte": ""
+      }
+    }
+  }

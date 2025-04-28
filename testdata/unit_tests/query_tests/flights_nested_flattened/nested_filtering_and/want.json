@@ -1,0 +1,37 @@
+{
+  "_source": [
+    "aircraft",
+    "code",
+    "route.arrival_airport.location.coordinates.elevation",
+    "route.arrival_airport.name",
+    "route.arrival_airport.runways",
+    "route.arrival_airport.terminals",
+    "route.travel_time"
+  ],
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "route.arrival_airport.location.coordinates.elevation": {
+              "gte": "200"
+            }
+          }
+        },
+        {
+          "match": {
+            "route.arrival_airport.terminals": "2"
+          }
+        },
+        {
+          "range": {
+            "route.travel_time": {
+              "lt": "300"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "size": 10000
+}

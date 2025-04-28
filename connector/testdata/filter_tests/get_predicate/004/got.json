@@ -1,0 +1,26 @@
+{
+    "in_collection": {
+      "column_name": "route",
+      "type": "nested_collection"
+    },
+    "predicate": {
+      "in_collection": {
+        "column_name": "arrival_airport",
+        "type": "nested_collection"
+      },
+      "predicate": {
+        "column": {
+          "type": "column",
+          "name": "terminals"
+        },
+        "operator": "match",
+        "type": "binary_comparison_operator",
+        "value": {
+          "type": "scalar",
+          "value": "2"
+        }
+      },
+      "type": "exists"
+    },
+    "type": "exists"
+  }

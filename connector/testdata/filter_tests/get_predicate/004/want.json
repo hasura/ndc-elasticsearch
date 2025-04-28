@@ -1,0 +1,12 @@
+{
+    "column": {
+      "type": "column",
+      "name": "terminals"
+    },
+    "operator": "match",
+    "type": "binary_comparison_operator",
+    "value": {
+      "type": "scalar",
+      "value": "2"
+    }
+  }

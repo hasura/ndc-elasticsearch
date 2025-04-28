@@ -1,0 +1,12 @@
+{
+    "column": {
+      "type": "column",
+      "name": "name"
+    },
+    "operator": "prefix",
+    "type": "binary_comparison_operator",
+    "value": {
+      "type": "scalar",
+      "value": "J"
+    }
+  }

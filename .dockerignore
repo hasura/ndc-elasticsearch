@@ -2,10 +2,11 @@
 .github/**
 ci/**
 docs/**
-testdata/**
+**/testdata/**
 Makefile
 README.md
 LICENSE.txt
 CHANGELOG.md
 Dockerfile
 docker-compose.yaml
+*_test.go
