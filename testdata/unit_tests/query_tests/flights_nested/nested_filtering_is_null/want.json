@@ -1,0 +1,21 @@
+{
+  "_source": [
+    "aircraft",
+    "code"
+  ],
+  "query": {
+    "nested": {
+      "path": "route.arrival_airport",
+      "query": {
+        "bool": {
+          "must_not": {
+            "exists": {
+              "field": "route.arrival_airport.code"
+            }
+          }
+        }
+      }
+    }
+  },
+  "size": 10000
+}
