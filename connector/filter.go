@@ -116,11 +116,11 @@ func handleExpressionUnaryComparisonOperator(expr *schema.ExpressionUnaryCompari
 			"field": fieldName,
 		}
 		filter := map[string]interface{}{"bool": map[string]interface{}{"must_not": map[string]interface{}{"exists": value}}}
-		// if nestedFields, ok := state.NestedFields[collection]; ok {
-		// 	if _, ok := nestedFields.(map[string]string)[expr.Column.Name]; ok {
-		// 		filter = prepareNestedQuery(state, "bool.must_not.exists", value, fieldName, len(expr.Column.FieldPath), collection)
-		// 	}
-		// }
+		var err error
+		filter, err = prepareNestedQuery(state, filter, fieldName, collection)
+		if err != nil {
+			return nil, err
+		}
 		return filter, nil
 	}
 	return nil, schema.UnprocessableContentError("invalid unary comparison operator", map[string]any{
