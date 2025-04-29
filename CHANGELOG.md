@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.1]
+
 - Fix nil pointer when using bearer token for auth ([#88](https://github.com/hasura/ndc-elasticsearch/pull/88))
 
 ## [1.9.0]
