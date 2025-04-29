@@ -116,11 +116,11 @@ func handleExpressionUnaryComparisonOperator(expr *schema.ExpressionUnaryCompari
 			"field": fieldName,
 		}
 		filter := map[string]interface{}{"bool": map[string]interface{}{"must_not": map[string]interface{}{"exists": value}}}
-		if nestedFields, ok := state.NestedFields[collection]; ok {
-			if _, ok := nestedFields.(map[string]string)[expr.Column.Name]; ok {
-				filter = prepareNestedQuery(state, "bool.must_not.exists", value, fieldName, len(expr.Column.FieldPath), collection)
-			}
-		}
+		// if nestedFields, ok := state.NestedFields[collection]; ok {
+		// 	if _, ok := nestedFields.(map[string]string)[expr.Column.Name]; ok {
+		// 		filter = prepareNestedQuery(state, "bool.must_not.exists", value, fieldName, len(expr.Column.FieldPath), collection)
+		// 	}
+		// }
 		return filter, nil
 	}
 	return nil, schema.UnprocessableContentError("invalid unary comparison operator", map[string]any{
@@ -164,10 +164,11 @@ func handleExpressionBinaryComparisonOperator(
 		expr.Operator: value,
 	}
 
-	// TOOD: re-enable
-	// if nestedPath != "" {
-	// 	filter = prepareNestedQuery(state, expr.Operator, value, fieldPath, len(expr.Column.FieldPath), collection)
-	// }
+	filter, err = prepareNestedQuery(state, filter, fieldPath, collection)
+
+	if err != nil {
+		return nil, err
+	}
 
 	return filter, nil
 }
@@ -199,45 +200,30 @@ func joinFieldPath(state *types.State, fieldPath []string, columnName string, co
 	return joinedPath, nestedPath
 }
 
-// prepareNestedQuery creates a Elasticsearch's nested query based on field_path.
 func prepareNestedQuery(
 	state *types.State,
-	operator string,
-	value map[string]interface{},
-	fieldName string,
-	nestedLevel int,
+	filter map[string]interface{},
+	fieldPath string,
 	collection string,
-) map[string]interface{} {
-	// Create the innermost query
-	operators := strings.Split(operator, ".")
-	query := value
-	// Iterate over the operators in reverse order
-	for i := len(operators) - 1; i >= 0; i-- {
-		// Wrap the current query part inside the new level
-		query = map[string]interface{}{
-			operators[i]: query,
-		}
+) (map[string]interface{}, error) {
+	isNested, err := state.Configuration.IsFieldNested(collection, fieldPath)
+	if err != nil {
+		return nil, err
 	}
-	// Iterate over the fieldPath in to build the nested structure
-	pathIdx := strings.LastIndex(fieldName, ".")
-	for i := 0; i <= nestedLevel-1; i++ {
-		// Check if the current field is nested
-		if nestedFields, ok := state.NestedFields[collection]; ok {
-			if _, ok := nestedFields.(map[string]string)[fieldName[:pathIdx]]; ok {
-				// Create the nested query with the current path and query
-				query = map[string]interface{}{
-					"nested": map[string]interface{}{
-						"path":  fieldName[:pathIdx],
-						"query": query,
-					},
-				}
-			}
+	if isNested {
+		var nestedFilter map[string]interface{} = make(map[string]interface{})
+		nestedFilter["nested"] = map[string]interface{}{
+			"path":  fieldPath,
+			"query": filter,
 		}
-		// Update the pathIdx to the next level
-		pathIdx = strings.LastIndex(fieldName[:pathIdx], ".")
-	}
 
-	return query
+		filter = nestedFilter
+	}
+	splitFieldPath := strings.Split(fieldPath, ".")
+	if len(splitFieldPath) == 1 {
+		return filter, nil
+	}
+	return prepareNestedQuery(state, filter, strings.Join(splitFieldPath[:len(splitFieldPath)-1], "."), collection)
 }
 
 // evalComparisonValue evaluates the comparison value for scalar and variable type.
