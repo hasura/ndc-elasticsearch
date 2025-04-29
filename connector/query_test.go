@@ -157,6 +157,30 @@ var tests = []test{
 		group: "flights_nested_flattened",
 		name: "nested_filtering_or",
 	},
+	{
+		group: "flights_nested",
+		name: "nested_filtering",
+	},
+	{
+		group: "flights_nested",
+		name: "nested_filtering_and",
+	},
+	{
+		group: "flights_nested",
+		name: "nested_filtering_range",
+	},
+	{
+		group: "flights_nested",
+		name: "nested_filtering_or",
+	},
+	{
+		group: "flights_nested",
+		name: "nested_filtering_is_null",
+	},
+	{
+		group: "flights_nested",
+		name: "nested_filtering_is_not_null",
+	},
 }
 
 func TestPrepareElasticsearchQuery(t *testing.T) {

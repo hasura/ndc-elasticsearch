@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Add nested filtering support for nested flattened mappings ([#85](https://github.com/hasura/ndc-elasticsearch/pull/85))
+- Add nested filtering support for nested mappings ([#86](https://github.com/hasura/ndc-elasticsearch/pull/86))
 
 ## [1.8.0]
 

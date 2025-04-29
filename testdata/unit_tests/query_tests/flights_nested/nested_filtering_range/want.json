@@ -1,0 +1,16 @@
+{
+  "_source": [
+    "route.arrival_airport.name",
+    "route.departure_airport.name",
+    "route.travel_time"
+  ],
+  "query": {
+    "range": {
+      "route.travel_time": {
+        "gte": "100",
+        "lte": "200"
+      }
+    }
+  },
+  "size": 100
+}

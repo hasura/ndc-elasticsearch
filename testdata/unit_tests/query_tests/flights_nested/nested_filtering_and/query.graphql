@@ -1,0 +1,48 @@
+query MyQuery {
+  flights(
+    args: {}
+    where: {
+      _and: [
+        {
+          route: {
+            arrivalAirport: {
+              location: {
+                coordinates: {
+                  elevation: {
+                    range: { gte: "200", lt: "", lte: "", boost: "", gt: "" }
+                  }
+                }
+              }
+            }
+          }
+        }
+        {
+          route: { arrivalAirport: { location: {}, terminals: { match: "2" } } }
+        }
+        {
+          route: {
+            travelTime: {
+              range: { boost: "", gt: "", gte: "", lt: "300", lte: "" }
+            }
+          }
+        }
+      ]
+    }
+  ) {
+    route {
+      arrivalAirport {
+        location {
+          coordinates {
+            elevation
+          }
+        }
+        name
+        runways
+        terminals
+      }
+      travelTime
+    }
+    code
+    aircraft
+  }
+}

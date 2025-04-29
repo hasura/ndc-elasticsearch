@@ -221,7 +221,7 @@ func TestConfigurationGetFieldProperties(t *testing.T) {
 			indexName:            "transactions",
 			fieldPath:            "transaction_details.item_name",
 			wantFieldType:        "text",
-			wantSubtypes:         map[string]string{"keyword":"keyword"},
+			wantSubtypes:         map[string]string{"keyword": "keyword"},
 			wantFieldDataEnabled: false,
 		},
 		{
@@ -256,6 +256,56 @@ func getConfiguration(configurationStr string) *Configuration {
 		panic(err)
 	}
 	return &configuration
+}
+
+func TestIsFieldNested(t *testing.T) {
+	tests := []struct {
+		name           string
+		indexName      string
+		fieldPath      string
+		configuration  string
+		expectedNested bool
+	}{
+		{
+			name:           "field_is_nested_1",
+			indexName:      "multi_level_nested",
+			fieldPath:      "nested_1",
+			configuration:  multiLevelNestedConfiguration,
+			expectedNested: true,
+		},
+		{
+			name:           "field_is_not_nested_2",
+			indexName:      "multi_level_nested",
+			fieldPath:      "nested_1.non_nested_2",
+			configuration:  multiLevelNestedConfiguration,
+			expectedNested: false,
+		},
+		{
+			name:           "field_is_nested_3",
+			indexName:      "multi_level_nested",
+			fieldPath:      "nested_1.non_nested_2.nested_3",
+			configuration:  multiLevelNestedConfiguration,
+			expectedNested: true,
+		},
+		{
+			name:           "field_is_nested_4",
+			indexName:      "multi_level_nested",
+			fieldPath:      "nested_1.non_nested_2.nested_3.non_nested_4",
+			configuration:  multiLevelNestedConfiguration,
+			expectedNested: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config := getConfiguration(tt.configuration)
+
+			gotIsNested, err := config.IsFieldNested(tt.indexName, tt.fieldPath)
+			assert.NoError(t, err)
+
+			assert.Equal(t, tt.expectedNested, gotIsNested)
+		})
+	}
 }
 
 const configurationTransactions = `{
@@ -397,6 +447,44 @@ const configurationTransactions = `{
           },
           "session_id": {
             "type": "keyword"
+          }
+        }
+      }
+    }
+  },
+  "queries": {}
+}`
+
+const multiLevelNestedConfiguration = `{
+  "indices": {
+    "multi_level_nested": {
+      "mappings": {
+        "properties": {
+          "nested_1": {
+            "properties": {
+              "non_nested_2": {
+                "properties": {
+                  "nested_3": {
+                    "properties": {
+                      "non_nested_4": {
+                        "properties": {
+                          "nested_5": {
+                            "properties": {
+                              "some_value": {
+                                "type": "text"
+                              }
+                            },
+                            "type": "nested"
+                          }
+                        }
+                      }
+                    },
+                    "type": "nested"
+                  }
+                }
+              }
+            },
+            "type": "nested"
           }
         }
       }

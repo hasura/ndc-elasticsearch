@@ -1,0 +1,218 @@
+{
+  "arguments": {},
+  "collection": "flights",
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "aircraft": {
+        "column": "aircraft",
+        "type": "column"
+      },
+      "code": {
+        "column": "code",
+        "type": "column"
+      },
+      "id": {
+        "column": "_id",
+        "type": "column"
+      },
+      "passengers": {
+        "column": "passengers",
+        "type": "column"
+      },
+      "route": {
+        "column": "route",
+        "fields": {
+          "fields": {
+            "fields": {
+              "arrivalAirport": {
+                "column": "arrival_airport",
+                "fields": {
+                  "fields": {
+                    "fields": {
+                      "code": {
+                        "column": "code",
+                        "type": "column"
+                      },
+                      "location": {
+                        "column": "location",
+                        "fields": {
+                          "fields": {
+                            "fields": {
+                              "coordinates": {
+                                "column": "coordinates",
+                                "fields": {
+                                  "fields": {
+                                    "fields": {
+                                      "elevation": {
+                                        "column": "elevation",
+                                        "type": "column"
+                                      },
+                                      "latitude": {
+                                        "column": "latitude",
+                                        "type": "column"
+                                      },
+                                      "longitude": {
+                                        "column": "longitude",
+                                        "type": "column"
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": "array"
+                                },
+                                "type": "column"
+                              },
+                              "country": {
+                                "column": "country",
+                                "type": "column"
+                              },
+                              "state": {
+                                "column": "state",
+                                "type": "column"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "type": "column"
+                      },
+                      "name": {
+                        "column": "name",
+                        "type": "column"
+                      },
+                      "runways": {
+                        "column": "runways",
+                        "type": "column"
+                      },
+                      "terminals": {
+                        "column": "terminals",
+                        "type": "column"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "type": "column"
+              },
+              "departureAirport": {
+                "column": "departure_airport",
+                "fields": {
+                  "fields": {
+                    "fields": {
+                      "code": {
+                        "column": "code",
+                        "type": "column"
+                      },
+                      "location": {
+                        "column": "location",
+                        "fields": {
+                          "fields": {
+                            "fields": {
+                              "coordinates": {
+                                "column": "coordinates",
+                                "fields": {
+                                  "fields": {
+                                    "fields": {
+                                      "elevation": {
+                                        "column": "elevation",
+                                        "type": "column"
+                                      },
+                                      "latitude": {
+                                        "column": "latitude",
+                                        "type": "column"
+                                      },
+                                      "longitude": {
+                                        "column": "longitude",
+                                        "type": "column"
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": "array"
+                                },
+                                "type": "column"
+                              },
+                              "country": {
+                                "column": "country",
+                                "type": "column"
+                              },
+                              "state": {
+                                "column": "state",
+                                "type": "column"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "type": "column"
+                      },
+                      "name": {
+                        "column": "name",
+                        "type": "column"
+                      },
+                      "runways": {
+                        "column": "runways",
+                        "type": "column"
+                      },
+                      "terminals": {
+                        "column": "terminals",
+                        "type": "column"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "type": "column"
+              },
+              "travelTime": {
+                "column": "travel_time",
+                "type": "column"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "type": "column"
+      }
+    },
+    "predicate": {
+      "in_collection": {
+        "column_name": "route",
+        "type": "nested_collection"
+      },
+      "predicate": {
+        "in_collection": {
+          "column_name": "departure_airport",
+          "type": "nested_collection"
+        },
+        "predicate": {
+          "in_collection": {
+            "column_name": "location",
+            "type": "nested_collection"
+          },
+          "predicate": {
+            "column": {
+              "type": "column",
+              "name": "state"
+            },
+            "operator": "prefix",
+            "type": "binary_comparison_operator",
+            "value": {
+              "type": "scalar",
+              "value": "T"
+            }
+          },
+          "type": "exists"
+        },
+        "type": "exists"
+      },
+      "type": "exists"
+    }
+  }
+}

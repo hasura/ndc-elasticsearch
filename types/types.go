@@ -91,6 +91,14 @@ func (c *Configuration) GetFieldProperties(indexName, fieldPath string) (fieldTy
 	return fieldType, subFieldMap, fieldDataEnabled, nil
 }
 
+func (c *Configuration) IsFieldNested(indexName, fieldPath string) (bool, error) {
+	fieldMap, err := c.GetFieldMap(indexName, fieldPath)
+	if err != nil {
+		return false, err
+	}
+	return fieldMap["type"] == "nested", nil
+}
+
 // NativeQuery contains the definition of the native query.
 type NativeQuery struct {
 	DSL        DSL                     `json:"dsl"`

@@ -1,0 +1,9 @@
+query MyQuery {
+  flights(
+    args: {}
+    where: {route: {arrivalAirport: {code: {_is_null: true}}}}
+  ) {
+    aircraft
+    code
+  }
+}

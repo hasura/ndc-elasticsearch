@@ -1,0 +1,39 @@
+{
+  "arguments": {},
+  "collection": "flights",
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "aircraft": {
+        "column": "aircraft",
+        "type": "column"
+      },
+      "code": {
+        "column": "code",
+        "type": "column"
+      }
+    },
+    "predicate": {
+      "in_collection": {
+        "column_name": "route",
+        "type": "nested_collection"
+      },
+      "predicate": {
+        "in_collection": {
+          "column_name": "arrival_airport",
+          "type": "nested_collection"
+        },
+        "predicate": {
+          "column": {
+            "type": "column",
+            "name": "code"
+          },
+          "operator": "is_null",
+          "type": "unary_comparison_operator"
+        },
+        "type": "exists"
+      },
+      "type": "exists"
+    }
+  }
+}
