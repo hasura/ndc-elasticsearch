@@ -1,0 +1,46 @@
+query MyQuery {
+  flights(
+    args: {}
+    where: {
+      route: { departureAirport: { location: { state: { prefix: "T" } } } }
+    }
+  ) {
+    route {
+      arrivalAirport {
+        location {
+          coordinates {
+            elevation
+            longitude
+            latitude
+          }
+          country
+          state
+        }
+        code
+        name
+        runways
+        terminals
+      }
+      departureAirport {
+        location {
+          coordinates {
+            latitude
+            longitude
+            elevation
+          }
+          country
+          state
+        }
+        code
+        terminals
+        runways
+        name
+      }
+      travelTime
+    }
+    code
+    aircraft
+    id
+    passengers
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "arguments": {},
+  "collection": "flights",
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "aircraft": {
+        "column": "aircraft",
+        "type": "column"
+      },
+      "code": {
+        "column": "code",
+        "type": "column"
+      },
+      "route": {
+        "column": "route",
+        "fields": {
+          "fields": {
+            "fields": {
+              "arrivalAirport": {
+                "column": "arrival_airport",
+                "fields": {
+                  "fields": {
+                    "fields": {
+                      "location": {
+                        "column": "location",
+                        "fields": {
+                          "fields": {
+                            "fields": {
+                              "coordinates": {
+                                "column": "coordinates",
+                                "fields": {
+                                  "fields": {
+                                    "fields": {
+                                      "elevation": {
+                                        "column": "elevation",
+                                        "type": "column"
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": "array"
+                                },
+                                "type": "column"
+                              },
+                              "country": {
+                                "column": "country",
+                                "type": "column"
+                              },
+                              "state": {
+                                "column": "state",
+                                "type": "column"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "type": "column"
+                      },
+                      "name": {
+                        "column": "name",
+                        "type": "column"
+                      },
+                      "runways": {
+                        "column": "runways",
+                        "type": "column"
+                      },
+                      "terminals": {
+                        "column": "terminals",
+                        "type": "column"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "type": "column"
+              },
+              "travelTime": {
+                "column": "travel_time",
+                "type": "column"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "type": "column"
+      }
+    },
+    "predicate": {
+      "expressions": [
+        {
+          "in_collection": {
+            "column_name": "route",
+            "type": "nested_collection"
+          },
+          "predicate": {
+            "in_collection": {
+              "column_name": "arrival_airport",
+              "type": "nested_collection"
+            },
+            "predicate": {
+              "column": {
+                "type": "column",
+                "name": "terminals"
+              },
+              "operator": "match",
+              "type": "binary_comparison_operator",
+              "value": {
+                "type": "scalar",
+                "value": "4"
+              }
+            },
+            "type": "exists"
+          },
+          "type": "exists"
+        },
+        {
+          "in_collection": {
+            "column_name": "route",
+            "type": "nested_collection"
+          },
+          "predicate": {
+            "in_collection": {
+              "column_name": "arrival_airport",
+              "type": "nested_collection"
+            },
+            "predicate": {
+              "column": {
+                "type": "column",
+                "name": "terminals"
+              },
+              "operator": "match",
+              "type": "binary_comparison_operator",
+              "value": {
+                "type": "scalar",
+                "value": "2"
+              }
+            },
+            "type": "exists"
+          },
+          "type": "exists"
+        },
+        {
+          "in_collection": {
+            "column_name": "route",
+            "type": "nested_collection"
+          },
+          "predicate": {
+            "column": {
+              "type": "column",
+              "name": "travel_time"
+            },
+            "operator": "range",
+            "type": "binary_comparison_operator",
+            "value": {
+              "type": "scalar",
+              "value": {
+                "boost": "",
+                "gt": "",
+                "gte": "",
+                "lt": "0",
+                "lte": ""
+              }
+            }
+          },
+          "type": "exists"
+        }
+      ],
+      "type": "or"
+    }
+  }
+}

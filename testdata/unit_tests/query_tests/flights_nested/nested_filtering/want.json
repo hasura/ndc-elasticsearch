@@ -1,0 +1,43 @@
+{
+  "_source": [
+    "_id",
+    "aircraft",
+    "code",
+    "passengers",
+    "route.arrival_airport.code",
+    "route.arrival_airport.location.coordinates.elevation",
+    "route.arrival_airport.location.coordinates.latitude",
+    "route.arrival_airport.location.coordinates.longitude",
+    "route.arrival_airport.location.country",
+    "route.arrival_airport.location.state",
+    "route.arrival_airport.name",
+    "route.arrival_airport.runways",
+    "route.arrival_airport.terminals",
+    "route.departure_airport.code",
+    "route.departure_airport.location.coordinates.elevation",
+    "route.departure_airport.location.coordinates.latitude",
+    "route.departure_airport.location.coordinates.longitude",
+    "route.departure_airport.location.country",
+    "route.departure_airport.location.state",
+    "route.departure_airport.name",
+    "route.departure_airport.runways",
+    "route.departure_airport.terminals",
+    "route.travel_time"
+  ],
+  "query": {
+    "nested": {
+      "path": "route.departure_airport",
+      "query": {
+        "nested": {
+          "path": "route.departure_airport.location",
+          "query": {
+            "prefix": {
+              "route.departure_airport.location.state": "T"
+            }
+          }
+        }
+      }
+    }
+  },
+  "size": 10000
+}

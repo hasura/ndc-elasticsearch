@@ -1,0 +1,47 @@
+{
+  "_source": [
+    "aircraft",
+    "code",
+    "route.arrival_airport.location.coordinates.elevation",
+    "route.arrival_airport.location.country",
+    "route.arrival_airport.location.state",
+    "route.arrival_airport.name",
+    "route.arrival_airport.runways",
+    "route.arrival_airport.terminals",
+    "route.travel_time"
+  ],
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "nested": {
+            "path": "route.arrival_airport",
+            "query": {
+              "match": {
+                "route.arrival_airport.terminals": "4"
+              }
+            }
+          }
+        },
+        {
+          "nested": {
+            "path": "route.arrival_airport",
+            "query": {
+              "match": {
+                "route.arrival_airport.terminals": "2"
+              }
+            }
+          }
+        },
+        {
+          "range": {
+            "route.travel_time": {
+              "lt": "0"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "size": 10000
+}
