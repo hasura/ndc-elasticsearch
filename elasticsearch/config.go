@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"net/http"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/hasura/ndc-sdk-go/credentials"
@@ -132,7 +133,9 @@ func GetDefaultResultSize() int {
 // This function should be used to setup the config with properties
 // that will be common across all configs (credentials provieder based configs or env based configs).
 func getBaseConfig() (*elasticsearch.Config, error) {
-	esConfig := elasticsearch.Config{}
+	esConfig := elasticsearch.Config{
+		Header: http.Header{},
+	}
 
 	// Read the address
 	address := os.Getenv(elasticsearchUrlEnvVar)
