@@ -29,6 +29,9 @@ RUN addgroup -g 1001 hasura && \
     chown 1001:1001 /app/ndc-elasticsearch && \
     chmod 755 /app/ndc-elasticsearch
 
+RUN mkdir -p /etc/connector \
+    && chown 1001:1001 /etc/connector
+
 # Use the non-root user
 USER 1001
 
@@ -37,6 +40,11 @@ EXPOSE 8080
 
 # Set env if needed
 ENV HASURA_CONFIGURATION_DIRECTORY=/etc/connector
+ENV HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH=/etc/connector
+ENV ELASTICSEARCH_CREDENTIALS_PROVIDER_KEY=my-auth-key
+
+
+RUN echo '{"indices": {},"queries": {}}' > /etc/connector/configuration.json
 
 # Run the app
 ENTRYPOINT ["/app/ndc-elasticsearch"]
