@@ -15,19 +15,29 @@ FROM alpine:3
 # Install necessary certificates for the application to run
 RUN apk --no-cache add ca-certificates
 
-# Set the working directory inside the container
-WORKDIR /root/
+# Create a safe working directory
+WORKDIR /app
 
 RUN mkdir -p /etc/connector
 
 # Copy the Go binary from the builder stage
 COPY --from=builder /app/ndc-elasticsearch .
 
-# Expose the port on which the service will run
+# Create non-root user with UID and GID 1001
+RUN addgroup -g 1001 hasura && \
+    adduser -u 1001 -G hasura -D hasura && \
+    chown 1001:1001 /app/ndc-elasticsearch && \
+    chmod 755 /app/ndc-elasticsearch
+
+# Use the non-root user
+USER 1001
+
+# Expose port
 EXPOSE 8080
 
+# Set env if needed
 ENV HASURA_CONFIGURATION_DIRECTORY=/etc/connector
 
-# Run the web service on container startup.
-ENTRYPOINT [ "./ndc-elasticsearch" ]
-CMD [ "serve" ]
+# Run the app
+ENTRYPOINT ["/app/ndc-elasticsearch"]
+CMD ["serve"]
