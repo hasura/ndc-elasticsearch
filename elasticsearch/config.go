@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
-	"net/http"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/hasura/ndc-sdk-go/credentials"
@@ -53,17 +53,6 @@ func getConfigFromEnv() (*elasticsearch.Config, error) {
 	esConfig.APIKey = apiKey
 	esConfig.Username = username
 	esConfig.Password = password
-
-	// Read the CA certificate if provided
-	caCertPath := os.Getenv("ELASTICSEARCH_CA_CERT_PATH")
-	if caCertPath != "" {
-		cert, err := os.ReadFile(caCertPath)
-		if err != nil {
-			return nil, fmt.Errorf("error reading CA certificate. Path: %s, Error: %v", caCertPath, err)
-		}
-
-		esConfig.CACert = cert
-	}
 
 	return esConfig, nil
 }
@@ -147,6 +136,17 @@ func getBaseConfig() (*elasticsearch.Config, error) {
 	addresses := make([]string, 0)
 	addresses = append(addresses, strings.Split(address, ",")...)
 	esConfig.Addresses = addresses
+
+	// Read the CA certificate if provided
+	caCertPath := os.Getenv("ELASTICSEARCH_CA_CERT_PATH")
+	if caCertPath != "" {
+		cert, err := os.ReadFile(caCertPath)
+		if err != nil {
+			return nil, fmt.Errorf("error reading CA certificate. Path: %s, Error: %v", caCertPath, err)
+		}
+
+		esConfig.CACert = cert
+	}
 
 	return &esConfig, nil
 }
