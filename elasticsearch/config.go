@@ -54,17 +54,6 @@ func getConfigFromEnv() (*elasticsearch.Config, error) {
 	esConfig.Username = username
 	esConfig.Password = password
 
-	// Read the CA certificate if provided
-	caCertPath := os.Getenv("ELASTICSEARCH_CA_CERT_PATH")
-	if caCertPath != "" {
-		cert, err := os.ReadFile(caCertPath)
-		if err != nil {
-			return nil, fmt.Errorf("error reading CA certificate. Path: %s, Error: %v", caCertPath, err)
-		}
-
-		esConfig.CACert = cert
-	}
-
 	return esConfig, nil
 }
 
@@ -112,18 +101,6 @@ func setupCredentialsUsingCredentialsProvider(ctx context.Context, esConfig *ela
 	} else {
 		esConfig.Header.Add("Authorization", fmt.Sprintf("Bearer %s", credential))
 	}
-
-	// Read the CA certificate if provided
-	caCertPath := os.Getenv("ELASTICSEARCH_CA_CERT_PATH")
-	if caCertPath != "" {
-		cert, err := os.ReadFile(caCertPath)
-		if err != nil {
-			return fmt.Errorf("error reading CA certificate. Path: %s, Error: %v", caCertPath, err)
-		}
-
-		esConfig.CACert = cert
-	}
-	
 	return nil
 }
 
@@ -159,6 +136,17 @@ func getBaseConfig() (*elasticsearch.Config, error) {
 	addresses := make([]string, 0)
 	addresses = append(addresses, strings.Split(address, ",")...)
 	esConfig.Addresses = addresses
+
+	// Read the CA certificate if provided
+	caCertPath := os.Getenv("ELASTICSEARCH_CA_CERT_PATH")
+	if caCertPath != "" {
+		cert, err := os.ReadFile(caCertPath)
+		if err != nil {
+			return nil, fmt.Errorf("error reading CA certificate. Path: %s, Error: %v", caCertPath, err)
+		}
+
+		esConfig.CACert = cert
+	}
 
 	return &esConfig, nil
 }
