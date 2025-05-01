@@ -32,6 +32,7 @@ func NewClient(ctx context.Context) (*Client, error) {
 }
 
 func (e *Client) Authenticate(ctx context.Context) error {
+	fmt.Println("Authenticating with elasticsearch")
 	ctx, span := otel.Tracer("es_client").Start(ctx, "authenticate_elasticsearch", trace.WithAttributes(
 		attribute.String("internal.visibility", "user"), // this attr makes the span visible in the hasura console
 	))
@@ -42,12 +43,14 @@ func (e *Client) Authenticate(ctx context.Context) error {
 	// actual errors are recorded in the span
 	esConfig, err := e.accquireAuthConfig(ctx, false)
 	if err != nil {
+		fmt.Printf("Error getting config from credentials provider: %v\n", err)
 		span.SetStatus(codes.Error, err.Error())
 		span.RecordError(err)
 		return errors.New("internal error")
 	}
 	esClient, err := elasticsearch.NewClient(*esConfig)
 	if err != nil {
+		fmt.Printf("Error creating elasticsearch client: %v\n", err)
 		span.SetStatus(codes.Error, err.Error())
 		span.RecordError(err)
 		return errors.New("internal error")
@@ -60,15 +63,19 @@ func (e *Client) Authenticate(ctx context.Context) error {
 		return nil
 	}
 
+	fmt.Printf("Error pinging elasticsearch: %v\n", err)
+
 	// if the ping fails, try to authenticate again with force refreshing the credentials
 	esConfig, err = e.accquireAuthConfig(ctx, true)
 	if err != nil {
+		fmt.Printf("Error getting config from credentials provider: %v\n", err)
 		span.SetStatus(codes.Error, err.Error())
 		span.RecordError(err)
 		return errors.New("internal error")
 	}
 	esClient, err = elasticsearch.NewClient(*esConfig)
 	if err != nil {
+		fmt.Printf("Error creating elasticsearch client: %v\n", err)
 		span.SetStatus(codes.Error, err.Error())
 		span.RecordError(err)
 		return errors.New("internal error")
@@ -77,6 +84,7 @@ func (e *Client) Authenticate(ctx context.Context) error {
 	// Ping the client to check if the connection is successful
 	err = e.Ping()
 	if err != nil {
+		fmt.Printf("Error pinging elasticsearch: %v\n", err)
 		span.SetStatus(codes.Error, err.Error())
 		span.RecordError(err)
 		return errors.New("internal error")
@@ -93,12 +101,14 @@ func (e *Client) accquireAuthConfig(ctx context.Context, forceRefresh bool) (*el
 	if shouldUseCredentialsProvider() {
 		esConfig, err := getConfigFromCredentialsProvider(ctx, forceRefresh)
 		if err != nil {
+			fmt.Printf("Error getting config from credentials provider: %v\n", err)
 			return nil, err
 		}
 		return esConfig, nil
 	} else {
 		esConfig, err := getConfigFromEnv()
 		if err != nil {
+			fmt.Printf("Error getting config from env: %v\n", err)
 			return nil, err
 		}
 		return esConfig, nil

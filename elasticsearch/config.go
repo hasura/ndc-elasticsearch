@@ -37,8 +37,10 @@ var (
 
 // getConfigFromEnv retrieves elastic search configuration from environment variables.
 func getConfigFromEnv() (*elasticsearch.Config, error) {
+	fmt.Printf("Getting Configuration from env vars for username and password\n")
 	esConfig, err := getBaseConfig()
 	if err != nil {
+		fmt.Printf("Error getting base config: %v\n", err)
 		return nil, err
 	}
 
@@ -48,6 +50,7 @@ func getConfigFromEnv() (*elasticsearch.Config, error) {
 	apiKey := os.Getenv("ELASTICSEARCH_API_KEY")
 
 	if apiKey == "" && (username == "" || password == "") {
+		fmt.Printf("Error: either username and password or apiKey should be provided\n")
 		return nil, errors.New("either username and password or apiKey should be provided")
 	}
 	esConfig.APIKey = apiKey
@@ -62,8 +65,10 @@ func shouldUseCredentialsProvider() bool {
 }
 
 func getConfigFromCredentialsProvider(ctx context.Context, forceRefresh bool) (*elasticsearch.Config, error) {
+	fmt.Printf("Getting Configuration from credentials provider\n")
 	esConfig, err := getBaseConfig()
 	if err != nil {
+		fmt.Printf("Error getting base config: %v\n", err)
 		return nil, err
 	}
 
@@ -71,6 +76,7 @@ func getConfigFromCredentialsProvider(ctx context.Context, forceRefresh bool) (*
 	mechanism := os.Getenv(credentialsProviderMechanismEnvVar)
 	err = setupCredentialsUsingCredentialsProvider(ctx, esConfig, key, mechanism, forceRefresh)
 	if err != nil {
+		fmt.Printf("Error setting up credentials using credentials provider: %v\n", err)
 		return nil, err
 	}
 	return esConfig, nil
@@ -80,25 +86,34 @@ func getConfigFromCredentialsProvider(ctx context.Context, forceRefresh bool) (*
 // It returns the updated config.
 func setupCredentialsUsingCredentialsProvider(ctx context.Context, esConfig *elasticsearch.Config, key string, mechanism string, forceRefresh bool) error {
 	if key == "" {
+		fmt.Printf("Error: %s is not set\n", credentialsProviderKeyEnvVar)
 		return errCredentialProviderKeyNotSet
 	}
 	if mechanism == "" {
+		fmt.Printf("Error: %s is not set\n", credentialsProviderMechanismEnvVar)
 		return errCredentialProviderMechanismNotSet
 	}
 	if mechanism != apiKeyCredentialsProviderMechanism && mechanism != serviceTokenCredentialsProviderMechanism && mechanism != bearerTokenCredentialsProviderMechanism {
+		fmt.Printf("Error: %s is invalid, should be either \"%s\" or \"%s\" or \"%s\"\n", credentialsProviderMechanismEnvVar, apiKeyCredentialsProviderMechanism, serviceTokenCredentialsProviderMechanism, bearerTokenCredentialsProviderMechanism)
 		return errCredentialProviderMechanismInvalid
 	}
 
 	credential, err := credentials.AcquireCredentials(ctx, key, forceRefresh)
 	if err != nil {
+		fmt.Printf("Error acquiring credentials: %v\n", err)
 		return err
 	}
 
+	fmt.Printf("Credential acquired: %s\n", credential)
+
 	if mechanism == apiKeyCredentialsProviderMechanism {
+		fmt.Println("Using API key credentials provider mechanism")
 		esConfig.APIKey = credential
 	} else if mechanism == serviceTokenCredentialsProviderMechanism {
+		fmt.Println("Using service token credentials provider mechanism")
 		esConfig.ServiceToken = credential
 	} else {
+		fmt.Println("Using bearer token credentials provider mechanism")
 		esConfig.Header.Add("Authorization", fmt.Sprintf("Bearer %s", credential))
 	}
 	return nil
@@ -140,6 +155,7 @@ func getBaseConfig() (*elasticsearch.Config, error) {
 	// Read the CA certificate if provided
 	caCertPath := os.Getenv("ELASTICSEARCH_CA_CERT_PATH")
 	if caCertPath != "" {
+		fmt.Printf("Using CA Certificate from path: %s\n", caCertPath)
 		cert, err := os.ReadFile(caCertPath)
 		if err != nil {
 			return nil, fmt.Errorf("error reading CA certificate. Path: %s, Error: %v", caCertPath, err)
