@@ -119,9 +119,11 @@ func (e *Client) accquireAuthConfig(ctx context.Context, forceRefresh bool) (*el
 func (e *Client) Ping() error {
 	res, err := e.client.Ping()
 	if err != nil {
+		fmt.Printf("Error pinging elasticsearch: %v\n", err)
 		return fmt.Errorf("failed to ping elasticsearch: %w", err)
 	}
 	if res.IsError() {
+		fmt.Printf("Error pinging elasticsearch: %s\n", res.String())
 		return fmt.Errorf("failed to ping elasticsearch: %s", res.String())
 	}
 

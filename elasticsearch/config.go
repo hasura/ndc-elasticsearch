@@ -10,9 +10,12 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"io"
+	"bytes"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/hasura/ndc-sdk-go/credentials"
+	estransport "github.com/elastic/elastic-transport-go/v8/elastictransport"
 )
 
 const esMaxResultSize = 10000
@@ -141,6 +144,12 @@ func GetDefaultResultSize() int {
 func getBaseConfig() (*elasticsearch.Config, error) {
 	esConfig := elasticsearch.Config{
 		Header: http.Header{},
+		Logger: &estransport.TextLogger{
+			Output:             os.Stdout,
+			EnableRequestBody:  true,
+			EnableResponseBody: true,
+		},
+		// EnableDebugLogger: true,
 	}
 
 	// Read the address
@@ -156,12 +165,17 @@ func getBaseConfig() (*elasticsearch.Config, error) {
 
 	certPool, err := loadCACert()
 	if err != nil {
+		esConfig.Transport = &debugTransport{rt: http.DefaultTransport}
 		fmt.Printf("Error loading CA cert pool: %v\n", err)
 	} else {
 		fmt.Printf("Adding cert pool to transport\n")
-		esConfig.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{RootCAs: certPool},
+		baseTransport := &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: certPool,
+			},
 		}
+
+		esConfig.Transport = &debugTransport{rt: baseTransport}
 	}
 
 	// Read the CA certificate if provided
@@ -195,4 +209,50 @@ func loadCACert() (*x509.CertPool, error) {
 		return nil, fmt.Errorf("failed to append cert")
 	}
 	return certPool, nil
+}
+
+type debugTransport struct {
+	rt http.RoundTripper
+}
+
+func (d *debugTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	fmt.Println("<========================= REQUEST")
+	fmt.Printf("%s %s\n", req.Method, req.URL)
+
+	for name, values := range req.Header {
+		for _, v := range values {
+			fmt.Printf("%s: %s\n", name, v)
+		}
+	}
+
+	if req.Body != nil {
+		bodyBytes, _ := io.ReadAll(req.Body)
+		req.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+		if len(bodyBytes) > 0 {
+			fmt.Println("Request Body:", string(bodyBytes))
+		}
+	}
+
+	resp, err := d.rt.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("============================> RESPONSE")
+	fmt.Println("Status:", resp.Status)
+	for name, values := range resp.Header {
+		for _, v := range values {
+			fmt.Printf("%s: %s\n", name, v)
+		}
+	}
+
+	if resp.Body != nil {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+		if len(bodyBytes) > 0 {
+			fmt.Println("Response Body:", string(bodyBytes))
+		}
+	}
+
+	return resp, nil
 }
