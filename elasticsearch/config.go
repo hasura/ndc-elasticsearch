@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
-	"net/http"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/hasura/ndc-sdk-go/credentials"
@@ -112,6 +112,18 @@ func setupCredentialsUsingCredentialsProvider(ctx context.Context, esConfig *ela
 	} else {
 		esConfig.Header.Add("Authorization", fmt.Sprintf("Bearer %s", credential))
 	}
+
+	// Read the CA certificate if provided
+	caCertPath := os.Getenv("ELASTICSEARCH_CA_CERT_PATH")
+	if caCertPath != "" {
+		cert, err := os.ReadFile(caCertPath)
+		if err != nil {
+			return fmt.Errorf("error reading CA certificate. Path: %s, Error: %v", caCertPath, err)
+		}
+
+		esConfig.CACert = cert
+	}
+	
 	return nil
 }
 
