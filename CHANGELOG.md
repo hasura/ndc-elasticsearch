@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Support ca certs when using credentials provider ([#92](https://github.com/hasura/ndc-elasticsearch/pull/92))
+
 - Create a non root user in Docker Image and move app out of root dir ([#91](https://github.com/hasura/ndc-elasticsearch/pull/91))
 
 ## [1.9.2]
