@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Create a non root user in Docker Image and move app out of root dir ([#91](https://github.com/hasura/ndc-elasticsearch/pull/91))
+
 ## [1.9.2]
 
 - Patch for broken release v1.9.1
