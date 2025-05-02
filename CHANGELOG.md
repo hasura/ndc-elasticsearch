@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.3]
+
 - Add logs to auth ([#94](https://github.com/hasura/ndc-elasticsearch/pull/94))
 
 - Support ca certs when using credentials provider ([#92](https://github.com/hasura/ndc-elasticsearch/pull/92))
