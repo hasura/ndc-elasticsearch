@@ -106,7 +106,7 @@ func (e *Client) Reauthenticate(ctx context.Context) error {
 func (e *Client) accquireAuthConfig(ctx context.Context, forceRefresh bool) (*elasticsearch.Config, error) {
 	logger := connector.GetLogger(ctx)
 	if shouldUseCredentialsProvider() {
-		logger.InfoContext(ctx, "using credentials provider")
+		logger.DebugContext(ctx, "using credentials provider")
 		esConfig, err := getConfigFromCredentialsProvider(ctx, forceRefresh)
 		if err != nil {
 			return nil, err
