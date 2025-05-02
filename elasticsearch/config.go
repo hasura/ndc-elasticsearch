@@ -93,7 +93,7 @@ func setupCredentialsUsingCredentialsProvider(ctx context.Context, esConfig *ela
 
 	credential, err := credentials.AcquireCredentials(ctx, key, forceRefresh)
 	if err != nil {
-		return err
+		return fmt.Errorf("error accquiring credentials: %w", err)
 	}
 
 	if mechanism == apiKeyCredentialsProviderMechanism {
