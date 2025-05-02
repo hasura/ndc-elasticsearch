@@ -2,6 +2,8 @@ package elasticsearch
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"net/http"
@@ -140,13 +142,27 @@ func getBaseConfig() (*elasticsearch.Config, error) {
 	// Read the CA certificate if provided
 	caCertPath := os.Getenv("ELASTICSEARCH_CA_CERT_PATH")
 	if caCertPath != "" {
-		cert, err := os.ReadFile(caCertPath)
+		certPool, err := loadCACert(caCertPath)
 		if err != nil {
 			return nil, fmt.Errorf("error reading CA certificate. Path: %s, Error: %v", caCertPath, err)
 		}
 
-		esConfig.CACert = cert
+		esConfig.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{RootCAs: certPool},
+		}
 	}
 
 	return &esConfig, nil
+}
+
+func loadCACert(caCertPath string) (*x509.CertPool, error) {
+	certPool := x509.NewCertPool()
+	cert, err := os.ReadFile(caCertPath)
+	if err != nil {
+		return nil, err
+	}
+	if ok := certPool.AppendCertsFromPEM(cert); !ok {
+		return nil, fmt.Errorf("failed to append cert, invalid PEM cert")
+	}
+	return certPool, nil
 }
