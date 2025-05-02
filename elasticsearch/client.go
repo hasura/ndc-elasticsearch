@@ -32,6 +32,7 @@ func NewClient(ctx context.Context) (*Client, error) {
 }
 
 func (e *Client) Authenticate(ctx context.Context) error {
+	logger := connector.GetLogger(ctx)
 	ctx, span := otel.Tracer("es_client").Start(ctx, "authenticate_elasticsearch", trace.WithAttributes(
 		attribute.String("internal.visibility", "user"), // this attr makes the span visible in the hasura console
 	))
@@ -42,14 +43,18 @@ func (e *Client) Authenticate(ctx context.Context) error {
 	// actual errors are recorded in the span
 	esConfig, err := e.accquireAuthConfig(ctx, false)
 	if err != nil {
+		logger.ErrorContext(ctx, "failed to get AuthConfig")
+		logger.DebugContext(ctx, "failed to get AuthConfig", "error", err)
 		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
+		span.RecordError(fmt.Errorf("failed to get AuthConfig: %w", err))
 		return errors.New("internal error")
 	}
 	esClient, err := elasticsearch.NewClient(*esConfig)
 	if err != nil {
+		logger.ErrorContext(ctx, "failed to create elasticsearch client")
+		logger.DebugContext(ctx, "failed to create elasticsearch client", "error", err)
 		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
+		span.RecordError(fmt.Errorf("failed to create elasticsearch client: %w", err))
 		return errors.New("internal error")
 	}
 	e.client = esClient
@@ -60,25 +65,34 @@ func (e *Client) Authenticate(ctx context.Context) error {
 		return nil
 	}
 
+	logger.ErrorContext(ctx, "failed to ping elasticsearch")
+	logger.DebugContext(ctx, "elasticsearch ping error", "error", err)
+
 	// if the ping fails, try to authenticate again with force refreshing the credentials
 	esConfig, err = e.accquireAuthConfig(ctx, true)
 	if err != nil {
+		logger.ErrorContext(ctx, "failed to get AuthConfig")
+		logger.DebugContext(ctx, "failed to get AuthConfig", "error", err)
 		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
+		span.RecordError(fmt.Errorf("failed to get AuthConfig: %w", err))
 		return errors.New("internal error")
 	}
 	esClient, err = elasticsearch.NewClient(*esConfig)
 	if err != nil {
+		logger.ErrorContext(ctx, "failed to create elasticsearch client")
+		logger.DebugContext(ctx, "failed to create elasticsearch client", "error", err)
 		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
+		span.RecordError(fmt.Errorf("failed to create elasticsearch client: %w", err))
 		return errors.New("internal error")
 	}
 	e.client = esClient
 	// Ping the client to check if the connection is successful
 	err = e.Ping()
 	if err != nil {
+		logger.ErrorContext(ctx, "failed to ping elasticsearch")
+		logger.DebugContext(ctx, "elasticsearch ping error", "error", err)
 		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
+		span.RecordError(fmt.Errorf("failed to ping elasticsearch: %w", err))
 		return errors.New("internal error")
 	}
 
@@ -90,14 +104,16 @@ func (e *Client) Reauthenticate(ctx context.Context) error {
 }
 
 func (e *Client) accquireAuthConfig(ctx context.Context, forceRefresh bool) (*elasticsearch.Config, error) {
+	logger := connector.GetLogger(ctx)
 	if shouldUseCredentialsProvider() {
+		logger.DebugContext(ctx, "using credentials provider")
 		esConfig, err := getConfigFromCredentialsProvider(ctx, forceRefresh)
 		if err != nil {
 			return nil, err
 		}
 		return esConfig, nil
 	} else {
-		esConfig, err := getConfigFromEnv()
+		esConfig, err := getConfigFromEnv(ctx)
 		if err != nil {
 			return nil, err
 		}

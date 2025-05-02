@@ -38,8 +38,8 @@ var (
 )
 
 // getConfigFromEnv retrieves elastic search configuration from environment variables.
-func getConfigFromEnv() (*elasticsearch.Config, error) {
-	esConfig, err := getBaseConfig()
+func getConfigFromEnv(ctx context.Context) (*elasticsearch.Config, error) {
+	esConfig, err := getBaseConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func shouldUseCredentialsProvider() bool {
 }
 
 func getConfigFromCredentialsProvider(ctx context.Context, forceRefresh bool) (*elasticsearch.Config, error) {
-	esConfig, err := getBaseConfig()
+	esConfig, err := getBaseConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func setupCredentialsUsingCredentialsProvider(ctx context.Context, esConfig *ela
 
 	credential, err := credentials.AcquireCredentials(ctx, key, forceRefresh)
 	if err != nil {
-		return err
+		return fmt.Errorf("error accquiring credentials: %w", err)
 	}
 
 	if mechanism == apiKeyCredentialsProviderMechanism {
@@ -123,7 +123,7 @@ func GetDefaultResultSize() int {
 // getBaseConfig returns a new elasticsearch client with only the address set.
 // This function should be used to setup the config with properties
 // that will be common across all configs (credentials provieder based configs or env based configs).
-func getBaseConfig() (*elasticsearch.Config, error) {
+func getBaseConfig(ctx context.Context) (*elasticsearch.Config, error) {
 	esConfig := elasticsearch.Config{
 		Header: http.Header{},
 	}
