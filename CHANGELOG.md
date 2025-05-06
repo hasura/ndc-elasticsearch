@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.4]
+
 - Prepend correct path to filepaths of user mounted files ([#96](https://github.com/hasura/ndc-elasticsearch/pull/96))
 
 ## [1.9.3]
