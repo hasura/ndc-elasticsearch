@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-sdk-go/credentials"
 )
 
@@ -144,7 +145,7 @@ func getBaseConfig(ctx context.Context) (*elasticsearch.Config, error) {
 	if caCertPath != "" {
 		certPool, err := loadCACert(caCertPath)
 		if err != nil {
-			return nil, fmt.Errorf("error reading CA certificate. Path: %s, Error: %v", caCertPath, err)
+			return nil, fmt.Errorf("error reading CA certificate. Path: %s, error: %v", caCertPath, err)
 		}
 
 		esConfig.Transport = &http.Transport{
@@ -157,7 +158,7 @@ func getBaseConfig(ctx context.Context) (*elasticsearch.Config, error) {
 
 func loadCACert(caCertPath string) (*x509.CertPool, error) {
 	certPool := x509.NewCertPool()
-	cert, err := os.ReadFile(caCertPath)
+	cert, err := internal.GetUsersFile(caCertPath)
 	if err != nil {
 		return nil, err
 	}
