@@ -6,10 +6,10 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
-
 )
 
 const (
@@ -177,4 +177,42 @@ func Contains(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+// Use this function to access files that are provided by the user (like certificates, etc).
+//
+// This function is responsible for generating the correct path and accessing the file.
+// The reason for generating a path that's different from the one that the user provided
+// is because there are two components that will be accessing the file:
+//
+// 1. The CLI Pluign: This will access the file from the ddn directory on the user's file system
+//
+// 2. The Docker Container: This will access the file from the /etc/connector/ directory
+//
+// The path of the file will change based on the component that is accessing it
+func GetUsersFile(filePath string) ([]byte, error) {
+	if os.Getenv("HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH") != "" {
+		// the plugin is accessing the file
+		// we'll prepend the value of this env var to the file path
+		filePath = filepath.Join(os.Getenv("HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH"), filePath)
+	} else if os.Getenv("HASURA_CONFIGURATION_DIRECTORY") != "" {
+		// the docker container is accessing the file
+		filePath = filepath.Join(os.Getenv("HASURA_CONFIGURATION_DIRECTORY"), filePath)
+	} else {
+		// since no env var is set, we'll assume that the docker container is accessing the file
+		// and the file is mounted to the /etc/connector/ directory, according to the spec:
+		// https://github.com/hasura/ndc-hub/blob/a764938e13fa3cc719745edaff73b584a936e3ef/rfcs/0000-deployment.md?plain=1#L23
+		filePath = filepath.Join("/etc/connector/", filePath)
+	}
+
+	if !FileExists(filePath) {
+		return nil, fmt.Errorf("file not found at %s", filePath)
+	}
+
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file %s: %w", filePath, err)
+	}
+
+	return fileContent, nil
 }
