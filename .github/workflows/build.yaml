@@ -1,0 +1,58 @@
+name: Build and Scan Docker Image
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  IMAGE_NAME: ghcr.io/hasura/ndc-elasticsearch:${{ github.sha }}
+  IMAGE_TAR_FILE: hasura-ndc-elasticsearch-${{ github.sha }}.tar
+jobs:
+  build-docker-image:
+    name: build-docker-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          docker build -f Dockerfile -t "${{ env.IMAGE_NAME }}" .
+
+      - name: Save Docker image as artifact
+        run: |
+          docker save -o "${{ env.IMAGE_TAR_FILE }}" "${{ env.IMAGE_NAME }}" 
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.IMAGE_TAR_FILE }}
+          path: ${{ env.IMAGE_TAR_FILE }}
+          retention-days: 1
+
+  scan-docker-image-with-gokakashi:
+    needs: build-docker-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.IMAGE_TAR_FILE }}
+
+      - name: Load Docker image
+        run: |
+          docker load -i "${{ env.IMAGE_TAR_FILE }}"
+
+      - name: Scan docker image with gokakashi
+        uses: shinobistack/gokakashi-action@v0.1.1
+        with:
+          image: '${{ env.IMAGE_NAME }}'
+          labels: agentKey=${{ github.run_id }}
+          policy: ci-platform
+          server: https://gokakashi-server.hasura-app.io
+          token: ${{ secrets.GOKAKASHI_API_TOKEN }}
+          cf_client_id: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          cf_client_secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          interval: 10
+          retries: 8
