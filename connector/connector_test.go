@@ -80,6 +80,11 @@ package connector
 // 		responseFile: "../testdata/query/filter/predicate_with_or_response.json",
 // 	},
 // 	{
+// 		name:         "predicate_with_empty_or",
+// 		requestFile:  "../testdata/query/filter/predicate_with_empty_or_request.json",
+// 		responseFile: "../testdata/query/filter/predicate_with_empty_or_response.json",
+// 	},
+// 	{
 // 		name:         "predicate_with_not",
 // 		requestFile:  "../testdata/query/filter/predicate_with_not_request.json",
 // 		responseFile: "../testdata/query/filter/predicate_with_not_response.json",
