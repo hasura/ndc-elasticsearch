@@ -114,6 +114,10 @@ var tests = []test{
 		name: "empty_or",
 	},
 	{
+		group: "payments",
+		name: "empty_and",
+	},
+	{
 		group: "customers",
 		name:  "simple_subtype_where_clause",
 	},
