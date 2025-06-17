@@ -37,18 +37,7 @@ func prepareFilterQuery(expression schema.Expression, state *types.State, collec
 		}
 		return filter, nil
 	case *schema.ExpressionOr:
-		queries := make([]map[string]interface{}, 0)
-		for _, expr := range expr.Expressions {
-			res, err := prepareFilterQuery(expr, state, collection)
-			if err != nil {
-				return nil, err
-			}
-			queries = append(queries, res)
-		}
-		filter["bool"] = map[string]interface{}{
-			"should": queries,
-		}
-		return filter, nil
+		return buildOrClauseQuery(expr.Expressions, state, collection)
 	case *schema.ExpressionNot:
 		res, err := prepareFilterQuery(expr.Expression, state, collection)
 		if err != nil {
@@ -64,6 +53,43 @@ func prepareFilterQuery(expression schema.Expression, state *types.State, collec
 			"expression": expression,
 		})
 	}
+}
+
+// buildOrClauseQuery constructs an Elasticsearch boolean query with "should" conditions
+// from a list of expressions. In Elasticsearch, "should" conditions are equivalent to OR logic.
+func buildOrClauseQuery(expressions []schema.Expression, state *types.State, collection string) (map[string]interface{}, error) {
+	if isEmptyOrClause(expressions) {
+		// an empty `or` clause is equivalent to a simple `false` clause according to the NDC Spec
+		// elasiticsearch does not have this behaviour inbuilt
+		// it treats an empty `or` clause  as a match all
+		// so, we explicitly add a `must_not` condition to negate the match all
+		return map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must_not": map[string]interface{}{
+					"match_all": map[string]interface{}{},
+				},
+			},
+		}, nil
+	}
+	
+	queries := make([]map[string]interface{}, 0)
+	for _, expr := range expressions {
+		res, err := prepareFilterQuery(expr, state, collection)
+		if err != nil {
+			return nil, err
+		}
+		queries = append(queries, res)
+	}
+	
+	filter := make(map[string]interface{})
+	filter["bool"] = map[string]interface{}{
+		"should": queries,
+	}
+	return filter, nil
+}
+
+func isEmptyOrClause(expressions []schema.Expression) bool {
+	return len(expressions) == 0
 }
 
 // getPredicate checks if a schema.Expression has nested filtering

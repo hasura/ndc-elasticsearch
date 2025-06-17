@@ -110,6 +110,10 @@ var tests = []test{
 		name:  "float_aggregations_with_range",
 	},
 	{
+		group: "payments",
+		name: "empty_or",
+	},
+	{
 		group: "customers",
 		name:  "simple_subtype_where_clause",
 	},
@@ -180,6 +184,14 @@ var tests = []test{
 	{
 		group: "flights_nested",
 		name: "nested_filtering_is_not_null",
+	},
+	{
+		group: "flights_nested",
+		name: "nested_or",
+	},
+	{
+		group: "flights_nested",
+		name: "empty_nested_or",
 	},
 }
 

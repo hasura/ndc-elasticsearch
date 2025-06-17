@@ -1,0 +1,46 @@
+{
+  "arguments": {},
+  "collection": "flights",
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "code": {
+        "column": "code",
+        "type": "column"
+      }
+    },
+    "predicate": {
+      "expressions": [
+        {
+          "column": {
+            "type": "column",
+            "name": "code"
+          },
+          "operator": "term",
+          "type": "binary_comparison_operator",
+          "value": {
+            "type": "scalar",
+            "value": "FL004000"
+          }
+        },
+        {
+          "column": {
+            "type": "column",
+            "name": "code"
+          },
+          "operator": "term",
+          "type": "binary_comparison_operator",
+          "value": {
+            "type": "scalar",
+            "value": "FL004001"
+          }
+        },
+        {
+          "expressions": [],
+          "type": "or"
+        }
+      ],
+      "type": "or"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "_source": [
+    "code"
+  ],
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "term": {
+            "code": "FL004000"
+          }
+        },
+        {
+          "term": {
+            "code": "FL004001"
+          }
+        },
+        {
+          "bool": {
+            "must_not": {
+              "match_all": {}
+            }
+          }
+        }
+      ]
+    }
+  },
+  "size": 10000
+}

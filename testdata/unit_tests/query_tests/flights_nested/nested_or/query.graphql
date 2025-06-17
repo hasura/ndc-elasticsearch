@@ -1,0 +1,14 @@
+query MyQuery {
+  flights(args: {}, where: {_or: [
+    { code: {term: "FL004000"}}
+    { code: {term: "FL004001"}}
+    {
+      _or: [
+            { code: {term: "FL004005"}}
+            { code: {term: "FL004006"}}
+      ]
+    }
+  ]}) {
+    code
+  }
+}
