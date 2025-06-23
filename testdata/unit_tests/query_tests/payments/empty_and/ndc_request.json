@@ -1,0 +1,25 @@
+{
+  "arguments": {},
+  "collection": "customers",
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "customerId": {
+        "column": "customer_id",
+        "type": "column"
+      },
+      "email": {
+        "column": "email",
+        "type": "column"
+      },
+      "name": {
+        "column": "name",
+        "type": "column"
+      }
+    },
+    "predicate": {
+      "expressions": [],
+      "type": "and"
+    }
+  }
+}

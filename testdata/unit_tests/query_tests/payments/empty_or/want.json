@@ -1,0 +1,15 @@
+{
+  "_source": [
+    "customer_id",
+    "email",
+    "name"
+  ],
+  "query": {
+    "bool": {
+      "must_not": {
+        "match_all": {}
+      }
+    }
+  },
+  "size": 10000
+}

@@ -24,31 +24,9 @@ func prepareFilterQuery(expression schema.Expression, state *types.State, collec
 		expr.Column.FieldPath = fieldPath
 		return handleExpressionBinaryComparisonOperator(expr, state, collection)
 	case *schema.ExpressionAnd:
-		queries := make([]map[string]interface{}, 0)
-		for _, expr := range expr.Expressions {
-			res, err := prepareFilterQuery(expr, state, collection)
-			if err != nil {
-				return nil, err
-			}
-			queries = append(queries, res)
-		}
-		filter["bool"] = map[string]interface{}{
-			"must": queries,
-		}
-		return filter, nil
+		return buildAndClauseQuery(expr.Expressions, state, collection)
 	case *schema.ExpressionOr:
-		queries := make([]map[string]interface{}, 0)
-		for _, expr := range expr.Expressions {
-			res, err := prepareFilterQuery(expr, state, collection)
-			if err != nil {
-				return nil, err
-			}
-			queries = append(queries, res)
-		}
-		filter["bool"] = map[string]interface{}{
-			"should": queries,
-		}
-		return filter, nil
+		return buildOrClauseQuery(expr.Expressions, state, collection)
 	case *schema.ExpressionNot:
 		res, err := prepareFilterQuery(expr.Expression, state, collection)
 		if err != nil {
@@ -64,6 +42,66 @@ func prepareFilterQuery(expression schema.Expression, state *types.State, collec
 			"expression": expression,
 		})
 	}
+}
+
+// buildAndClauseQuery constructs an Elasticsearch boolean query with "must" conditions
+// from a list of expressions. In Elasticsearch, "must" conditions are equivalent to AND logic.
+//
+// Note: An empty AND clause is treated as a match_all query according to the NDC Spec,
+// which matches all documents in Elasticsearch.
+// We don't need to handle this explicitly because Elasticsearch treats an empty "must" as a match_all.
+func buildAndClauseQuery(expressions []schema.Expression, state *types.State, collection string) (map[string]interface{}, error) {
+	queries := make([]map[string]interface{}, 0)
+	for _, expr := range expressions {
+		res, err := prepareFilterQuery(expr, state, collection)
+		if err != nil {
+			return nil, err
+		}
+		queries = append(queries, res)
+	}
+	
+	filter := make(map[string]interface{})
+	filter["bool"] = map[string]interface{}{
+		"must": queries,
+	}
+	return filter, nil
+}
+
+// buildOrClauseQuery constructs an Elasticsearch boolean query with "should" conditions
+// from a list of expressions. In Elasticsearch, "should" conditions are equivalent to OR logic.
+func buildOrClauseQuery(expressions []schema.Expression, state *types.State, collection string) (map[string]interface{}, error) {
+	if isEmptyOrClause(expressions) {
+		// an empty `or` clause is equivalent to a simple `false` clause according to the NDC Spec
+		// elasiticsearch does not have this behaviour inbuilt
+		// it treats an empty `or` clause  as a match all
+		// so, we explicitly add a `must_not` condition to negate the match all
+		return map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must_not": map[string]interface{}{
+					"match_all": map[string]interface{}{},
+				},
+			},
+		}, nil
+	}
+	
+	queries := make([]map[string]interface{}, 0)
+	for _, expr := range expressions {
+		res, err := prepareFilterQuery(expr, state, collection)
+		if err != nil {
+			return nil, err
+		}
+		queries = append(queries, res)
+	}
+	
+	filter := make(map[string]interface{})
+	filter["bool"] = map[string]interface{}{
+		"should": queries,
+	}
+	return filter, nil
+}
+
+func isEmptyOrClause(expressions []schema.Expression) bool {
+	return len(expressions) == 0
 }
 
 // getPredicate checks if a schema.Expression has nested filtering
