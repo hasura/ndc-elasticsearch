@@ -1,10 +1,12 @@
-version: '3.8'
 services:
   ndc-elasticsearch:
     image: ghcr.io/hasura/ndc-elasticsearch:latest
+    build:
+      context: .
     volumes:
       - ./resources/configuration.json:/etc/connector/configuration.json
       - certs:/usr/share/elasticsearch/config/certs
+    user: "0"
     ports:
       - 8080:8080
     environment:
@@ -16,6 +18,7 @@ services:
       ELASTICSEARCH_USERNAME: elastic
       ELASTICSEARCH_PASSWORD: ${ELASTIC_PASSWORD:-default}
       ELASTICSEARCH_CA_CERT_PATH: /usr/share/elasticsearch/config/certs/es01/es01.crt
+      HASURA_LOG_LEVEL: debug
     command: serve
     depends_on:
       jaeger:
@@ -58,10 +61,6 @@ services:
         chown -R root:root config/certs;
         find . -type d -exec chmod 750 \{\} \;;
         find . -type f -exec chmod 640 \{\} \;;
-        echo "Waiting for Elasticsearch availability";
-        until curl -s --cacert config/certs/ca/ca.crt https://es01:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
-        echo "Setting kibana_system password";
-        until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD:-default}" -H "Content-Type: application/json" https://es01:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD:-default}\"}" | grep -q "^{}"; do sleep 10; done;
         echo "All done!";
       '
     healthcheck:
@@ -69,11 +68,11 @@ services:
       interval: 1s
       timeout: 5s
       retries: 120
-  
+
   es01:
     depends_on:
       setup:
-        condition: service_healthy
+        condition: service_completed_successfully
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION:-8.13.4}
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
