@@ -1,6 +1,6 @@
 module github.com/hasura/ndc-elasticsearch
 
-go 1.25.6
+go 1.25.7
 
 require (
 	github.com/elastic/go-elasticsearch/v8 v8.19.1
