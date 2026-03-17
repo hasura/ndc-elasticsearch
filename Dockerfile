@@ -13,7 +13,9 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ndc-elasticsearch
 FROM alpine:3
 
 # Install necessary certificates for the application to run
-RUN apk --no-cache add ca-certificates
+RUN apk update && \
+    apk upgrade && \
+    apk --no-cache add ca-certificates
 
 # Create a safe working directory
 WORKDIR /app
