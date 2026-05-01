@@ -15,30 +15,31 @@
           "nested": {
             "path": "route.arrival_airport",
             "query": {
-              "nested": {
-                "path": "route.arrival_airport.location",
-                "query": {
-                  "nested": {
-                    "path": "route.arrival_airport.location.coordinates",
-                    "query": {
-                      "range": {
-                        "route.arrival_airport.location.coordinates.elevation": {
-                          "gte": "200"
+              "bool": {
+                "must": [
+                  {
+                    "nested": {
+                      "path": "route.arrival_airport.location",
+                      "query": {
+                        "nested": {
+                          "path": "route.arrival_airport.location.coordinates",
+                          "query": {
+                            "range": {
+                              "route.arrival_airport.location.coordinates.elevation": {
+                                "gte": "200"
+                              }
+                            }
+                          }
                         }
                       }
                     }
+                  },
+                  {
+                    "match": {
+                      "route.arrival_airport.terminals": "2"
+                    }
                   }
-                }
-              }
-            }
-          }
-        },
-        {
-          "nested": {
-            "path": "route.arrival_airport",
-            "query": {
-              "match": {
-                "route.arrival_airport.terminals": "2"
+                ]
               }
             }
           }
