@@ -59,7 +59,9 @@ func buildAndClauseQuery(expressions []schema.Expression, state *types.State, co
 		}
 		queries = append(queries, res)
 	}
-	
+
+	queries = groupNestedQueriesByPath(queries, "must")
+
 	filter := make(map[string]interface{})
 	filter["bool"] = map[string]interface{}{
 		"must": queries,
@@ -92,7 +94,9 @@ func buildOrClauseQuery(expressions []schema.Expression, state *types.State, col
 		}
 		queries = append(queries, res)
 	}
-	
+
+	queries = groupNestedQueriesByPath(queries, "should")
+
 	filter := make(map[string]interface{})
 	filter["bool"] = map[string]interface{}{
 		"should": queries,
@@ -236,6 +240,73 @@ func joinFieldPath(state *types.State, fieldPath []string, columnName string, co
 	}
 
 	return joinedPath, nestedPath
+}
+
+// groupNestedQueriesByPath groups Elasticsearch nested queries that share the same top-level
+// nested path into a single nested query. Multiple conditions targeting the same nested path
+// are merged into one nested query with a bool clause containing all inner conditions,
+// ensuring they are evaluated against the same nested document rather than independently.
+func groupNestedQueriesByPath(queries []map[string]interface{}, boolClause string) []map[string]interface{} {
+	type slot struct {
+		isNested     bool
+		path         string
+		innerQueries []map[string]interface{}
+		rawQuery     map[string]interface{}
+	}
+
+	slots := make([]*slot, 0, len(queries))
+	pathToSlot := make(map[string]*slot)
+
+	for _, q := range queries {
+		nested, hasNested := q["nested"].(map[string]interface{})
+		if hasNested {
+			path, hasPath := nested["path"].(string)
+			innerQuery, hasInner := nested["query"].(map[string]interface{})
+			if hasPath && hasInner {
+				if s, seen := pathToSlot[path]; seen {
+					s.innerQueries = append(s.innerQueries, innerQuery)
+					continue
+				}
+				s := &slot{
+					isNested:     true,
+					path:         path,
+					innerQueries: []map[string]interface{}{innerQuery},
+				}
+				pathToSlot[path] = s
+				slots = append(slots, s)
+				continue
+			}
+		}
+		slots = append(slots, &slot{rawQuery: q})
+	}
+
+	result := make([]map[string]interface{}, 0, len(slots))
+	for _, s := range slots {
+		if !s.isNested {
+			result = append(result, s.rawQuery)
+			continue
+		}
+		if len(s.innerQueries) == 1 {
+			result = append(result, map[string]interface{}{
+				"nested": map[string]interface{}{
+					"path":  s.path,
+					"query": s.innerQueries[0],
+				},
+			})
+		} else {
+			result = append(result, map[string]interface{}{
+				"nested": map[string]interface{}{
+					"path": s.path,
+					"query": map[string]interface{}{
+						"bool": map[string]interface{}{
+							boolClause: s.innerQueries,
+						},
+					},
+				},
+			})
+		}
+	}
+	return result
 }
 
 func prepareNestedQuery(
