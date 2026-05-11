@@ -7,7 +7,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go application
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ndc-elasticsearch
+RUN CGO_ENABLED=0 go build -o ndc-elasticsearch
 
 # Stage 2: Create a minimal image with the Go binary
 FROM alpine:3
