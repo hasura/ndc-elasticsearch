@@ -52,8 +52,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
-          cache-from: type=registry,ref=${{ env.GHCR_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}
-          cache-to: type=registry,ref=${{ env.GHCR_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}
+          cache-from: type=registry,ref=${{ env.GHCR_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}:build-cache
+          cache-to: type=registry,ref=${{ env.GHCR_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}:build-cache
 
   build-cli-binaries:
     name: build the CLI binaries
