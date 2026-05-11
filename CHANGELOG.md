@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.1]
+
+- Improve AND/OR query builder on nested paths.
+- Fix reported vulnerabilities.
+
 ## [1.10.0]
 
 - Upgrade Go v1.26 and fix reported vulnerabilities.
