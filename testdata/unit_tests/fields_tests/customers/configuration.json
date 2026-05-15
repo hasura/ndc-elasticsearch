@@ -1,0 +1,66 @@
+{
+  "indices": {
+    "customers": {
+      "mappings": {
+        "properties": {
+          "customer_id": {
+            "type": "keyword"
+          },
+          "email": {
+            "type": "keyword"
+          },
+          "location": {
+            "type": "geo_point"
+          },
+          "name": {
+            "fields": {
+              "raw": {
+                "ignore_above": 256,
+                "type": "keyword"
+              }
+            },
+            "type": "text"
+          }
+        }
+      }
+    }
+  },
+  "queries": {
+    "my_simple_query": {
+      "dsl": {
+        "internal": {
+          "_source": [
+            "_id",
+            "name"
+          ],
+          "size": 10000
+        }
+      },
+      "index": "customers",
+      "return_type": {
+        "kind": "index"
+      }
+    },
+    "my_simple_query_with_vars": {
+      "dsl": {
+        "file": "",
+        "internal": {
+          "_source": [
+            "_id",
+            "name"
+          ],
+          "size": "{{ size }}"
+        }
+      },
+      "index": "customers",
+      "return_type": {
+        "kind": "index"
+      },
+      "arguments": {
+        "size": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}
