@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.2]
+
+- Fix reported vulnerabilities.
+
 ## [1.10.1]
 
 - Improve AND/OR query builder on nested paths.
