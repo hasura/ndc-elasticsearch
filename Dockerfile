@@ -1,5 +1,5 @@
 # Stage 1: Build the Go binary
-FROM golang:1.26 AS builder
+FROM us-docker.pkg.dev/hasura-container-images/external-images/docker.io/library/golang:1.26-stable AS builder
 
 WORKDIR /app
 COPY go.mod go.sum ./
@@ -10,7 +10,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -o ndc-elasticsearch
 
 # Stage 2: Create a minimal image with the Go binary
-FROM alpine:3
+FROM us-docker.pkg.dev/hasura-container-images/external-images/docker.io/library/alpine:3-stable
 
 # Install necessary certificates for the application to run
 RUN apk update && \
