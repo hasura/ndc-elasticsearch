@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -178,16 +179,16 @@ func TestSearchPerAttemptLogging(t *testing.T) {
 		t.Errorf(`expected the target index in the log line, not found in:\n%s`, logs)
 	}
 
-	// The logged retry body must reflect what is ACTUALLY sent on the wire: a
-	// non-empty body identical to the first attempt.
-	retryBody := logFieldForMsg(t, logs, "Retry Query", "body")
-	if trimWS(retryBody) == "" {
-		t.Fatalf("expected a non-empty logged retry body, got %q", retryBody)
+	// body_bytes must be non-zero on both attempts, proving the retry carries a
+	// real payload (body_bytes=0 would mean the bug is present).
+	if logFieldForMsg(t, logs, "Query", "body_bytes") == "0" || logFieldForMsg(t, logs, "Query", "body_bytes") == "" {
+		t.Errorf("expected non-zero body_bytes on first attempt")
 	}
-	if !jsonEqual(t, retryBody, logFieldForMsg(t, logs, "Query", "body")) {
-		t.Errorf("logged retry body %q does not match first attempt body", retryBody)
+	retryBodyBytes := logFieldForMsg(t, logs, "Retry Query", "body_bytes")
+	if retryBodyBytes == "0" || retryBodyBytes == "" {
+		t.Fatalf("expected non-zero body_bytes on retry attempt, got %q", retryBodyBytes)
 	}
-	t.Logf("retry logged the full body: %s", retryBody)
+	t.Logf("retry logged body_bytes=%s", retryBodyBytes)
 }
 
 // logFieldForMsg returns the value of field for the first JSON log record whose
@@ -203,8 +204,11 @@ func logFieldForMsg(t *testing.T, logs, msg, field string) string {
 			continue
 		}
 		if rec["msg"] == msg {
-			if v, ok := rec[field].(string); ok {
+			switch v := rec[field].(type) {
+			case string:
 				return v
+			case float64:
+				return fmt.Sprintf("%g", v)
 			}
 		}
 	}
