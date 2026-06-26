@@ -52,7 +52,7 @@ func (c *Connector) TryInitState(ctx context.Context, configuration *types.Confi
 
 // HealthCheck checks the health of the connector.
 func (c *Connector) HealthCheck(ctx context.Context, configuration *types.Configuration, state *types.State) error {
-	if err := state.Client.Ping(); err != nil {
+	if err := state.Client.Ping(ctx); err != nil {
 		return err
 	}
 	return nil
