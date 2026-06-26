@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.3]
+
+- Fix dropped query body on 401 retry — Elasticsearch was receiving an empty body on reauthentication retries, silently returning unfiltered results. ([#118](https://github.com/hasura/ndc-elasticsearch/pull/118))
+- Replace raw query body debug logging with payload size to avoid PII exposure in filter values. ([#120](https://github.com/hasura/ndc-elasticsearch/pull/120))
+
 ## [1.10.2]
 
 - Fix reported vulnerabilities.
