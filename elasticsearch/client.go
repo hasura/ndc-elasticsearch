@@ -205,13 +205,11 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 				return nil, fmt.Errorf("error: %s", err)
 			}
 			// Rebuild the body so the retried request carries the same query
-			// instead of the already-drained (empty) reader. Setting the env var
-			// ELASTICSEARCH_DISABLE_RETRY_BODY_REBUILD reproduces the old, buggy
-			// behaviour (empty retry body) and is intended for testing only.
-			if !retryBodyRebuildDisabled() {
-				req.Body = bytes.NewReader(body)
-			}
-			logger.DebugContext(ctx, "Retry Query", "index", index, "body", retryBodyForLog(req.Body))
+			// instead of the already-drained (empty) reader. The retried reader
+			// holds exactly these bytes, so logging string(body) reflects what is
+			// actually sent over the wire.
+			req.Body = bytes.NewReader(body)
+			logger.DebugContext(ctx, "Retry Query", "index", index, "body", string(body))
 			res, err = req.Do(ctx, e.client)
 			if err != nil {
 				return nil, fmt.Errorf("error: %s", err)
@@ -223,13 +221,6 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 	return res, err
 }
 
-// retryBodyRebuildDisabled reports whether the retry body rebuild has been
-// disabled via env var. This exists solely to reproduce the pre-fix buggy
-// behaviour in tests; it should never be set in production.
-func retryBodyRebuildDisabled() bool {
-	return os.Getenv("ELASTICSEARCH_DISABLE_RETRY_BODY_REBUILD") != ""
-}
-
 // drainBody reads an io.Reader fully and returns its bytes, handling a nil
 // reader (no body) gracefully.
 func drainBody(r io.Reader) ([]byte, error) {
@@ -237,21 +228,6 @@ func drainBody(r io.Reader) ([]byte, error) {
 		return nil, nil
 	}
 	return io.ReadAll(r)
-}
-
-// retryBodyForLog returns the exact bytes that will be sent on the retry attempt
-// so the log line reflects what actually goes over the wire. With the fix the
-// reader is a *bytes.Reader we can peek without consuming; in the buggy mode the
-// reader is the drained original, so the logged body is empty - matching reality.
-func retryBodyForLog(r io.Reader) string {
-	br, ok := r.(*bytes.Reader)
-	if !ok {
-		return ""
-	}
-	buf := make([]byte, br.Len())
-	// ReadAt does not advance the read cursor, so req.Do still sends the body.
-	n, _ := br.ReadAt(buf, 0)
-	return string(buf[:n])
 }
 
 // Explain performs a search with explain operation in elastic search.

@@ -54,19 +54,15 @@ func newFakeES(t *testing.T, bodies *[]string, mu *sync.Mutex) *httptest.Server 
 // that the retry, sent after re-authentication, carries the SAME, non-empty
 // query body as the first attempt.
 //
-// How to flip between buggy and fixed behaviour
-// ---------------------------------------------
-//
-//	# NEW (fixed) behaviour — retry body equals first body. Test PASSES:
 //	go test -v -run TestSearchRetryBodyOn401 ./elasticsearch/
 //
-//	# OLD (buggy) behaviour — retry sends an empty body. Test FAILS:
-//	ELASTICSEARCH_DISABLE_RETRY_BODY_REBUILD=1 \
-//	    go test -v -run TestSearchRetryBodyOn401 ./elasticsearch/
+// To manually reproduce the OLD buggy behaviour (retry sends an empty body),
+// comment out the body-rebuild line in search() in client.go:
 //
-// The env var ELASTICSEARCH_DISABLE_RETRY_BODY_REBUILD makes the production code
-// skip the body rebuild before the retry, exactly reproducing the pre-fix bug,
-// so the reviewer exercises the REAL code path in both modes.
+//	// req.Body = bytes.NewReader(body)   // <- comment this out before the retry req.Do
+//
+// and re-run this test: it will fail with "BUG REPRODUCED", because the retry
+// then reuses the already-drained reader and sends an empty body.
 func TestSearchRetryBodyOn401(t *testing.T) {
 	var (
 		mu           sync.Mutex
@@ -130,15 +126,10 @@ func TestSearchRetryBodyOn401(t *testing.T) {
 // TestSearchPerAttemptLogging verifies the per-attempt request logging: the
 // connector logs the actual _search body and target index it sends on EVERY
 // attempt, and the retry log line carries the literal "Retry Query" marker so
-// retries are easy to grep. The logged retry body reflects what is ACTUALLY
-// sent, so in buggy mode it is empty and in fixed mode it equals the first body.
+// retries are easy to grep. The logged body reflects what is ACTUALLY sent, so
+// the "Retry Query" line carries the same non-empty body as the first attempt.
 //
-//	# See the logs for both attempts (fixed mode):
 //	go test -v -run TestSearchPerAttemptLogging ./elasticsearch/
-//
-//	# Buggy mode — the "Retry Query" line shows an empty body:
-//	ELASTICSEARCH_DISABLE_RETRY_BODY_REBUILD=1 \
-//	    go test -v -run TestSearchPerAttemptLogging ./elasticsearch/
 func TestSearchPerAttemptLogging(t *testing.T) {
 	var (
 		mu           sync.Mutex
@@ -187,19 +178,16 @@ func TestSearchPerAttemptLogging(t *testing.T) {
 		t.Errorf(`expected the target index in the log line, not found in:\n%s`, logs)
 	}
 
-	// The logged retry body must reflect what is ACTUALLY sent on the wire.
+	// The logged retry body must reflect what is ACTUALLY sent on the wire: a
+	// non-empty body identical to the first attempt.
 	retryBody := logFieldForMsg(t, logs, "Retry Query", "body")
-	if retryBodyRebuildDisabled() {
-		if trimWS(retryBody) != "" {
-			t.Errorf("buggy mode: expected empty logged retry body, got %q", retryBody)
-		}
-		t.Logf("buggy mode confirmed: retry logged an EMPTY body: %q", retryBody)
-	} else {
-		if !jsonEqual(t, retryBody, logFieldForMsg(t, logs, "Query", "body")) {
-			t.Errorf("fixed mode: logged retry body %q does not match first attempt body", retryBody)
-		}
-		t.Logf("fixed mode confirmed: retry logged the full body: %s", retryBody)
+	if trimWS(retryBody) == "" {
+		t.Fatalf("expected a non-empty logged retry body, got %q", retryBody)
 	}
+	if !jsonEqual(t, retryBody, logFieldForMsg(t, logs, "Query", "body")) {
+		t.Errorf("logged retry body %q does not match first attempt body", retryBody)
+	}
+	t.Logf("retry logged the full body: %s", retryBody)
 }
 
 // logFieldForMsg returns the value of field for the first JSON log record whose
