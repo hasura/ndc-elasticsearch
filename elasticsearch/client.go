@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
@@ -166,21 +168,50 @@ func (e *Client) Search(ctx context.Context, index string, body map[string]inter
 
 // search is a helper function to perform a search operation in elastic search.
 func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*esapi.Response, error) {
+	logger := connector.GetLogger(ctx)
+
 	req := &esapi.SearchRequest{}
 
 	for _, opt := range o {
 		opt(req)
 	}
 
+	// req.Body is an io.Reader that is fully drained by req.Do. If we retry the
+	// request after a 401 (see below) by calling req.Do again on the same req,
+	// the already-drained reader sends an empty body. Elasticsearch treats an
+	// empty _search body as a match_all query and returns unfiltered results.
+	// To make the request safely repeatable, capture the encoded body once and
+	// rebuild a fresh reader before every attempt.
+	body, err := drainBody(req.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading search request body: %w", err)
+	}
+	index := strings.Join(req.Index, ",")
+
+	// First attempt.
+	req.Body = bytes.NewReader(body)
+	logger.DebugContext(ctx, "Query", "index", index, "body", string(body))
 	res, err := req.Do(ctx, e.client)
+	// Check the transport error before touching res: on a transport-level
+	// failure res is nil and res.IsError() would panic.
+	if err != nil {
+		return nil, fmt.Errorf("error while querying: %s", err)
+	}
 
 	if res.IsError() {
 		if res.StatusCode == 401 {
-			// Unauthorized error, reauthenticate and retry
-			err = e.Reauthenticate(ctx)
-			if err != nil {
+			// Unauthorized error, reauthenticate and retry.
+			if err = e.Reauthenticate(ctx); err != nil {
 				return nil, fmt.Errorf("error: %s", err)
 			}
+			// Rebuild the body so the retried request carries the same query
+			// instead of the already-drained (empty) reader. Setting the env var
+			// ELASTICSEARCH_DISABLE_RETRY_BODY_REBUILD reproduces the old, buggy
+			// behaviour (empty retry body) and is intended for testing only.
+			if !retryBodyRebuildDisabled() {
+				req.Body = bytes.NewReader(body)
+			}
+			logger.DebugContext(ctx, "Retry Query", "index", index, "body", retryBodyForLog(req.Body))
 			res, err = req.Do(ctx, e.client)
 			if err != nil {
 				return nil, fmt.Errorf("error: %s", err)
@@ -190,6 +221,37 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 		}
 	}
 	return res, err
+}
+
+// retryBodyRebuildDisabled reports whether the retry body rebuild has been
+// disabled via env var. This exists solely to reproduce the pre-fix buggy
+// behaviour in tests; it should never be set in production.
+func retryBodyRebuildDisabled() bool {
+	return os.Getenv("ELASTICSEARCH_DISABLE_RETRY_BODY_REBUILD") != ""
+}
+
+// drainBody reads an io.Reader fully and returns its bytes, handling a nil
+// reader (no body) gracefully.
+func drainBody(r io.Reader) ([]byte, error) {
+	if r == nil {
+		return nil, nil
+	}
+	return io.ReadAll(r)
+}
+
+// retryBodyForLog returns the exact bytes that will be sent on the retry attempt
+// so the log line reflects what actually goes over the wire. With the fix the
+// reader is a *bytes.Reader we can peek without consuming; in the buggy mode the
+// reader is the drained original, so the logged body is empty - matching reality.
+func retryBodyForLog(r io.Reader) string {
+	br, ok := r.(*bytes.Reader)
+	if !ok {
+		return ""
+	}
+	buf := make([]byte, br.Len())
+	// ReadAt does not advance the read cursor, so req.Do still sends the body.
+	n, _ := br.ReadAt(buf, 0)
+	return string(buf[:n])
 }
 
 // Explain performs a search with explain operation in elastic search.
