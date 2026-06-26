@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Fix `_search` payload being dropped on the 401 re-authentication retry. The retry reused an already-drained request body and sent an empty `_search` body, which Elasticsearch interprets as `match_all`, returning wrong/unfiltered results after a credential refresh. The retry now replays the original query body, and a transport-level error from the first request is checked before the response is used.
+- Log the actual `_search` request (target index and body) sent on each attempt at `DEBUG` level. The post-401 retry is logged with a `"Retry Query"` marker so retry requests can be distinguished from first-attempt `"Query"` requests. Credentials/auth headers are not logged.
 
 ## [1.10.2]
 

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -173,5 +174,79 @@ func TestSearch401RetrySendsSameBody(t *testing.T) {
 			"An empty/short body means the retry was sent without the query, which Elasticsearch "+
 			"interprets as match_all. This is the bug from commit 3431d53 / PR #72.",
 			retryBody, len(retryBody), queryBody)
+	}
+}
+
+// TestSearch401RetryLogsBodyPerAttempt verifies the per-attempt request logging
+// requested in support ticket #15000: the connector must log the actual _search
+// request (target index + body) it sends on EACH attempt, and the post-401
+// retry log line must carry the literal marker "Retry Query" so it can be
+// grepped apart from first-attempt "Query" lines.
+//
+// It captures the connector's structured logs (slog) and asserts both markers
+// are emitted with the real query body. Because the fix re-seeds the request
+// body before every attempt, the logged body matches what is actually sent over
+// the wire on both the first attempt and the retry.
+func TestSearch401RetryLogsBodyPerAttempt(t *testing.T) {
+	// Route connector.GetLogger's fallback (no logger in ctx) at debug level into
+	// a buffer we can assert on. slog.Default is global, so restore it after.
+	var logBuf bytes.Buffer
+	prevDefault := slog.Default()
+	slog.SetDefault(slog.New(slog.NewJSONHandler(&logBuf, &slog.HandlerOptions{Level: slog.LevelDebug})))
+	defer slog.SetDefault(prevDefault)
+
+	ctx := context.Background()
+	queryBody := []byte(`{"query":{"term":{"title":"hasura"}}}`)
+
+	transport := &recordingTransport{}
+	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses:    []string{"http://elasticsearch.invalid:9200"},
+		Transport:    transport,
+		DisableRetry: true,
+	})
+	if err != nil {
+		t.Fatalf("failed to build elasticsearch client: %v", err)
+	}
+
+	e := &Client{
+		client:         esClient,
+		reauthenticate: func(context.Context) error { return nil },
+	}
+
+	opts := []func(*esapi.SearchRequest){
+		func(r *esapi.SearchRequest) { r.Index = []string{"test-index"} },
+		func(r *esapi.SearchRequest) { r.Body = bytes.NewBuffer(queryBody) },
+	}
+
+	if _, err = e.search(ctx, opts...); err != nil {
+		t.Fatalf("search returned an unexpected error: %v", err)
+	}
+
+	logs := logBuf.String()
+	t.Logf("captured logs:\n%s", logs)
+
+	// First-attempt log line.
+	if !strings.Contains(logs, `"msg":"Query"`) {
+		t.Errorf("expected a first-attempt %q log line; got:\n%s", "Query", logs)
+	}
+	// Retry log line carrying the required marker.
+	if !strings.Contains(logs, `"msg":"Retry Query"`) {
+		t.Errorf("expected a %q marked log line on the 401 retry; got:\n%s", "Retry Query", logs)
+	}
+	// Both log lines must include the actual query body and target index. The
+	// body is JSON-escaped inside the JSON log record, so assert on a stable
+	// fragment of the query.
+	if strings.Count(logs, `term`) < 2 || strings.Count(logs, `title`) < 2 {
+		t.Errorf("expected the real query body to be logged on both attempts; got:\n%s", logs)
+	}
+	if strings.Count(logs, `"index":"test-index"`) < 2 {
+		t.Errorf("expected the target index to be logged on both attempts; got:\n%s", logs)
+	}
+	// Sanity: the fake never sends credentials, but guard against accidentally
+	// logging common auth fields from this path.
+	for _, secret := range []string{"Authorization", "password", "apiKey", "api_key", "ServiceToken"} {
+		if strings.Contains(logs, secret) {
+			t.Errorf("log output unexpectedly contains a credential-like field %q:\n%s", secret, logs)
+		}
 	}
 }

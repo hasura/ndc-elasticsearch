@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
@@ -179,6 +180,8 @@ func (e *Client) Search(ctx context.Context, index string, body map[string]inter
 
 // search is a helper function to perform a search operation in elastic search.
 func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*esapi.Response, error) {
+	logger := connector.GetLogger(ctx)
+
 	req := &esapi.SearchRequest{}
 
 	for _, opt := range o {
@@ -206,7 +209,14 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 		}
 	}
 
+	// index and body are logged on each attempt so the exact _search request that
+	// goes over the wire is observable. Because seedBody re-seeds req.Body with
+	// exactly these bytes before every attempt, string(body) reflects what is
+	// actually sent (auth headers/credentials are never logged).
+	index := strings.Join(req.Index, ",")
+
 	seedBody()
+	logger.DebugContext(ctx, "Query", "index", index, "body", string(body))
 	res, err := req.Do(ctx, e.client)
 	// Check the transport error before touching res: on a transport-level failure
 	// req.Do returns (nil, err), so dereferencing res first would panic.
@@ -221,6 +231,9 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 				return nil, fmt.Errorf("error: %w", err)
 			}
 			seedBody()
+			// "Retry Query" marks the post-401 retry so it can be grepped apart
+			// from first-attempt "Query" log lines.
+			logger.DebugContext(ctx, "Retry Query", "index", index, "body", string(body))
 			res, err = req.Do(ctx, e.client)
 			if err != nil {
 				return nil, fmt.Errorf("error: %w", err)
