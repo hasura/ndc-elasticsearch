@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/elastic/go-elasticsearch/v8"
@@ -19,6 +20,18 @@ import (
 
 type Client struct {
 	client *elasticsearch.Client
+	// reauthenticate refreshes credentials when Elasticsearch returns a 401.
+	// It defaults to (*Client).Reauthenticate; tests may override it to avoid
+	// rebuilding the underlying client (and its transport) on retry.
+	reauthenticate func(ctx context.Context) error
+}
+
+// reauth refreshes credentials on a 401, using the overridable hook when set.
+func (e *Client) reauth(ctx context.Context) error {
+	if e.reauthenticate != nil {
+		return e.reauthenticate(ctx)
+	}
+	return e.Reauthenticate(ctx)
 }
 
 // NewClient creates a new client with configuration from cfg.
@@ -172,18 +185,45 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 		opt(req)
 	}
 
+	// req.Body is an io.Reader that esapi drains while building the HTTP request.
+	// Capture its bytes once so the request can be replayed: without this, the
+	// 401 retry below would reuse the already-drained reader and send an empty
+	// _search body, which Elasticsearch interprets as match_all (dropping the
+	// actual query and returning wrong results).
+	var body []byte
+	if req.Body != nil {
+		var err error
+		body, err = io.ReadAll(req.Body)
+		if err != nil {
+			return nil, fmt.Errorf("error reading search request body: %w", err)
+		}
+	}
+	// seedBody resets req.Body to a fresh reader over the captured bytes so every
+	// attempt transmits the same payload.
+	seedBody := func() {
+		if body != nil {
+			req.Body = bytes.NewReader(body)
+		}
+	}
+
+	seedBody()
 	res, err := req.Do(ctx, e.client)
+	// Check the transport error before touching res: on a transport-level failure
+	// req.Do returns (nil, err), so dereferencing res first would panic.
+	if err != nil {
+		return nil, fmt.Errorf("error while querying: %w", err)
+	}
 
 	if res.IsError() {
 		if res.StatusCode == 401 {
-			// Unauthorized error, reauthenticate and retry
-			err = e.Reauthenticate(ctx)
-			if err != nil {
-				return nil, fmt.Errorf("error: %s", err)
+			// Unauthorized error, reauthenticate and retry with the same body.
+			if err = e.reauth(ctx); err != nil {
+				return nil, fmt.Errorf("error: %w", err)
 			}
+			seedBody()
 			res, err = req.Do(ctx, e.client)
 			if err != nil {
-				return nil, fmt.Errorf("error: %s", err)
+				return nil, fmt.Errorf("error: %w", err)
 			}
 		} else {
 			return nil, fmt.Errorf("error while querying: %s", res.String())
