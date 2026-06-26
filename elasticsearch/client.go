@@ -190,7 +190,7 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 
 	// First attempt.
 	req.Body = bytes.NewReader(body)
-	logger.DebugContext(ctx, "Query", "index", index, "body", string(body))
+	logger.DebugContext(ctx, "Query", "index", index, "body_bytes", len(body))
 	res, err := req.Do(ctx, e.client)
 	// Check the transport error before touching res: on a transport-level
 	// failure res is nil and res.IsError() would panic.
@@ -209,7 +209,7 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 			// holds exactly these bytes, so logging string(body) reflects what is
 			// actually sent over the wire.
 			req.Body = bytes.NewReader(body)
-			logger.DebugContext(ctx, "Retry Query", "index", index, "body", string(body))
+			logger.DebugContext(ctx, "Retry Query", "index", index, "body_bytes", len(body))
 			res, err = req.Do(ctx, e.client)
 			if err != nil {
 				return nil, fmt.Errorf("error: %s", err)
