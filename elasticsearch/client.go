@@ -28,7 +28,7 @@ func NewClient(ctx context.Context) (*Client, error) {
 	client := &Client{}
 	err := client.Authenticate(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error authenticating with elasticsearch: %s", err)
+		return nil, fmt.Errorf("could not authenticate with elasticsearch: %w", err)
 	}
 	return client, nil
 }
@@ -45,23 +45,23 @@ func (e *Client) Authenticate(ctx context.Context) error {
 	// actual errors are recorded in the span
 	esConfig, err := e.accquireAuthConfig(ctx, false)
 	if err != nil {
-		logger.ErrorContext(ctx, "failed to get AuthConfig")
+		logger.ErrorContext(ctx, "failed to get AuthConfig", "category", "es_auth_or_connectivity")
 		logger.DebugContext(ctx, "failed to get AuthConfig", "error", err)
 		span.SetStatus(codes.Error, err.Error())
 		span.RecordError(fmt.Errorf("failed to get AuthConfig: %w", err))
-		return errors.New("internal error")
+		return errors.New("elasticsearch authentication configuration is invalid or missing: set ELASTICSEARCH_URL and credentials (ELASTICSEARCH_USERNAME/PASSWORD or ELASTICSEARCH_API_KEY)")
 	}
 	esClient, err := elasticsearch.NewClient(*esConfig)
 	if err != nil {
-		logger.ErrorContext(ctx, "failed to create elasticsearch client")
+		logger.ErrorContext(ctx, "failed to create elasticsearch client", "category", "es_auth_or_connectivity")
 		logger.DebugContext(ctx, "failed to create elasticsearch client", "error", err)
 		span.SetStatus(codes.Error, err.Error())
 		span.RecordError(fmt.Errorf("failed to create elasticsearch client: %w", err))
-		return errors.New("internal error")
+		return errors.New("failed to initialize elasticsearch client from the provided configuration; check ELASTICSEARCH_URL/credentials/CA cert")
 	}
 	e.client = esClient
 	// Ping the client to check if the connection is successful
-	err = e.Ping()
+	err = e.Ping(ctx)
 	if err == nil {
 		// authenticated successfully
 		return nil
@@ -73,29 +73,29 @@ func (e *Client) Authenticate(ctx context.Context) error {
 	// if the ping fails, try to authenticate again with force refreshing the credentials
 	esConfig, err = e.accquireAuthConfig(ctx, true)
 	if err != nil {
-		logger.ErrorContext(ctx, "failed to get AuthConfig")
+		logger.ErrorContext(ctx, "failed to get AuthConfig", "category", "es_auth_or_connectivity")
 		logger.DebugContext(ctx, "failed to get AuthConfig", "error", err)
 		span.SetStatus(codes.Error, err.Error())
 		span.RecordError(fmt.Errorf("failed to get AuthConfig: %w", err))
-		return errors.New("internal error")
+		return errors.New("elasticsearch authentication configuration is invalid or missing: set ELASTICSEARCH_URL and credentials (ELASTICSEARCH_USERNAME/PASSWORD or ELASTICSEARCH_API_KEY)")
 	}
 	esClient, err = elasticsearch.NewClient(*esConfig)
 	if err != nil {
-		logger.ErrorContext(ctx, "failed to create elasticsearch client")
+		logger.ErrorContext(ctx, "failed to create elasticsearch client", "category", "es_auth_or_connectivity")
 		logger.DebugContext(ctx, "failed to create elasticsearch client", "error", err)
 		span.SetStatus(codes.Error, err.Error())
 		span.RecordError(fmt.Errorf("failed to create elasticsearch client: %w", err))
-		return errors.New("internal error")
+		return errors.New("failed to initialize elasticsearch client from the provided configuration; check ELASTICSEARCH_URL/credentials/CA cert")
 	}
 	e.client = esClient
 	// Ping the client to check if the connection is successful
-	err = e.Ping()
+	err = e.Ping(ctx)
 	if err != nil {
-		logger.ErrorContext(ctx, "failed to ping elasticsearch")
+		logger.ErrorContext(ctx, "failed to ping elasticsearch", "category", "es_auth_or_connectivity")
 		logger.DebugContext(ctx, "elasticsearch ping error", "error", err)
 		span.SetStatus(codes.Error, err.Error())
 		span.RecordError(fmt.Errorf("failed to ping elasticsearch: %w", err))
-		return errors.New("internal error")
+		return errors.New("elasticsearch authentication failed: credentials were rejected or the cluster is unreachable after re-authentication (HTTP 401 / connection). Verify credentials and that they are not expired/rotated")
 	}
 
 	return nil
@@ -124,13 +124,16 @@ func (e *Client) accquireAuthConfig(ctx context.Context, forceRefresh bool) (*el
 }
 
 // Ping returns whether the Elasticsearch cluster is running.
-func (e *Client) Ping() error {
+func (e *Client) Ping(ctx context.Context) error {
+	logger := connector.GetLogger(ctx)
 	res, err := e.client.Ping()
 	if err != nil {
-		return fmt.Errorf("failed to ping elasticsearch: %w", err)
+		return fmt.Errorf("cannot connect to elasticsearch (network/TLS error); check ELASTICSEARCH_URL and connectivity: %w", err)
 	}
 	if res.IsError() {
-		return fmt.Errorf("failed to ping elasticsearch: %s", res.String())
+		// Keep the raw cluster response at DEBUG only; never surface it to consumers.
+		logger.DebugContext(ctx, "elasticsearch ping error response", "status", res.StatusCode, "body", res.String())
+		return fmt.Errorf("elasticsearch health check failed: cluster returned HTTP %d (%s); verify ELASTICSEARCH_URL and that the cluster is reachable", res.StatusCode, res.Status())
 	}
 
 	defer res.Body.Close()
@@ -142,7 +145,7 @@ func (e *Client) Ping() error {
 func (e *Client) Search(ctx context.Context, index string, body map[string]interface{}) (map[string]interface{}, error) {
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(body); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to encode the search query (internal): %w", err)
 	}
 
 	search := esapi.Search(func(o ...func(*esapi.SearchRequest)) (*esapi.Response, error) {
@@ -195,14 +198,14 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 	// Check the transport error before touching res: on a transport-level
 	// failure res is nil and res.IsError() would panic.
 	if err != nil {
-		return nil, fmt.Errorf("error while querying: %s", err)
+		return nil, fmt.Errorf("elasticsearch request failed before a response (network/TLS); check connectivity to the cluster: %w", err)
 	}
 
 	if res.IsError() {
 		if res.StatusCode == 401 {
 			// Unauthorized error, reauthenticate and retry.
 			if err = e.Reauthenticate(ctx); err != nil {
-				return nil, fmt.Errorf("error: %s", err)
+				return nil, fmt.Errorf("re-authentication after an HTTP 401 failed; credentials may be expired/rotated or invalid: %w", err)
 			}
 			// Rebuild the body so the retried request carries the same query
 			// instead of the already-drained (empty) reader. The retried reader
@@ -212,10 +215,12 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 			logger.DebugContext(ctx, "Retry Query", "index", index, "body_bytes", req.Body.(*bytes.Reader).Len())
 			res, err = req.Do(ctx, e.client)
 			if err != nil {
-				return nil, fmt.Errorf("error: %s", err)
+				return nil, fmt.Errorf("elasticsearch request failed on the post-401 retry (network/TLS): %w", err)
 			}
 		} else {
-			return nil, fmt.Errorf("error while querying: %s", res.String())
+			// Keep the raw cluster response body at DEBUG only; never surface it to consumers.
+			logger.DebugContext(ctx, "es search error response", "status", res.StatusCode, "index", index, "body", res.String())
+			return nil, fmt.Errorf("elasticsearch returned an error for the search (HTTP %d %s); see debug logs for details", res.StatusCode, res.Status())
 		}
 	}
 	return res, err
@@ -244,7 +249,7 @@ func (e *Client) ExplainSearch(ctx context.Context, index string, query map[stri
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to encode the search query (internal): %w", err)
 	}
 
 	// `profile=true` is added to the query in the Buffer
@@ -291,7 +296,7 @@ func (e *Client) GetIndices(ctx context.Context) ([]string, error) {
 	// Perform the request
 	res, err := req.Do(context.Background(), e.client)
 	if err != nil {
-		return nil, fmt.Errorf("error getting indices: %s", err)
+		return nil, fmt.Errorf("failed to list elasticsearch indices (check connectivity/permissions): %w", err)
 	}
 
 	indices, err := parseResponse(ctx, res)
@@ -324,7 +329,7 @@ func (e *Client) GetAliases(ctx context.Context) (aliasToIndexMap map[string]str
 	// Perform the request
 	res, err := req.Do(context.Background(), e.client)
 	if err != nil {
-		return nil, fmt.Errorf("error getting aliases: %s", err)
+		return nil, fmt.Errorf("failed to list elasticsearch aliases (check connectivity/permissions): %w", err)
 	}
 
 	result, err := parseResponse(ctx, res)
@@ -334,14 +339,14 @@ func (e *Client) GetAliases(ctx context.Context) (aliasToIndexMap map[string]str
 
 	resultJson, err := json.Marshal(result)
 	if err != nil {
-		return nil, fmt.Errorf("error marshalling alias result to JSON: %s", err)
+		return nil, fmt.Errorf("failed to process the elasticsearch alias response (internal): %w", err)
 	}
 
 	// Parse alias result to get alias to index mapping
 	unmarshalledJsonArray := make([]map[string]string, 0)
 	err = json.Unmarshal(resultJson, &unmarshalledJsonArray)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling alias result: %s", err)
+		return nil, fmt.Errorf("failed to process the elasticsearch alias response (internal): %w", err)
 	}
 
 	aliasToIndexMap = make(map[string]string)
@@ -376,7 +381,7 @@ func (e *Client) GetMappings(ctx context.Context, indices []string) (mappings ma
 	// Perform the request
 	res, err := req.Do(context.Background(), e.client)
 	if err != nil {
-		return nil, fmt.Errorf("error getting mappings: %s", err)
+		return nil, fmt.Errorf("failed to get elasticsearch index mappings (check connectivity/permissions): %w", err)
 	}
 
 	result, err := parseResponse(ctx, res)
@@ -386,7 +391,7 @@ func (e *Client) GetMappings(ctx context.Context, indices []string) (mappings ma
 
 	mappings, ok := result.(map[string]interface{})
 	if !ok {
-		return nil, errors.New("failed to convert mappings to map[string]interface{}")
+		return nil, errors.New("failed to parse the elasticsearch mappings response (unexpected format)")
 	}
 
 	return mappings, nil
@@ -401,26 +406,75 @@ func parseResponse(ctx context.Context, res *esapi.Response) (interface{}, error
 	if res.IsError() {
 		var e map[string]interface{}
 		if err := json.NewDecoder(res.Body).Decode(&e); err != nil {
-			return nil, fmt.Errorf("error parsing the response body: %s", err)
-		} else {
-			// Print the response status and error information.
-			root_cause, _ := e["error"].(map[string]interface{})["root_cause"].([]interface{})[0].(map[string]interface{})
-			errMsg := fmt.Sprintf("[%s] %s: %s",
-				res.Status(),
-				root_cause["type"],
-				root_cause["reason"],
-			)
-			logger.DebugContext(ctx, "Response Details", "response", e)
-			return nil, errors.New(errMsg)
+			// The error response body itself failed to decode; keep raw err at DEBUG.
+			logger.DebugContext(ctx, "failed to parse elasticsearch error response body", "status", res.StatusCode, "error", err)
+			return nil, fmt.Errorf("failed to parse the elasticsearch response (HTTP %s); see debug logs: %w", res.Status(), err)
 		}
+		// Keep the full ES error object (which may include root_cause.reason, field
+		// values, and other potentially sensitive detail) at DEBUG only. Never
+		// surface it to the consumer.
+		logger.DebugContext(ctx, "Response Details", "response", e)
+
+		// Extract the error category (root_cause.type) defensively; it is a safe,
+		// non-sensitive classifier unlike root_cause.reason.
+		causeType := extractRootCauseType(e)
+		guidance := guidanceForRootCauseType(causeType)
+		if guidance != "" {
+			return nil, fmt.Errorf("elasticsearch rejected the request: %s - %s (HTTP %s); see debug logs for details", causeType, guidance, res.Status())
+		}
+		return nil, fmt.Errorf("elasticsearch rejected the request: %s (HTTP %s); see debug logs for details", causeType, res.Status())
 	}
 
 	var result interface{}
 	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("error parsing the response body: %s", err)
+		logger.DebugContext(ctx, "failed to parse elasticsearch response body", "status", res.StatusCode, "error", err)
+		return nil, fmt.Errorf("failed to parse the elasticsearch response (HTTP %s); see debug logs: %w", res.Status(), err)
 	}
 
 	return result, nil
+}
+
+// extractRootCauseType safely pulls error.root_cause[0].type out of a decoded
+// Elasticsearch error response. It returns "unknown" when the structure is not
+// present, so a malformed error body never panics. Only the non-sensitive type
+// classifier is returned; root_cause.reason is intentionally never extracted.
+func extractRootCauseType(e map[string]interface{}) string {
+	errObj, ok := e["error"].(map[string]interface{})
+	if !ok {
+		return "unknown"
+	}
+	rootCauses, ok := errObj["root_cause"].([]interface{})
+	if !ok || len(rootCauses) == 0 {
+		// Fall back to the top-level error.type when root_cause is absent.
+		if t, ok := errObj["type"].(string); ok && t != "" {
+			return t
+		}
+		return "unknown"
+	}
+	rootCause, ok := rootCauses[0].(map[string]interface{})
+	if !ok {
+		return "unknown"
+	}
+	if t, ok := rootCause["type"].(string); ok && t != "" {
+		return t
+	}
+	return "unknown"
+}
+
+// guidanceForRootCauseType maps common Elasticsearch root_cause types to fixed,
+// non-sensitive remediation guidance. Returns "" when no specific guidance is
+// known for the type.
+func guidanceForRootCauseType(causeType string) string {
+	switch causeType {
+	case "security_exception":
+		return "authorization failed"
+	case "index_not_found_exception":
+		return "index does not exist"
+	case "parsing_exception", "x_content_parse_exception":
+		return "the generated query was invalid"
+	default:
+		return ""
+	}
 }
 
 // GetInfo retrieves information about Elasticsearch.
@@ -428,7 +482,7 @@ func (e *Client) GetInfo(ctx context.Context) (interface{}, error) {
 	req := esapi.InfoRequest{}
 	res, err := req.Do(ctx, e.client)
 	if err != nil {
-		return nil, fmt.Errorf("error getting elasticsearch information: %s", err)
+		return nil, fmt.Errorf("failed to get elasticsearch cluster information (check connectivity/permissions): %w", err)
 	}
 
 	result, err := parseResponse(ctx, res)
