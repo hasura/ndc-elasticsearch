@@ -2,11 +2,26 @@ package connector
 
 import (
 	"context"
+	"sort"
+	"strings"
 
 	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-elasticsearch/types"
 	"github.com/hasura/ndc-sdk-go/schema"
 )
+
+// collectionObjects holds the intermediate (pre-emission) field/object lists
+// produced for a single collection (an index or a native query definition).
+// We collect these for every collection first, resolve object-type names
+// globally, and only then emit object types — this is what prevents the
+// object-type name-collision bug (ENT-82) where identically-named objects in
+// different collections (or inner/outer objects sharing a name) overwrote each
+// other in the single global ObjectTypes map, silently dropping fields.
+type collectionObjects struct {
+	name    string                   // collection / index-level object-type name
+	fields  []map[string]interface{} // top-level fields of the collection
+	objects []map[string]interface{} // nested object types (flattened)
+}
 
 // GetSchema returns the schema by parsing the configuration.
 func (c *Connector) GetSchema(ctx context.Context, configuration *types.Configuration, state *types.State) (schema.SchemaResponseMarshaler, error) {
@@ -24,6 +39,15 @@ func ParseConfigurationToSchema(configuration *types.Configuration, state *types
 	}
 
 	indices := configuration.Indices
+
+	// Phase 1: walk every index and collect its fields/objects. Object-type
+	// names are NOT written to the schema yet — they are resolved globally in
+	// phase 2 so that distinct objects can never overwrite one another.
+	collected := make([]collectionObjects, 0, len(indices))
+	// reservedNames are names that an object type may not silently reuse as its
+	// bare name (collection names and the connector's static scalar/object type
+	// names); reusing them would clobber an unrelated type.
+	reservedNames := make(map[string]bool)
 
 	for indexName, mappings := range indices {
 		state.SupportedFilterFields[indexName] = map[string]interface{}{
@@ -49,7 +73,8 @@ func ParseConfigurationToSchema(configuration *types.Configuration, state *types
 		}
 
 		fields, objects := getScalarTypesAndObjects(properties, state, indexName, "")
-		prepareNdcSchema(&ndcSchema, indexName, fields, objects)
+		collected = append(collected, collectionObjects{name: indexName, fields: fields, objects: objects})
+		reservedNames[indexName] = true
 
 		ndcSchema.Collections = append(ndcSchema.Collections, schema.CollectionInfo{
 			Name:                  indexName,
@@ -61,15 +86,107 @@ func ParseConfigurationToSchema(configuration *types.Configuration, state *types
 	}
 
 	nativeQueries := configuration.Queries
+	parseNativeQueryToSchema(&ndcSchema, state, nativeQueries, &collected, reservedNames)
 
-	ndcSchema = parseNativeQueryToSchema(&ndcSchema, state, nativeQueries)
+	// Phase 2: resolve object-type names. Keep the bare field name when it is
+	// unambiguous (minimal churn / backward compatible) and only fall back to a
+	// fully-qualified `index.path.to.field` name when the bare name is genuinely
+	// ambiguous, so no fields are ever dropped and the output is deterministic.
+	resolution := resolveObjectTypeNames(collected, reservedNames)
+
+	// Phase 3: rewrite every object-type reference to its resolved name and emit
+	// the object types into the schema.
+	for _, c := range collected {
+		rewriteObjectFieldTypes(c.fields, resolution)
+		for _, obj := range c.objects {
+			rewriteObjectFieldTypes(obj["fields"].([]map[string]interface{}), resolution)
+			if qualified, ok := obj["name"].(string); ok {
+				if final, ok := resolution[qualified]; ok {
+					obj["name"] = final
+				}
+			}
+		}
+		prepareNdcSchema(&ndcSchema, c.name, c.fields, c.objects)
+	}
 
 	return &ndcSchema
 }
 
+// resolveObjectTypeNames builds a map from each object's fully-qualified name
+// (`index.path.to.field`) to the name it should be emitted under.
+//
+// An object keeps its bare field name when that bare name maps to exactly one
+// distinct structure across the whole schema and does not collide with a
+// reserved name. Otherwise every object sharing that bare name is emitted under
+// its fully-qualified name. This guarantees:
+//   - no two structurally-different objects ever share a key (no dropped fields),
+//   - the result is independent of Go map iteration order (deterministic),
+//   - names are only changed when they would otherwise collide (minimal churn).
+func resolveObjectTypeNames(collected []collectionObjects, reservedNames map[string]bool) map[string]string {
+	// Reserve the connector's static scalar/object type names (including any
+	// compound scalar types generated during phase 1) so an object never
+	// shadows them by reusing a bare name.
+	for name := range internal.ScalarTypeMap {
+		reservedNames[name] = true
+	}
+	for name := range internal.ObjectTypeMap {
+		reservedNames[name] = true
+	}
+	for name := range internal.RequiredScalarTypes {
+		reservedNames[name] = true
+	}
+	for name := range internal.RequiredObjectTypes {
+		reservedNames[name] = true
+	}
+	reservedNames["_id"] = true
+
+	// Collect the distinct structural signatures seen for each bare name.
+	signaturesByBareName := make(map[string]map[string]bool)
+	for _, c := range collected {
+		for _, obj := range c.objects {
+			bare := obj["bareName"].(string)
+			sig := obj["signature"].(string)
+			if signaturesByBareName[bare] == nil {
+				signaturesByBareName[bare] = make(map[string]bool)
+			}
+			signaturesByBareName[bare][sig] = true
+		}
+	}
+
+	resolution := make(map[string]string)
+	for _, c := range collected {
+		for _, obj := range c.objects {
+			qualified := obj["name"].(string)
+			bare := obj["bareName"].(string)
+			if len(signaturesByBareName[bare]) == 1 && !reservedNames[bare] {
+				resolution[qualified] = bare
+			} else {
+				resolution[qualified] = qualified
+			}
+		}
+	}
+	return resolution
+}
+
+// rewriteObjectFieldTypes replaces the (qualified) type name of every object
+// field with its resolved name. Scalar field types are never present in the
+// resolution map and are left untouched.
+func rewriteObjectFieldTypes(fields []map[string]interface{}, resolution map[string]string) {
+	for _, field := range fields {
+		if _, isObject := field["obj"]; !isObject {
+			continue
+		}
+		if qualified, ok := field["type"].(string); ok {
+			if final, ok := resolution[qualified]; ok {
+				field["type"] = final
+			}
+		}
+	}
+}
+
 // parseNativeQueryToSchema parses the given native queries and adds them to the schema response.
 // It also handles return types of kind "defination" and updates the state accordingly.
-func parseNativeQueryToSchema(schemaResponse *schema.SchemaResponse, state *types.State, nativeQueries map[string]types.NativeQuery) schema.SchemaResponse {
+func parseNativeQueryToSchema(schemaResponse *schema.SchemaResponse, state *types.State, nativeQueries map[string]types.NativeQuery, collected *[]collectionObjects, reservedNames map[string]bool) {
 	for queryName, queryConfig := range nativeQueries {
 		indexName := queryConfig.Index
 
@@ -94,8 +211,11 @@ func parseNativeQueryToSchema(schemaResponse *schema.SchemaResponse, state *type
 			state.NestedFields[indexName] = make(map[string]string)
 			state.SupportedAggregateFields[indexName] = make(map[string]string)
 			state.SupportedSortFields[indexName] = make(map[string]string)
+			// Defer object-type emission to phase 3 (see ParseConfigurationToSchema)
+			// so native-query object types take part in global name resolution too.
 			fields, objects := getScalarTypesAndObjects(properties, state, indexName, "")
-			prepareNdcSchema(schemaResponse, indexName, fields, objects)
+			*collected = append(*collected, collectionObjects{name: indexName, fields: fields, objects: objects})
+			reservedNames[indexName] = true
 		}
 
 		// Get arguments for the collection info
@@ -118,8 +238,6 @@ func parseNativeQueryToSchema(schemaResponse *schema.SchemaResponse, state *type
 
 		schemaResponse.Collections = append(schemaResponse.Collections, collectionInfo)
 	}
-
-	return *schemaResponse
 }
 
 // getNdcArguments converts the query parameters to NDC ArgumentInfo objects.
@@ -169,21 +287,58 @@ func getScalarTypesAndObjects(properties map[string]interface{}, state *types.St
 			if fieldType == "nested" {
 				state.NestedFields[indexName].(map[string]string)[fieldWithParent] = fieldType
 			}
-			fields = append(fields, map[string]interface{}{
-				"name": fieldName,
-				"type": fieldName,
-				"obj":  true,
-			})
 
 			flds, objs := getScalarTypesAndObjects(nestedObject, state, indexName, fieldWithParent)
+
+			// Each object is identified by a fully-qualified, globally-unique name
+			// (`index.path.to.field`); name resolution may later collapse this back
+			// to the bare field name when it is unambiguous. `signature` captures
+			// the full recursive structure so two objects are treated as the same
+			// type only when they are structurally identical.
+			qualifiedName := indexName + "." + fieldWithParent
+			sig := objectSignature(flds)
+
+			fields = append(fields, map[string]interface{}{
+				"name":      fieldName,
+				"type":      qualifiedName,
+				"obj":       true,
+				"signature": sig,
+			})
+
 			objects = append(objects, map[string]interface{}{
-				"name":   fieldName,
-				"fields": flds,
+				"name":      qualifiedName,
+				"bareName":  fieldName,
+				"signature": sig,
+				"fields":    flds,
 			})
 			objects = append(objects, objs...)
 		}
 	}
 	return fields, objects
+}
+
+// objectSignature produces an order-independent, fully-recursive fingerprint of
+// an object's fields. Two objects produce the same signature only when they
+// have the same field names, the same scalar types, and structurally-identical
+// nested objects. It is used to decide whether two objects sharing a bare field
+// name are in fact the same type (safe to collapse) or different types (which
+// must be disambiguated).
+func objectSignature(fields []map[string]interface{}) string {
+	parts := make([]string, 0, len(fields))
+	for _, field := range fields {
+		name, _ := field["name"].(string)
+		if _, isObject := field["obj"]; isObject {
+			// Embed the child's own signature so the fingerprint is recursive and
+			// independent of the (qualified) child type name, which varies by index.
+			childSig, _ := field["signature"].(string)
+			parts = append(parts, name+"=@{"+childSig+"}")
+		} else {
+			fieldType, _ := field["type"].(string)
+			parts = append(parts, name+"="+fieldType)
+		}
+	}
+	sort.Strings(parts)
+	return strings.Join(parts, ";")
 }
 
 // prepareNdcSchema prepares the NDC schema. It takes in the NDC schema,
