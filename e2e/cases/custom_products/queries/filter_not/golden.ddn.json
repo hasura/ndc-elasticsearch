@@ -1,0 +1,12 @@
+{
+  "products": [
+    {
+      "sku": "PRD-003",
+      "in_stock": false
+    },
+    {
+      "sku": "PRD-006",
+      "in_stock": false
+    }
+  ]
+}

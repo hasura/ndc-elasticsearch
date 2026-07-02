@@ -1,0 +1,12 @@
+{"index": {"_index": "products", "_id": "PRD-001"}}
+{"sku": "PRD-001", "name": "Aluminium Widget", "description": "A lightweight aluminium widget", "price": 9.99, "quantity": 100, "in_stock": true, "created_at": "2023-01-15", "tags": ["hardware", "metal"], "rating": 4.5, "location": {"lat": 40.71, "lon": -74.01}, "manufacturer": {"name": "Acme", "country": "US"}}
+{"index": {"_index": "products", "_id": "PRD-002"}}
+{"sku": "PRD-002", "name": "Steel Bolt", "description": "A sturdy steel bolt", "price": 2.5, "quantity": 500, "in_stock": true, "created_at": "2023-02-20", "tags": ["hardware"], "rating": 4.0, "location": {"lat": 34.05, "lon": -118.24}, "manufacturer": {"name": "Acme", "country": "US"}}
+{"index": {"_index": "products", "_id": "PRD-003"}}
+{"sku": "PRD-003", "name": "Copper Wire", "description": "Conductive copper wire", "price": 15.0, "quantity": 0, "in_stock": false, "created_at": "2023-03-10", "tags": ["electrical", "metal"], "rating": 3.5, "location": {"lat": 52.52, "lon": 13.4}, "manufacturer": {"name": "Globex", "country": "DE"}}
+{"index": {"_index": "products", "_id": "PRD-004"}}
+{"sku": "PRD-004", "name": "Plastic Case", "description": "A durable plastic case", "price": 5.25, "quantity": 250, "in_stock": true, "created_at": "2023-04-05", "tags": ["plastic"], "rating": 2.0, "location": {"lat": 37.77, "lon": -122.42}, "manufacturer": {"name": "Initech", "country": "US"}}
+{"index": {"_index": "products", "_id": "PRD-005"}}
+{"sku": "PRD-005", "name": "Rubber Gasket", "description": "A flexible rubber gasket", "price": 1.75, "quantity": 1000, "in_stock": true, "created_at": "2023-05-12", "tags": ["rubber", "seal"], "rating": 5.0, "location": {"lat": 48.86, "lon": 2.35}, "manufacturer": {"name": "Globex", "country": "DE"}}
+{"index": {"_index": "products", "_id": "PRD-006"}}
+{"sku": "PRD-006", "name": "Titanium Screw", "description": "An aerospace-grade titanium screw", "price": 25.0, "quantity": 50, "in_stock": false, "created_at": "2023-06-18", "tags": ["hardware", "metal"], "rating": 4.8, "location": {"lat": 35.68, "lon": 139.69}, "manufacturer": {"name": "Acme", "country": "US"}}

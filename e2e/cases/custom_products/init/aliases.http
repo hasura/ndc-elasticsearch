@@ -1,0 +1,3 @@
+# Create a read alias for the products index (tricky-case setup example).
+POST /_aliases
+{ "actions": [ { "add": { "index": "products", "alias": "products_alias" } } ] }

@@ -1,0 +1,2 @@
+index: "products"
+description: "FILTER/not: NOT in_stock (i.e. out of stock)."

@@ -1,0 +1,2 @@
+index: "products"
+description: "FILTER/and: in_stock == true AND price > 5."

@@ -1,0 +1,2 @@
+index: "products"
+description: "SELECT family: pick fields, ORDER BY sku asc, LIMIT 3."

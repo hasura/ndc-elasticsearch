@@ -1,0 +1,2 @@
+index: "kibana_sample_data_logs"
+description: "FILTER/range: bytes >= 5000."

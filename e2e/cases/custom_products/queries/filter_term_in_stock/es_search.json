@@ -1,0 +1,17 @@
+{
+  "size": 50,
+  "_source": [
+    "sku",
+    "in_stock"
+  ],
+  "query": {
+    "term": {
+      "in_stock": true
+    }
+  },
+  "sort": [
+    {
+      "sku": "asc"
+    }
+  ]
+}

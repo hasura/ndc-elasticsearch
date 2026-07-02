@@ -1,0 +1,13 @@
+{
+  "size": 5,
+  "_source": [
+    "geo.dest",
+    "bytes",
+    "extension"
+  ],
+  "sort": [
+    {
+      "bytes": "desc"
+    }
+  ]
+}

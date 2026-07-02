@@ -1,0 +1,9 @@
+query FilterAnd {
+  products(
+    where: { _and: [{ in_stock: { _eq: true } }, { price: { _gt: 5 } }] }
+    order_by: { sku: Asc }
+  ) {
+    sku
+    price
+  }
+}

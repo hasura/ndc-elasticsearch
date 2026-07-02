@@ -1,0 +1,30 @@
+{
+  "size": 10,
+  "_source": [
+    "geo.dest",
+    "bytes"
+  ],
+  "query": {
+    "bool": {
+      "filter": [
+        {
+          "term": {
+            "geo.dest": "US"
+          }
+        },
+        {
+          "range": {
+            "bytes": {
+              "gt": 1000
+            }
+          }
+        }
+      ]
+    }
+  },
+  "sort": [
+    {
+      "bytes": "desc"
+    }
+  ]
+}

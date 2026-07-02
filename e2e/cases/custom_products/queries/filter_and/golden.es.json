@@ -1,0 +1,18 @@
+{
+  "hits": {
+    "hits": [
+      {
+        "_source": {
+          "sku": "PRD-001",
+          "price": 9.99
+        }
+      },
+      {
+        "_source": {
+          "sku": "PRD-004",
+          "price": 5.25
+        }
+      }
+    ]
+  }
+}

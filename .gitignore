@@ -27,3 +27,6 @@ go.work.sum
 # codegen assets
 .codegen/
 ndc-elasticsearch
+
+# e2e generated report artifacts (regenerated each run)
+e2e/report/

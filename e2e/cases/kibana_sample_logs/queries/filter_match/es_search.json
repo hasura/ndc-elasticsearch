@@ -1,0 +1,11 @@
+{
+  "size": 10,
+  "_source": [
+    "extension"
+  ],
+  "query": {
+    "match": {
+      "extension": "gz"
+    }
+  }
+}

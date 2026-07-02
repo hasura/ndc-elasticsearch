@@ -1,0 +1,30 @@
+{
+  "hits": {
+    "hits": [
+      {
+        "_source": {
+          "sku": "PRD-001",
+          "in_stock": true
+        }
+      },
+      {
+        "_source": {
+          "sku": "PRD-002",
+          "in_stock": true
+        }
+      },
+      {
+        "_source": {
+          "sku": "PRD-004",
+          "in_stock": true
+        }
+      },
+      {
+        "_source": {
+          "sku": "PRD-005",
+          "in_stock": true
+        }
+      }
+    ]
+  }
+}
