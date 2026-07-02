@@ -248,7 +248,7 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 
 		span := trace.SpanFromContext(ctx)
 		span.AddEvent("http_401_received", trace.WithAttributes(attribute.String("index", index)))
-		logger.InfoContext(ctx, "401 received, acquiring reauth lock", "index", index)
+		logger.DebugContext(ctx, "401 received, acquiring reauth lock", "index", index)
 
 		// Serialize reauthentication: only one goroutine refreshes credentials;
 		// others wait here and then detect that e.client was already replaced.
