@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.4]
+
+- Fix concurrent-reauth data race on `e.client`. ([#124](https://github.com/hasura/ndc-elasticsearch/pull/124))
+- Remove accidental request body logging. ([#125](https://github.com/hasura/ndc-elasticsearch/pull/125))
+- Promote key log levels to info and add `retry_query` span. ([#126](https://github.com/hasura/ndc-elasticsearch/pull/126))
+
 ## [1.10.3]
 
 - Fix dropped query body on 401 retry — Elasticsearch was receiving an empty body on reauthentication retries, silently returning unfiltered results. ([#118](https://github.com/hasura/ndc-elasticsearch/pull/118))
