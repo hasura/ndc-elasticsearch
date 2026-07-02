@@ -29,6 +29,11 @@ var tests = []test{
 	{
 		name: "books_2",
 	},
+	{
+		// Single index with two distinct nested objects — no name collision.
+		// After the fix, unambiguous bare names must be preserved unchanged.
+		name: "nested_multi",
+	},
 }
 
 func TestSchema(t *testing.T) {

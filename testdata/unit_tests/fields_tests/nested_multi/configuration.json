@@ -1,0 +1,45 @@
+{
+  "indices": {
+    "orders": {
+      "mappings": {
+        "properties": {
+          "order_id": {
+            "type": "keyword"
+          },
+          "placed_at": {
+            "type": "date"
+          },
+          "address": {
+            "type": "nested",
+            "properties": {
+              "street": {
+                "type": "text"
+              },
+              "city": {
+                "type": "keyword"
+              },
+              "country": {
+                "type": "keyword"
+              }
+            }
+          },
+          "line_items": {
+            "type": "nested",
+            "properties": {
+              "sku": {
+                "type": "keyword"
+              },
+              "quantity": {
+                "type": "integer"
+              },
+              "price": {
+                "type": "float"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "queries": {}
+}
