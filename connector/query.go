@@ -3,7 +3,6 @@ package connector
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"maps"
 
 	"github.com/hasura/ndc-elasticsearch/elasticsearch"
@@ -214,10 +213,6 @@ func prepareElasticsearchQuery(ctx context.Context, request *schema.QueryRequest
 			query["query"] = filter
 		}
 	}
-
-	// Pretty print the query
-	queryJSON, _ := json.MarshalIndent(query, "", "  ")
-	fmt.Println(string(queryJSON))
 
 	return query, nil
 }
