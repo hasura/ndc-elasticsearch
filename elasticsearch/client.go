@@ -82,7 +82,7 @@ func (e *Client) Authenticate(ctx context.Context) error {
 	// Ping the client to check if the connection is successful
 	err = pingClient(esClient)
 	if err == nil {
-		// authenticated successfully
+		logger.DebugContext(ctx, "authentication successful")
 		return nil
 	}
 
@@ -121,7 +121,18 @@ func (e *Client) Authenticate(ctx context.Context) error {
 }
 
 func (e *Client) Reauthenticate(ctx context.Context) error {
-	return e.Authenticate(ctx)
+	logger := connector.GetLogger(ctx)
+	logger.DebugContext(ctx, "reauthenticating after 401")
+	ctx, span := otel.Tracer("es_client").Start(ctx, "reauthenticate_elasticsearch", trace.WithAttributes(
+		attribute.String("internal.visibility", "user"),
+		attribute.String("trigger", "http_401"),
+	))
+	defer span.End()
+	if err := e.Authenticate(ctx); err != nil {
+		span.SetStatus(codes.Error, err.Error())
+		return err
+	}
+	return nil
 }
 
 func (e *Client) accquireAuthConfig(ctx context.Context, forceRefresh bool) (*elasticsearch.Config, error) {
@@ -232,20 +243,36 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 			return nil, fmt.Errorf("error while querying: %s", res.String())
 		}
 
+		span := trace.SpanFromContext(ctx)
+		span.AddEvent("http_401_received", trace.WithAttributes(attribute.String("index", index)))
+		logger.DebugContext(ctx, "401 received, acquiring reauth lock", "index", index)
+
 		// Serialize reauthentication: only one goroutine refreshes credentials;
 		// others wait here and then detect that e.client was already replaced.
 		e.reauthMu.Lock()
 		if e.getClient() == firstClient {
 			// Client hasn't been replaced yet — this goroutine does the reauth.
+			span.AddEvent("reauth_started")
 			if err = e.Reauthenticate(ctx); err != nil {
 				e.reauthMu.Unlock()
+				span.SetStatus(codes.Error, err.Error())
 				return nil, fmt.Errorf("error: %s", err)
 			}
+			span.AddEvent("reauth_completed")
+		} else {
+			// Another concurrent goroutine already rotated the client while we
+			// were waiting for reauthMu — skip the refresh and go straight to
+			// the retry with the already-replaced client.
+			span.AddEvent("reauth_skipped", trace.WithAttributes(
+				attribute.String("reason", "completed_by_concurrent_goroutine"),
+			))
+			logger.DebugContext(ctx, "reauth already completed by concurrent goroutine, retrying", "index", index)
 		}
 		retryClient := e.getClient()
 		e.reauthMu.Unlock()
 
 		req.Body = bytes.NewReader(body)
+		span.AddEvent("retrying_after_reauth", trace.WithAttributes(attribute.String("index", index)))
 		logger.DebugContext(ctx, "Retry Query", "index", index, "body_bytes", req.Body.(*bytes.Reader).Len())
 		res, err = req.Do(ctx, retryClient)
 		if err != nil {
