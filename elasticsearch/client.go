@@ -9,6 +9,8 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync"
+	"sync/atomic"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
@@ -20,7 +22,24 @@ import (
 )
 
 type Client struct {
-	client *elasticsearch.Client
+	// client is accessed by many concurrent goroutines (one per query) and
+	// replaced on reauthentication. atomic.Pointer gives lock-free reads while
+	// keeping writes safe.
+	client atomic.Pointer[elasticsearch.Client]
+
+	// reauthMu serializes credential refreshes. When multiple goroutines receive
+	// HTTP 401 simultaneously, only the first one to acquire this lock actually
+	// calls Reauthenticate; the rest wait, then detect that e.client has already
+	// been replaced and skip straight to the retry.
+	reauthMu sync.Mutex
+}
+
+func (e *Client) getClient() *elasticsearch.Client {
+	return e.client.Load()
+}
+
+func (e *Client) setClient(c *elasticsearch.Client) {
+	e.client.Store(c)
 }
 
 // NewClient creates a new client with configuration from cfg.
@@ -59,9 +78,9 @@ func (e *Client) Authenticate(ctx context.Context) error {
 		span.RecordError(fmt.Errorf("failed to create elasticsearch client: %w", err))
 		return errors.New("internal error")
 	}
-	e.client = esClient
+	e.setClient(esClient)
 	// Ping the client to check if the connection is successful
-	err = e.Ping()
+	err = pingClient(esClient)
 	if err == nil {
 		// authenticated successfully
 		return nil
@@ -87,9 +106,9 @@ func (e *Client) Authenticate(ctx context.Context) error {
 		span.RecordError(fmt.Errorf("failed to create elasticsearch client: %w", err))
 		return errors.New("internal error")
 	}
-	e.client = esClient
+	e.setClient(esClient)
 	// Ping the client to check if the connection is successful
-	err = e.Ping()
+	err = pingClient(esClient)
 	if err != nil {
 		logger.ErrorContext(ctx, "failed to ping elasticsearch")
 		logger.DebugContext(ctx, "elasticsearch ping error", "error", err)
@@ -125,16 +144,22 @@ func (e *Client) accquireAuthConfig(ctx context.Context, forceRefresh bool) (*el
 
 // Ping returns whether the Elasticsearch cluster is running.
 func (e *Client) Ping() error {
-	res, err := e.client.Ping()
+	return pingClient(e.getClient())
+}
+
+// pingClient pings c directly, without touching the Client wrapper.
+// Authenticate calls this with the freshly-created *elasticsearch.Client so
+// that it pings the specific instance it just built rather than whatever
+// e.client happens to hold at call time.
+func pingClient(c *elasticsearch.Client) error {
+	res, err := c.Ping()
 	if err != nil {
 		return fmt.Errorf("failed to ping elasticsearch: %w", err)
 	}
+	defer res.Body.Close()
 	if res.IsError() {
 		return fmt.Errorf("failed to ping elasticsearch: %s", res.String())
 	}
-
-	defer res.Body.Close()
-
 	return nil
 }
 
@@ -188,34 +213,43 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 	}
 	index := strings.Join(req.Index, ",")
 
-	// First attempt.
+	// Snapshot the client pointer used for this attempt. On a 401 we compare
+	// this snapshot against the current pointer to decide whether another
+	// goroutine already reauthenticated while we were waiting for reauthMu.
+	firstClient := e.getClient()
+
 	req.Body = bytes.NewReader(body)
 	logger.DebugContext(ctx, "Query", "index", index, "body_bytes", req.Body.(*bytes.Reader).Len())
-	res, err := req.Do(ctx, e.client)
 	// Check the transport error before touching res: on a transport-level
 	// failure res is nil and res.IsError() would panic.
+	res, err := req.Do(ctx, firstClient)
 	if err != nil {
 		return nil, fmt.Errorf("error while querying: %s", err)
 	}
 
 	if res.IsError() {
-		if res.StatusCode == 401 {
-			// Unauthorized error, reauthenticate and retry.
-			if err = e.Reauthenticate(ctx); err != nil {
-				return nil, fmt.Errorf("error: %s", err)
-			}
-			// Rebuild the body so the retried request carries the same query
-			// instead of the already-drained (empty) reader. The retried reader
-			// holds exactly these bytes, so logging string(body) reflects what is
-			// actually sent over the wire.
-			req.Body = bytes.NewReader(body)
-			logger.DebugContext(ctx, "Retry Query", "index", index, "body_bytes", req.Body.(*bytes.Reader).Len())
-			res, err = req.Do(ctx, e.client)
-			if err != nil {
-				return nil, fmt.Errorf("error: %s", err)
-			}
-		} else {
+		if res.StatusCode != 401 {
 			return nil, fmt.Errorf("error while querying: %s", res.String())
+		}
+
+		// Serialize reauthentication: only one goroutine refreshes credentials;
+		// others wait here and then detect that e.client was already replaced.
+		e.reauthMu.Lock()
+		if e.getClient() == firstClient {
+			// Client hasn't been replaced yet — this goroutine does the reauth.
+			if err = e.Reauthenticate(ctx); err != nil {
+				e.reauthMu.Unlock()
+				return nil, fmt.Errorf("error: %s", err)
+			}
+		}
+		retryClient := e.getClient()
+		e.reauthMu.Unlock()
+
+		req.Body = bytes.NewReader(body)
+		logger.DebugContext(ctx, "Retry Query", "index", index, "body_bytes", req.Body.(*bytes.Reader).Len())
+		res, err = req.Do(ctx, retryClient)
+		if err != nil {
+			return nil, fmt.Errorf("error: %s", err)
 		}
 	}
 	return res, err
@@ -289,7 +323,7 @@ func (e *Client) GetIndices(ctx context.Context) ([]string, error) {
 	}
 
 	// Perform the request
-	res, err := req.Do(context.Background(), e.client)
+	res, err := req.Do(context.Background(), e.getClient())
 	if err != nil {
 		return nil, fmt.Errorf("error getting indices: %s", err)
 	}
@@ -322,7 +356,7 @@ func (e *Client) GetAliases(ctx context.Context) (aliasToIndexMap map[string]str
 	}
 
 	// Perform the request
-	res, err := req.Do(context.Background(), e.client)
+	res, err := req.Do(context.Background(), e.getClient())
 	if err != nil {
 		return nil, fmt.Errorf("error getting aliases: %s", err)
 	}
@@ -374,7 +408,7 @@ func (e *Client) GetMappings(ctx context.Context, indices []string) (mappings ma
 	}
 
 	// Perform the request
-	res, err := req.Do(context.Background(), e.client)
+	res, err := req.Do(context.Background(), e.getClient())
 	if err != nil {
 		return nil, fmt.Errorf("error getting mappings: %s", err)
 	}
@@ -426,7 +460,7 @@ func parseResponse(ctx context.Context, res *esapi.Response) (interface{}, error
 // GetInfo retrieves information about Elasticsearch.
 func (e *Client) GetInfo(ctx context.Context) (interface{}, error) {
 	req := esapi.InfoRequest{}
-	res, err := req.Do(ctx, e.client)
+	res, err := req.Do(ctx, e.getClient())
 	if err != nil {
 		return nil, fmt.Errorf("error getting elasticsearch information: %s", err)
 	}
