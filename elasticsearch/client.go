@@ -86,7 +86,7 @@ func (e *Client) Authenticate(ctx context.Context) error {
 	err = pingClient(esClient)
 	if err == nil {
 		e.setClient(esClient)
-		logger.DebugContext(ctx, "authentication successful")
+		logger.InfoContext(ctx, "authentication successful")
 		return nil
 	}
 
@@ -119,13 +119,13 @@ func (e *Client) Authenticate(ctx context.Context) error {
 		return errors.New("internal error")
 	}
 	e.setClient(esClient)
-	logger.DebugContext(ctx, "authentication successful")
+	logger.InfoContext(ctx, "authentication successful")
 	return nil
 }
 
 func (e *Client) Reauthenticate(ctx context.Context) error {
 	logger := connector.GetLogger(ctx)
-	logger.DebugContext(ctx, "reauthenticating after 401")
+	logger.InfoContext(ctx, "reauthenticating after 401")
 	ctx, span := otel.Tracer("es_client").Start(ctx, "reauthenticate_elasticsearch", trace.WithAttributes(
 		attribute.String("internal.visibility", "user"),
 		attribute.String("trigger", "http_401"),
@@ -233,7 +233,7 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 	firstClient := e.getClient()
 
 	req.Body = bytes.NewReader(body)
-	logger.DebugContext(ctx, "Query", "index", index, "body_bytes", req.Body.(*bytes.Reader).Len())
+	logger.InfoContext(ctx, "Query", "index", index, "body_bytes", req.Body.(*bytes.Reader).Len())
 	// Check the transport error before touching res: on a transport-level
 	// failure res is nil and res.IsError() would panic.
 	res, err := req.Do(ctx, firstClient)
@@ -248,7 +248,7 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 
 		span := trace.SpanFromContext(ctx)
 		span.AddEvent("http_401_received", trace.WithAttributes(attribute.String("index", index)))
-		logger.DebugContext(ctx, "401 received, acquiring reauth lock", "index", index)
+		logger.InfoContext(ctx, "401 received, acquiring reauth lock", "index", index)
 
 		// Serialize reauthentication: only one goroutine refreshes credentials;
 		// others wait here and then detect that e.client was already replaced.
@@ -276,11 +276,22 @@ func (e *Client) search(ctx context.Context, o ...func(*esapi.SearchRequest)) (*
 
 		req.Body = bytes.NewReader(body)
 		span.AddEvent("retrying_after_reauth", trace.WithAttributes(attribute.String("index", index)))
-		logger.DebugContext(ctx, "Retry Query", "index", index, "body_bytes", req.Body.(*bytes.Reader).Len())
+		logger.InfoContext(ctx, "Retry Query", "index", index, "body_bytes", req.Body.(*bytes.Reader).Len())
+		_, retrySpan := otel.Tracer("es_client").Start(ctx, "retry_query")
+		retrySpan.SetAttributes(
+			attribute.String("db.statement", string(body)),
+			attribute.String("db.elasticsearch.path_parts.index", index),
+			attribute.String("db.operation", "search"),
+			attribute.String("http.request.method", "POST"),
+			attribute.String("db.system", "elasticsearch"),
+		)
 		res, err = req.Do(ctx, retryClient)
 		if err != nil {
+			retrySpan.SetStatus(codes.Error, err.Error())
+			retrySpan.End()
 			return nil, fmt.Errorf("error: %s", err)
 		}
+		retrySpan.End()
 	}
 	return res, err
 }
