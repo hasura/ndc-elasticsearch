@@ -78,10 +78,14 @@ func (e *Client) Authenticate(ctx context.Context) error {
 		span.RecordError(fmt.Errorf("failed to create elasticsearch client: %w", err))
 		return errors.New("internal error")
 	}
-	e.setClient(esClient)
-	// Ping the client to check if the connection is successful
+	// Validate before publishing: ping first, then setClient. This ensures
+	// getClient() never vends an unvalidated client to concurrent goroutines,
+	// which also prevents a spurious second reauth when another goroutine
+	// snapshots a freshly-stored-but-not-yet-pinged client and mistakes it for
+	// the stale one that caused the original 401.
 	err = pingClient(esClient)
 	if err == nil {
+		e.setClient(esClient)
 		logger.DebugContext(ctx, "authentication successful")
 		return nil
 	}
@@ -106,8 +110,6 @@ func (e *Client) Authenticate(ctx context.Context) error {
 		span.RecordError(fmt.Errorf("failed to create elasticsearch client: %w", err))
 		return errors.New("internal error")
 	}
-	e.setClient(esClient)
-	// Ping the client to check if the connection is successful
 	err = pingClient(esClient)
 	if err != nil {
 		logger.ErrorContext(ctx, "failed to ping elasticsearch")
@@ -116,7 +118,8 @@ func (e *Client) Authenticate(ctx context.Context) error {
 		span.RecordError(fmt.Errorf("failed to ping elasticsearch: %w", err))
 		return errors.New("internal error")
 	}
-
+	e.setClient(esClient)
+	logger.DebugContext(ctx, "authentication successful")
 	return nil
 }
 
