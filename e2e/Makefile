@@ -6,7 +6,6 @@
 #   KEEP_STACK=1      leave a case's docker compose stack up after it finishes (debugging)
 #   E2E_CASE=<name>   restrict to a single case (see `e2e-case`)
 #   STACK_VERSION=..  pin the Elasticsearch/Kibana/connector stack (default 8.13.4)
-#   ANTHROPIC_API_KEY the LLM key used for result comparison (required unless UPDATE_GOLDEN=1)
 #
 # The suite is gated behind the `e2e` build tag AND E2E=1 so the fast unit CI is
 # never affected.
@@ -33,8 +32,6 @@ endif
 	cd $(REPO_ROOT) && E2E_CASE=$(CASE) $(GOTEST) -run 'TestE2E/$(CASE)'
 
 ## e2e-update-golden: (re)generate goldens for all cases (or one, via CASE=)
-# Recurse so UPDATE_GOLDEN=1 is exported to the whole run (including preflight,
-# which then does not require ANTHROPIC_API_KEY).
 e2e-update-golden:
 	$(MAKE) $(if $(CASE),e2e-case CASE=$(CASE),e2e) UPDATE_GOLDEN=1
 
@@ -60,9 +57,6 @@ e2e-preflight:
 	@docker compose version >/dev/null 2>&1 || { echo "ERROR: 'docker compose' plugin is required"; exit 1; }
 	@command -v ddn >/dev/null 2>&1 || { echo "ERROR: the Hasura 'ddn' CLI is required (see e2e/README.md)"; exit 1; }
 	@command -v go >/dev/null 2>&1 || { echo "ERROR: go is required"; exit 1; }
-	@if [ -z "$$UPDATE_GOLDEN" ] && [ -z "$$ANTHROPIC_API_KEY" ]; then \
-		echo "ERROR: ANTHROPIC_API_KEY is required for LLM comparison (or run with UPDATE_GOLDEN=1)"; exit 1; \
-	fi
 
 help:
 	@grep -E '^## ' $(lastword $(MAKEFILE_LIST)) | sed 's/## //'

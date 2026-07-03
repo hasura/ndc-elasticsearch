@@ -11,9 +11,6 @@
 # It is a SEPARATE workflow from `.github/workflows/test.yaml` so the fast unit
 # CI stays fast and unaffected (spec decision #7). It runs on every PR.
 #
-# Required repository secret:
-#   ANTHROPIC_API_KEY  - used by the harness for LLM-based result comparison
-#                        (spec decision #3).
 # =============================================================================
 
 name: E2E
@@ -55,7 +52,6 @@ jobs:
           E2E: "1"
           FAIL_FAST: "1"
           STACK_VERSION: "8.13.4"
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: make -C e2e e2e
 
       # The report is always produced (even on failure) — upload it as an artifact.

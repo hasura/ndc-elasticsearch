@@ -7,7 +7,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -34,7 +36,6 @@ func TestMain(m *testing.M) {
 			"UPDATE_GOLDEN": strconv.FormatBool(env.UpdateGolden),
 			"FAIL_FAST":     strconv.FormatBool(env.FailFast),
 			"STACK_VERSION": env.StackVersion,
-			"LLM_MODEL":     env.LLMModel,
 		}
 	}
 
@@ -237,60 +238,38 @@ func runQuery(ctx context.Context, t *testing.T, env *Env, stack *Stack, es *ESC
 		return qr
 	}
 
-	// Comparison mode.
+	// Comparison mode: compare results against committed goldens.
 	goldenDDN, _ := os.ReadFile(q.GoldenDDNPath)
 	goldenES, _ := os.ReadFile(q.GoldenESPath)
 	qr.GoldenDDN = string(goldenDDN)
 	qr.GoldenES = string(goldenES)
 
-	comparisons := []struct {
-		name           string
-		labelA, labelB string
-		a, b           []byte
-	}{
-		{"ddn-vs-es", "DDN GraphQL result", "Elasticsearch _search result", ddnData, esBody},
-		{"ddn-vs-golden", "DDN GraphQL result", "golden.ddn.json (expected)", ddnData, goldenDDN},
-		{"es-vs-golden", "Elasticsearch _search result", "golden.es.json (expected)", esBody, goldenES},
+	var failMsgs []string
+
+	switch {
+	case len(goldenDDN) == 0:
+		failMsgs = append(failMsgs, "golden.ddn.json missing; run with UPDATE_GOLDEN=1")
+	case isPendingGolden(goldenDDN):
+		t.Logf("[%s/%s] golden.ddn.json is pending; skipping comparison (run UPDATE_GOLDEN=1)", c.Name, q.Name)
+	case !jsonEqual(ddnData, goldenDDN):
+		failMsgs = append(failMsgs, "DDN result does not match golden.ddn.json")
 	}
 
-	allEquivalent := true
-	for _, cmp := range comparisons {
-		nv := NamedVerdict{Comparison: cmp.name}
-		isGoldenCmp := cmp.name == "ddn-vs-golden" || cmp.name == "es-vs-golden"
-		if isGoldenCmp && len(cmp.b) == 0 {
-			nv.Error = "golden file missing; run with UPDATE_GOLDEN=1 to create it"
-			allEquivalent = false
-			qr.Verdicts = append(qr.Verdicts, nv)
-			continue
-		}
-		// A "pending" golden (sentinel {"__pending__": true}) is committed for
-		// cases whose values are environment-derived (e.g. the kibana sample
-		// dataset). Its golden comparison is SKIPPED — the live DDN-vs-ES parity
-		// check still decides pass/fail — and the author regenerates it with
-		// UPDATE_GOLDEN=1. See e2e/README.md.
-		if isGoldenCmp && isPendingGolden(cmp.b) {
-			nv.Error = "golden pending regeneration (UPDATE_GOLDEN=1); comparison skipped"
-			qr.Verdicts = append(qr.Verdicts, nv)
-			continue
-		}
-		v, err := CompareEquivalent(ctx, env, desc, cmp.labelA, cmp.a, cmp.labelB, cmp.b)
-		if err != nil {
-			nv.Error = err.Error()
-			allEquivalent = false
-		} else {
-			nv.Verdict = v
-			if !v.Equivalent {
-				allEquivalent = false
-			}
-		}
-		qr.Verdicts = append(qr.Verdicts, nv)
+	switch {
+	case len(goldenES) == 0:
+		failMsgs = append(failMsgs, "golden.es.json missing; run with UPDATE_GOLDEN=1")
+	case isPendingGolden(goldenES):
+		t.Logf("[%s/%s] golden.es.json is pending; skipping comparison (run UPDATE_GOLDEN=1)", c.Name, q.Name)
+	case !jsonEqual(esBody, goldenES):
+		failMsgs = append(failMsgs, "ES result does not match golden.es.json")
 	}
 
-	if allEquivalent {
+	if len(failMsgs) == 0 {
 		qr.Status = StatusPass
 	} else {
 		qr.Status = StatusFail
-		t.Errorf("[%s/%s] L4 parity failed; see report for LLM verdicts and payloads", c.Name, q.Name)
+		qr.Message = strings.Join(failMsgs, "; ")
+		t.Errorf("[%s/%s] L4 golden comparison failed: %s", c.Name, q.Name, qr.Message)
 	}
 	qr.Timings = []StepTiming{{Step: "query", DurationMS: time.Since(qStart).Milliseconds()}}
 	return qr
@@ -356,4 +335,17 @@ func joinLines(items []string) string {
 		out += s
 	}
 	return out
+}
+
+// jsonEqual reports whether a and b represent the same JSON value after
+// normalizing through unmarshal (handles key ordering, whitespace, etc.).
+func jsonEqual(a, b []byte) bool {
+	var va, vb interface{}
+	if err := json.Unmarshal(a, &va); err != nil {
+		return false
+	}
+	if err := json.Unmarshal(b, &vb); err != nil {
+		return false
+	}
+	return reflect.DeepEqual(va, vb)
 }

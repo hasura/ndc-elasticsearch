@@ -30,20 +30,6 @@ type Env struct {
 	// name. Set by `make e2e-case CASE=<name>` via E2E_CASE. Empty => all cases.
 	CaseFilter string
 
-	// LLMAPIKey is the API key used for the LLM-based result comparison.
-	// Sourced from ANTHROPIC_API_KEY (see docs in e2e/README.md). Must be a CI
-	// secret. Empty is only allowed when UpdateGolden is true (we skip the LLM
-	// comparison while (re)generating goldens).
-	LLMAPIKey string
-
-	// LLMModel is the model id used for comparison. Defaults to a current Claude
-	// model; override with E2E_LLM_MODEL.
-	LLMModel string
-
-	// LLMBaseURL is the Anthropic-compatible messages endpoint. Override with
-	// E2E_LLM_BASE_URL to point at a proxy. Defaults to the Anthropic API.
-	LLMBaseURL string
-
 	// Paths, resolved once at startup.
 	RepoRoot    string // absolute path to the repository root
 	E2EDir      string // <repo>/e2e
@@ -68,8 +54,7 @@ func envOr(key, def string) string {
 }
 
 // LoadEnv reads all configuration from the process environment and resolves the
-// repository-relative paths. It fails fast when the LLM key is required but
-// missing.
+// repository-relative paths.
 func LoadEnv() (*Env, error) {
 	root, err := repoRoot()
 	if err != nil {
@@ -81,9 +66,6 @@ func LoadEnv() (*Env, error) {
 		FailFast:     envBool("FAIL_FAST"),
 		KeepStack:    envBool("KEEP_STACK"),
 		CaseFilter:   strings.TrimSpace(os.Getenv("E2E_CASE")),
-		LLMAPIKey:    strings.TrimSpace(os.Getenv("ANTHROPIC_API_KEY")),
-		LLMModel:     envOr("E2E_LLM_MODEL", "claude-opus-4-8"),
-		LLMBaseURL:   envOr("E2E_LLM_BASE_URL", "https://api.anthropic.com/v1/messages"),
 		StackVersion: envOr("STACK_VERSION", "8.13.4"),
 		RepoRoot:     root,
 	}
@@ -92,10 +74,6 @@ func LoadEnv() (*Env, error) {
 	e.ComposeFile = filepath.Join(e.E2EDir, "docker-compose.e2e.yaml")
 	e.ReportDir = filepath.Join(e.E2EDir, "report")
 
-	if !e.UpdateGolden && e.LLMAPIKey == "" {
-		return nil, fmt.Errorf("ANTHROPIC_API_KEY is required for LLM result comparison; " +
-			"set it (a CI secret) or run with UPDATE_GOLDEN=1 to (re)generate goldens without comparing")
-	}
 	return e, nil
 }
 

@@ -23,21 +23,13 @@ type StepTiming struct {
 	DurationMS int64  `json:"duration_ms"`
 }
 
-// NamedVerdict pairs an LLM comparison label with its verdict.
-type NamedVerdict struct {
-	Comparison string   `json:"comparison"` // e.g. "ddn-vs-es"
-	Verdict    *Verdict `json:"verdict,omitempty"`
-	Error      string   `json:"error,omitempty"`
-}
-
 // QueryReport is the L4 outcome for a single query.
 type QueryReport struct {
-	Name     string         `json:"name"`
-	Layer    string         `json:"layer"` // "L4"
-	Target   string         `json:"target_index"`
-	Status   string         `json:"status"`
-	Message  string         `json:"message,omitempty"`
-	Verdicts []NamedVerdict `json:"verdicts,omitempty"`
+	Name    string `json:"name"`
+	Layer   string `json:"layer"` // "L4"
+	Target  string `json:"target_index"`
+	Status  string `json:"status"`
+	Message string `json:"message,omitempty"`
 
 	// Payloads are attached on failure (and when regenerating goldens) for debugging.
 	DDNPayload string `json:"ddn_payload,omitempty"`
@@ -160,21 +152,11 @@ func (r *Report) markdown() string {
 			b.WriteString("\n</details>\n\n")
 		}
 
-		b.WriteString("| query | layer | target | status | LLM verdict |\n")
-		b.WriteString("|---|---|---|---|---|\n")
+		b.WriteString("| query | layer | target | status |\n")
+		b.WriteString("|---|---|---|---|\n")
 		for _, q := range c.Queries {
-			verdict := "—"
-			for _, v := range q.Verdicts {
-				if v.Comparison == "ddn-vs-es" {
-					if v.Error != "" {
-						verdict = "error: " + oneLine(v.Error)
-					} else if v.Verdict != nil {
-						verdict = fmt.Sprintf("equivalent=%v", v.Verdict.Equivalent)
-					}
-				}
-			}
-			b.WriteString(fmt.Sprintf("| %s | %s | `%s` | %s %s | %s |\n",
-				q.Name, q.Layer, q.Target, statusEmoji(q.Status), q.Status, oneLine(verdict)))
+			b.WriteString(fmt.Sprintf("| %s | %s | `%s` | %s %s |\n",
+				q.Name, q.Layer, q.Target, statusEmoji(q.Status), q.Status))
 		}
 		b.WriteString("\n")
 
@@ -186,16 +168,6 @@ func (r *Report) markdown() string {
 			b.WriteString(fmt.Sprintf("### ❌ %s / %s\n\n", c.Name, q.Name))
 			if q.Message != "" {
 				b.WriteString("> " + escapeMD(q.Message) + "\n\n")
-			}
-			for _, v := range q.Verdicts {
-				if v.Verdict != nil {
-					b.WriteString(fmt.Sprintf("- **%s**: equivalent=%v — %s\n", v.Comparison, v.Verdict.Equivalent, escapeMD(v.Verdict.Rationale)))
-					for _, d := range v.Verdict.Diffs {
-						b.WriteString("  - " + escapeMD(d) + "\n")
-					}
-				} else if v.Error != "" {
-					b.WriteString(fmt.Sprintf("- **%s**: error — %s\n", v.Comparison, escapeMD(v.Error)))
-				}
 			}
 			writeDetails(&b, "DDN payload", q.DDNPayload)
 			writeDetails(&b, "ES payload", q.ESPayload)
