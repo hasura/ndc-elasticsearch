@@ -9,7 +9,7 @@
       "bytes": "desc"
     },
     {
-      "geo.dest": "asc"
+      "@timestamp": "asc"
     }
   ]
 }

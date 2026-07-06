@@ -1,2 +1,2 @@
 index: "kibana_sample_data_logs"
-description: "SORT: bytes desc then geo.dest asc."
+description: "SORT: bytes desc then timestamp asc."

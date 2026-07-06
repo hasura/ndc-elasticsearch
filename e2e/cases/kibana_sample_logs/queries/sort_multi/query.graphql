@@ -1,5 +1,5 @@
 query SortMulti {
-  kibanaSampleDataLogs(order_by: [{ bytes: Desc }, { extension: Asc }], limit: 5) {
+  kibanaSampleDataLogs(order_by: [{ bytes: Desc }, { timestamp: Asc }], limit: 5) {
     bytes
     geo { dest }
   }

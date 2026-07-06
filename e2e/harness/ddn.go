@@ -179,7 +179,7 @@ func BuildDDN(ctx context.Context, s *Stack, c Case) error {
 
 	// Stage the artifacts the engine container mounts: the ddn-built open-dd
 	// metadata + the repo's webhook auth config (matches the repo compose).
-	if err := stageEngineArtifacts(s, buildOut); err != nil {
+	if err := stageEngineArtifacts(s, metaPath); err != nil {
 		return err
 	}
 	return nil
@@ -201,13 +201,9 @@ func rewriteConnectorHost(envFile, oldURL, newURL string) error {
 	return os.WriteFile(envFile, []byte(updated), 0o644)
 }
 
-// stageEngineArtifacts locates the built metadata and copies it (plus the
-// webhook auth config) into ${workdir}/engine which the engine container mounts.
-func stageEngineArtifacts(s *Stack, buildOut string) error {
-	metaSrc, err := findBuiltMetadata(buildOut)
-	if err != nil {
-		return err
-	}
+// stageEngineArtifacts copies the built metadata (plus the webhook auth config)
+// into ${workdir}/engine which the engine container mounts.
+func stageEngineArtifacts(s *Stack, metaSrc string) error {
 	engineDir := filepath.Join(s.Workdir, "engine")
 	if err := copyFile(metaSrc, filepath.Join(engineDir, "metadata.json")); err != nil {
 		return err
@@ -250,18 +246,23 @@ func findBuiltMetadata(buildOut string) (string, error) {
 			return c, nil
 		}
 	}
-	// Fall back to a recursive search for the largest metadata.json.
-	var found string
+	// Fall back to a recursive search. Fail loudly if multiple are found: that
+	// indicates an unexpected CLI output layout that requires explicit handling.
+	var matches []string
 	_ = filepath.Walk(buildOut, func(path string, info os.FileInfo, err error) error {
 		if err == nil && !info.IsDir() && filepath.Base(path) == "metadata.json" {
-			found = path
+			matches = append(matches, path)
 		}
 		return nil
 	})
-	if found != "" {
-		return found, nil
+	switch len(matches) {
+	case 0:
+		return "", fmt.Errorf("could not locate built metadata.json under %s", buildOut)
+	case 1:
+		return matches[0], nil
+	default:
+		return "", fmt.Errorf("ambiguous build output: found %d metadata.json files under %s: %v", len(matches), buildOut, matches)
 	}
-	return "", fmt.Errorf("could not locate built metadata.json under %s", buildOut)
 }
 
 // engineKnownKinds is the set of metadata object kinds that v3-engine:latest
