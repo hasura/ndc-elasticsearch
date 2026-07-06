@@ -1,18 +1,3 @@
-# =============================================================================
-# MAINTAINER ACTION REQUIRED
-# -----------------------------------------------------------------------------
-# This file must be moved to `.github/workflows/e2e.yaml` by a maintainer.
-# It is committed here as a plain .txt because the PR author's GitHub token does
-# not have the `workflow` scope and therefore cannot push files under
-# `.github/workflows/`.
-#
-#   git mv e2e/ci/e2e.yaml.txt .github/workflows/e2e.yaml
-#
-# It is a SEPARATE workflow from `.github/workflows/test.yaml` so the fast unit
-# CI stays fast and unaffected (spec decision #7). It runs on every PR.
-#
-# =============================================================================
-
 name: E2E
 
 on:
@@ -52,6 +37,8 @@ jobs:
           E2E: "1"
           FAIL_FAST: "1"
           STACK_VERSION: "8.13.4"
+          # REQUIRED: lets the harness run `ddn auth login` non-interactively.
+          HASURA_DDN_PAT: ${{ secrets.HASURA_DDN_PAT }}
         run: make -C e2e e2e
 
       # The report is always produced (even on failure) — upload it as an artifact.
