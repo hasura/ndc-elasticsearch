@@ -13,9 +13,12 @@ package harness
 //     which govern how multi-field (sub-field) compound scalar type names are
 //     built (e.g. a `text` field with a `keyword` sub-field becomes the compound
 //     NDC scalar type "text.keyword").
-//   - connector/schema.go : object/nested handling. `object` mappings become a
-//     named NDC object type; `nested` mappings become an ARRAY of that object
-//     type. `flattened` is not expanded (treated as JSON).
+//   - connector/schema.go : object/nested handling. EVERY ES object container —
+//     explicit `object`, `nested`, and implicit-object (properties with no
+//     `type`) — becomes an ARRAY of a named NDC object type (the connector sets
+//     obj:true for any field with `properties` and wraps those fields in an
+//     array type, since an ES object field may hold a single object or an array
+//     of objects). `flattened` is not expanded (treated as JSON).
 //
 // We intentionally assert against representations (the observable NDC contract)
 // rather than trying to byte-for-byte reconstruct compound scalar type names,

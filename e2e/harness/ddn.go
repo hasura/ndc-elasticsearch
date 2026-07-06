@@ -10,7 +10,39 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
+
+// ddnLoginOnce ensures we authenticate the ddn CLI at most once per test process.
+var (
+	ddnLoginOnce sync.Once
+	ddnLoginErr  error
+)
+
+// ensureDDNLogin authenticates the ddn CLI. This CLI version (v3.9.x, installed
+// via the v4 channel) requires an authenticated session even for local-only
+// `supergraph init` / `supergraph build local` — it fails otherwise with
+// "Not logged in. Run `ddn auth login`". When HASURA_DDN_PAT is set (a CI
+// secret, or a local dev's PAT) we log in non-interactively. If it is empty we
+// assume the caller already ran `ddn auth login` (e.g. via browser) and let the
+// subsequent commands surface a clear error if not.
+//
+// Note: `--access-token` is the current flag (the older `--pat` is deprecated);
+// both accept a Personal Access Token. Login persists credentials to the ddn
+// config, so a single login covers every case in the run.
+func ensureDDNLogin(ctx context.Context, dir string, baseEnv []string) error {
+	ddnLoginOnce.Do(func() {
+		pat := strings.TrimSpace(os.Getenv("HASURA_DDN_PAT"))
+		if pat == "" {
+			return // assume already authenticated (or a subsequent step will fail clearly)
+		}
+		if _, err := mustRun(ctx, dir, baseEnv, "ddn", "auth", "login",
+			"--access-token", pat, "--no-prompt"); err != nil {
+			ddnLoginErr = fmt.Errorf("ddn auth login (using HASURA_DDN_PAT): %w", err)
+		}
+	})
+	return ddnLoginErr
+}
 
 // connectorLinkName is the DataConnectorLink / connector name used in the
 // generated DDN metadata. It matches the connector's docker-compose service
@@ -56,6 +88,11 @@ func BuildDDN(ctx context.Context, s *Stack, c Case) error {
 	// ddn reads/writes non-interactively when these are set.
 	baseEnv := []string{
 		"HASURA_DDN_PAT=" + os.Getenv("HASURA_DDN_PAT"), // optional; local builds don't require login
+	}
+
+	// 0. Authenticate the ddn CLI (required even for local-only builds).
+	if err := ensureDDNLogin(ctx, projDir, baseEnv); err != nil {
+		return err
 	}
 
 	// 1. Scaffold a fresh supergraph project (globals + app subgraphs).
@@ -213,24 +250,24 @@ func findBuiltMetadata(buildOut string) (string, error) {
 // accepts. Kinds produced by ddn supergraph build but absent here (e.g.
 // AuthConfig, CompatibilityConfig) are stripped before staging the metadata.
 var engineKnownKinds = map[string]bool{
-	"DataConnectorLink":                true,
-	"GraphqlConfig":                    true,
-	"ObjectType":                       true,
-	"ScalarType":                       true,
-	"ObjectBooleanExpressionType":      true,
-	"BooleanExpressionType":            true,
-	"OrderByExpression":                true,
+	"DataConnectorLink":                 true,
+	"GraphqlConfig":                     true,
+	"ObjectType":                        true,
+	"ScalarType":                        true,
+	"ObjectBooleanExpressionType":       true,
+	"BooleanExpressionType":             true,
+	"OrderByExpression":                 true,
 	"DataConnectorScalarRepresentation": true,
-	"AggregateExpression":              true,
-	"Model":                            true,
-	"Command":                          true,
-	"Relationship":                     true,
-	"TypePermissions":                  true,
-	"ModelPermissions":                 true,
-	"CommandPermissions":               true,
-	"LifecyclePluginHook":              true,
-	"View":                             true,
-	"ViewPermissions":                  true,
+	"AggregateExpression":               true,
+	"Model":                             true,
+	"Command":                           true,
+	"Relationship":                      true,
+	"TypePermissions":                   true,
+	"ModelPermissions":                  true,
+	"CommandPermissions":                true,
+	"LifecyclePluginHook":               true,
+	"View":                              true,
+	"ViewPermissions":                   true,
 }
 
 // stripUnknownKindsFromMetadata removes metadata objects whose kind is not

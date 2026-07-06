@@ -84,18 +84,21 @@ e2e/
 - **Go** (version from [`go.mod`](../go.mod)).
 - **The Hasura DDN CLI (`ddn`)** on your `PATH`.
   Install: `curl -L https://graphql-engine-cdn.hasura.io/ddn/cli/v4/get.sh | bash`
-  (the CI workflow installs the v4 channel; the harness only uses the stable
-  `supergraph init` / `connector-link` / `model add` / `supergraph build local`
-  sub-commands — if your CLI version renames a flag, adjust
-  [`harness/ddn.go`](harness/ddn.go)).
-- **An LLM API key** for result comparison — `ANTHROPIC_API_KEY` (see
-  [decision #3](#assertions-in-detail)). Not needed when regenerating goldens
-  (`UPDATE_GOLDEN=1`).
+  (the CI workflow installs the v4 channel; verified against `ddn` v3.9.x — the
+  harness only uses the stable `supergraph init` / `connector-link` /
+  `model add` / `supergraph build local` sub-commands — if your CLI version
+  renames a flag, adjust [`harness/ddn.go`](harness/ddn.go)).
+- **DDN authentication.** This `ddn` version requires an authenticated session
+  even for local-only builds. Set `HASURA_DDN_PAT` to a Hasura DDN Personal
+  Access Token and the harness logs in automatically
+  (`ddn auth login --access-token "$HASURA_DDN_PAT"`) before any `ddn` command.
+  Alternatively, if `HASURA_DDN_PAT` is unset, the harness assumes you have
+  already run `ddn auth login` interactively (e.g. via browser).
 
 ## Running locally
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...
+export HASURA_DDN_PAT=...   # or run `ddn auth login` interactively beforehand
 
 # run everything
 make -C e2e e2e
@@ -117,17 +120,17 @@ Fail-fast is **off** locally by default. Turn it on with `FAIL_FAST=1`.
 
 ## Running in CI
 
-CI runs on **every PR**, in a **separate** workflow from the unit tests so the
-unit CI stays fast. The workflow file is committed at
-[`ci/e2e.yaml.txt`](ci/e2e.yaml.txt) and **must be moved by a maintainer** to
-`.github/workflows/e2e.yaml` (the PR author's token lacks the `workflow` scope):
+CI runs on **every PR**, in a **separate** workflow (`.github/workflows/e2e.yaml`)
+from the unit tests so the unit CI stays fast. It sets `FAIL_FAST=1` (fail-fast
+**on** in CI) and always uploads the report as an artifact.
 
-```bash
-git mv e2e/ci/e2e.yaml.txt .github/workflows/e2e.yaml
-```
-
-It sets `FAIL_FAST=1` (fail-fast **on** in CI), requires the repository secret
-`ANTHROPIC_API_KEY`, and always uploads the report as an artifact.
+> **The e2e run step must expose the DDN token to the harness** as
+> `HASURA_DDN_PAT: ${{ secrets.HASURA_DDN_PAT }}` (the harness then runs
+> `ddn auth login` automatically). Because the PR author's token lacks the
+> `workflow` scope and cannot push under `.github/workflows/`, the corrected
+> reference is kept at [`ci/e2e.yaml.txt`](ci/e2e.yaml.txt); a maintainer must
+> sync the `HASURA_DDN_PAT` env line into the live `.github/workflows/e2e.yaml`.
+> The `HASURA_DDN_PAT` repository secret has already been added.
 
 ## The report
 
@@ -260,8 +263,11 @@ is used by the Kibana reference case (its values are environment-derived).
   `short → int16`, `byte → int8`, `unsigned_long → biginteger`,
   `float/half_float → float32`, `double/scaled_float → float64`,
   `boolean → boolean`, `geo_point/geo_shape/*_range/… → json`. Multi-fields
-  become compound scalar types (`text.keyword`); `object`/`nested` become NDC
-  object types (nested → an **array** of the object type).
+  become compound scalar types (`text.keyword`). Every ES object container —
+  explicit `object`, `nested`, and implicit-object (properties with no `type`) —
+  becomes an **array of a named NDC object type** (the connector models all of
+  them uniformly, since an ES object field can hold a single object or an array
+  of objects).
 
 **L4 — query parity + goldens** (per query):
 
@@ -278,7 +284,7 @@ is used by the Kibana reference case (its values are environment-derived).
 | Var | Default | Meaning |
 |---|---|---|
 | `E2E` | – | must be `1` to run the suite (in addition to the `e2e` build tag) |
-| `ANTHROPIC_API_KEY` | – | LLM key for comparison (required unless `UPDATE_GOLDEN=1`) |
+| `HASURA_DDN_PAT` | – | DDN Personal Access Token; harness runs `ddn auth login --access-token` with it (unset ⇒ assumes you already `ddn auth login`'d) |
 | `UPDATE_GOLDEN` | – | `1` = (re)generate goldens instead of comparing |
 | `FAIL_FAST` | off | `1` = `go test -failfast` (on in CI, off locally) |
 | `KEEP_STACK` | off | `1` = don't tear a case's stack down (debugging) |

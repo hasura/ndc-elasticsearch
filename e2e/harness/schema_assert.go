@@ -173,16 +173,18 @@ func assertFieldsConform(sch *ndcSchema, index, ndcObjType, prefix string, props
 		childProps, hasProps := fieldDef["properties"].(map[string]interface{})
 
 		switch {
-		case esType == "nested" && hasProps:
+		case hasProps && (esType == "nested" || esType == "object" || esType == ""):
+			// The connector represents EVERY ES object container — `nested`,
+			// explicit `object`, and implicit-object (properties with no `type`)
+			// — as an ARRAY of a named object type. An ES object field can hold a
+			// single object or an array of objects interchangeably, so the
+			// connector models them uniformly as arrays (see
+			// connector/schema.go: getScalarTypesAndObjects sets obj:true for any
+			// field with `properties`, and getNdcObjectFields wraps obj fields in
+			// an array type). We assert that behaviour consistently here.
 			if !isArray {
-				problems = append(problems, fmt.Sprintf("%s.%s: nested object should be an ARRAY of object type in NDC, got named %q",
+				problems = append(problems, fmt.Sprintf("%s.%s: object/nested container should be an ARRAY of object type in NDC, got named %q",
 					index, fieldPath, baseName))
-			}
-			problems = append(problems, assertFieldsConform(sch, index, baseName, fieldPath, childProps)...)
-
-		case (esType == "object" || esType == "") && hasProps:
-			if isArray {
-				problems = append(problems, fmt.Sprintf("%s.%s: object should be a named object type in NDC, got array", index, fieldPath))
 			}
 			problems = append(problems, assertFieldsConform(sch, index, baseName, fieldPath, childProps)...)
 
