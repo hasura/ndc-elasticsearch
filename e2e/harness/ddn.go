@@ -27,16 +27,32 @@ var (
 // assume the caller already ran `ddn auth login` (e.g. via browser) and let the
 // subsequent commands surface a clear error if not.
 //
-// Note: `--access-token` is the current flag (the older `--pat` is deprecated);
-// both accept a Personal Access Token. Login persists credentials to the ddn
-// config, so a single login covers every case in the run.
-func ensureDDNLogin(ctx context.Context, dir string, baseEnv []string) error {
+// IMPORTANT: the ddn CLI auto-binds several env vars to auth flags
+// (HASURA_DDN_PAT->--pat, HASURA_DDN_ACCESS_TOKEN->--access-token, the OIDC
+// ones->their flags) and refuses if MORE THAN ONE auth method is present:
+// "Only one of --pat, --access-token, --oidc-access-token and --oidc-id-token
+// can be used". Because the run step exports HASURA_DDN_PAT (bound to --pat),
+// passing our own --access-token flag would be a SECOND method and fail. So we
+// run `ddn auth login` with ALL of those auth env vars STRIPPED from its
+// environment and supply the token via exactly one method: the --access-token
+// flag (the current, non-deprecated flag; --pat is deprecated). Only the login
+// command gets this stripped env — other ddn commands keep the normal env.
+//
+// Login persists credentials to the ddn config, so a single login covers every
+// case in the run.
+func ensureDDNLogin(ctx context.Context, dir string) error {
 	ddnLoginOnce.Do(func() {
 		pat := strings.TrimSpace(os.Getenv("HASURA_DDN_PAT"))
 		if pat == "" {
 			return // assume already authenticated (or a subsequent step will fail clearly)
 		}
-		if _, err := mustRun(ctx, dir, baseEnv, "ddn", "auth", "login",
+		loginEnv := envWithout(os.Environ(),
+			"HASURA_DDN_PAT",
+			"HASURA_DDN_ACCESS_TOKEN",
+			"HASURA_DDN_OIDC_ACCESS_TOKEN",
+			"HASURA_DDN_OIDC_ID_TOKEN",
+		)
+		if _, err := mustRunFullEnv(ctx, dir, loginEnv, "ddn", "auth", "login",
 			"--access-token", pat, "--no-prompt"); err != nil {
 			ddnLoginErr = fmt.Errorf("ddn auth login (using HASURA_DDN_PAT): %w", err)
 		}
@@ -90,8 +106,10 @@ func BuildDDN(ctx context.Context, s *Stack, c Case) error {
 		"HASURA_DDN_PAT=" + os.Getenv("HASURA_DDN_PAT"), // optional; local builds don't require login
 	}
 
-	// 0. Authenticate the ddn CLI (required even for local-only builds).
-	if err := ensureDDNLogin(ctx, projDir, baseEnv); err != nil {
+	// 0. Authenticate the ddn CLI (required even for local-only builds). Runs
+	//    with the DDN auth env vars stripped to avoid a two-auth-methods conflict
+	//    (see ensureDDNLogin).
+	if err := ensureDDNLogin(ctx, projDir); err != nil {
 		return err
 	}
 
