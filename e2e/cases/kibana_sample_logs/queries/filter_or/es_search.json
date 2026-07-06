@@ -1,6 +1,7 @@
 {
   "size": 10,
   "_source": [
+    "bytes",
     "geo.dest"
   ],
   "query": {
@@ -22,7 +23,7 @@
   },
   "sort": [
     {
-      "geo.dest": "asc"
+      "bytes": "desc"
     }
   ]
 }

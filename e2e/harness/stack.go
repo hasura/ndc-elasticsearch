@@ -4,11 +4,13 @@ package harness
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -150,6 +152,9 @@ func (s *Stack) KibanaBaseURL() string {
 
 // Introspect runs the connector's `update` command as a one-shot container,
 // writing ${CASE_WORKDIR}/connector/configuration.json from the live ES.
+// For Kibana sample-data cases the raw config lists system and backing-index
+// names that are not usable as GraphQL identifiers; filterKibanaConfig rewrites
+// it to expose only the data-stream alias as a single named collection.
 func (s *Stack) Introspect(ctx context.Context) error {
 	t := s.startTimer("stack:introspect")
 	defer t.done()
@@ -162,7 +167,51 @@ func (s *Stack) Introspect(ctx context.Context) error {
 	if _, err := os.Stat(cfg); err != nil {
 		return fmt.Errorf("introspection did not produce %s: %w", cfg, err)
 	}
+	if s.case_.Meta.KibanaSample != "" {
+		if err := filterKibanaConfig(cfg, s.case_.Meta.KibanaSample); err != nil {
+			return fmt.Errorf("filtering kibana config: %w", err)
+		}
+	}
 	return nil
+}
+
+// filterKibanaConfig rewrites configuration.json so that it contains only one
+// index entry keyed by the data-stream alias (kibana_sample_data_<kind>).
+// Kibana stores sample data in a data stream whose backing index has a
+// date-stamped name like .ds-kibana_sample_data_logs-2026.07.06-000001.
+// The connector's update command discovers that physical name, which cannot
+// be used as a GraphQL identifier. We find it by its prefix, rename it to the
+// alias, and drop all other indices so `ddn model add` only creates one model.
+func filterKibanaConfig(cfgPath, kibanaSampleKind string) error {
+	raw, err := os.ReadFile(cfgPath)
+	if err != nil {
+		return err
+	}
+	var cfg map[string]interface{}
+	if err := json.Unmarshal(raw, &cfg); err != nil {
+		return err
+	}
+	alias := "kibana_sample_data_" + kibanaSampleKind // e.g. kibana_sample_data_logs
+	backingPrefix := ".ds-" + alias                   // e.g. .ds-kibana_sample_data_logs
+
+	indices, _ := cfg["indices"].(map[string]interface{})
+	var aliasMapping interface{}
+	for name, mapping := range indices {
+		if strings.HasPrefix(name, backingPrefix) || name == alias {
+			aliasMapping = mapping
+			break
+		}
+	}
+	if aliasMapping == nil {
+		return fmt.Errorf("could not find a backing index for %s in configuration.json", alias)
+	}
+	cfg["indices"] = map[string]interface{}{alias: aliasMapping}
+
+	out, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(cfgPath, out, 0o644)
 }
 
 // StartConnector brings up the connector in serve mode and waits for /health.

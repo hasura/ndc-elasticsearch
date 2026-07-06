@@ -1,19 +1,19 @@
 {
   "products": [
     {
-      "sku": "PRD-001",
       "name": "Aluminium Widget",
-      "price": 9.99
+      "price": 9.99,
+      "sku": "PRD-001"
     },
     {
-      "sku": "PRD-002",
       "name": "Steel Bolt",
-      "price": 2.5
+      "price": 2.5,
+      "sku": "PRD-002"
     },
     {
-      "sku": "PRD-003",
       "name": "Copper Wire",
-      "price": 15.0
+      "price": 15,
+      "sku": "PRD-003"
     }
   ]
 }

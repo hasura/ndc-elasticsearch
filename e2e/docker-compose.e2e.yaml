@@ -145,6 +145,7 @@ services:
       - ${CASE_WORKDIR}/connector:/etc/connector
     environment:
       HASURA_CONFIGURATION_DIRECTORY: /etc/connector
+      HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH: /etc/connector
       ELASTICSEARCH_URL: https://es01:9200
       ELASTICSEARCH_USERNAME: elastic
       ELASTICSEARCH_PASSWORD: ${ELASTIC_PASSWORD:-default}
@@ -202,7 +203,7 @@ services:
     image: ghcr.io/hasura/v3-dev-auth-webhook
     platform: linux/amd64
     ports:
-      - "${AUTH_PORT:-3050}:3050"
+      - "${AUTH_PORT:-3050}:3060"
 
 volumes:
   certs:

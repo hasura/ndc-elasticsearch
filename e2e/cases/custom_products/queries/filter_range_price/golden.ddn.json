@@ -1,12 +1,12 @@
 {
   "products": [
     {
-      "sku": "PRD-003",
-      "price": 15.0
+      "price": 15,
+      "sku": "PRD-003"
     },
     {
-      "sku": "PRD-006",
-      "price": 25.0
+      "price": 25,
+      "sku": "PRD-006"
     }
   ]
 }

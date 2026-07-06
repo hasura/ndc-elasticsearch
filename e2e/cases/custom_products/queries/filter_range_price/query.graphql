@@ -1,5 +1,5 @@
 query FilterRange {
-  products(where: { price: { _gt: 10 } }, order_by: { sku: Asc }) {
+  products(where: { price: { range: { gt: 10 } } }, order_by: { sku: Asc }) {
     sku
     price
   }

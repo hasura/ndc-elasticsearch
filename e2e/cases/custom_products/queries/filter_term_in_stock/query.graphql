@@ -1,6 +1,6 @@
 query FilterTerm {
-  products(where: { in_stock: { _eq: true } }, order_by: { sku: Asc }) {
+  products(where: { inStock: { term: true } }, order_by: { sku: Asc }) {
     sku
-    in_stock
+    inStock
   }
 }

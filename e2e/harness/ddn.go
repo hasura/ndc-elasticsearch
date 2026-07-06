@@ -4,6 +4,7 @@ package harness
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -62,12 +63,18 @@ func BuildDDN(ctx context.Context, s *Stack, c Case) error {
 		return fmt.Errorf("ddn supergraph init: %w", err)
 	}
 
+	// ddn ≥ v3.8 uses the project-root .env as the context's localEnvFile and
+	// requires the target env file to exist before connector-link add can write
+	// connector URLs into it. supergraph init creates .env (empty) — we use it
+	// so that supergraph build local (which reads localEnvFile=".env") sees the URL.
+	localEnvFile := filepath.Join(projDir, ".env")
+
 	// 2. Register a connector link pointing at the running connector (host URL
 	//    so the following introspection call can reach it from the test host).
 	if _, err := mustRun(ctx, projDir, baseEnv, "ddn", "connector-link", "add", connectorLinkName,
 		"--configure-host", hostConnectorURL,
 		"--subgraph", filepath.Join("app", "subgraph.yaml"),
-		"--target-env-file", filepath.Join("app", ".env.app.local"),
+		"--target-env-file", localEnvFile,
 	); err != nil {
 		return fmt.Errorf("ddn connector-link add: %w", err)
 	}
@@ -75,15 +82,14 @@ func BuildDDN(ctx context.Context, s *Stack, c Case) error {
 	// 3. Introspect the connector schema into the DataConnectorLink.
 	if _, err := mustRun(ctx, projDir, baseEnv, "ddn", "connector-link", "update", connectorLinkName,
 		"--subgraph", filepath.Join("app", "subgraph.yaml"),
-		"--env-file", filepath.Join("app", ".env.app.local"),
+		"--env-file", localEnvFile,
 	); err != nil {
 		return fmt.Errorf("ddn connector-link update (introspection): %w", err)
 	}
 
 	// Rewrite the connector host in the env from localhost:<port> (host) to the
 	// docker-network URL so the engine container can reach the connector.
-	if err := rewriteConnectorHost(filepath.Join(projDir, "app", ".env.app.local"),
-		hostConnectorURL, dockerConnectorURL); err != nil {
+	if err := rewriteConnectorHost(localEnvFile, hostConnectorURL, dockerConnectorURL); err != nil {
 		return fmt.Errorf("rewriting connector host for docker network: %w", err)
 	}
 
@@ -103,6 +109,17 @@ func BuildDDN(ctx context.Context, s *Stack, c Case) error {
 		"--output-dir", buildOut,
 	); err != nil {
 		return fmt.Errorf("ddn supergraph build local: %w", err)
+	}
+
+	// Strip AuthConfig from the built metadata — ddn supergraph build embeds it
+	// (required by the CLI) but v3-engine:latest reads auth config only from
+	// AUTHN_CONFIG_PATH and rejects AuthConfig as an unknown kind in the metadata.
+	metaPath, err := findBuiltMetadata(buildOut)
+	if err != nil {
+		return fmt.Errorf("locating built metadata: %w", err)
+	}
+	if err := stripUnknownKindsFromMetadata(metaPath); err != nil {
+		return fmt.Errorf("stripping unknown kinds from metadata: %w", err)
 	}
 
 	// Stage the artifacts the engine container mounts: the ddn-built open-dd
@@ -140,11 +157,26 @@ func stageEngineArtifacts(s *Stack, buildOut string) error {
 	if err := copyFile(metaSrc, filepath.Join(engineDir, "metadata.json")); err != nil {
 		return err
 	}
-	// The OSS v3-engine reads a separate AUTHN_CONFIG_PATH; reuse the repo's
-	// webhook auth config so x-hasura-role: admin works via auth_hook (matches
-	// the repo's own docker-compose.yaml).
-	authSrc := filepath.Join(s.env.RepoRoot, "resources", "auth_config.json")
-	if err := copyFile(authSrc, filepath.Join(engineDir, "auth_config.json")); err != nil {
+	// The OSS v3-engine reads a separate AUTHN_CONFIG_PATH.
+	// v3-dev-auth-webhook listens on port 3060 (not 3050); write the config
+	// directly so we don't depend on the repo's resources/auth_config.json port.
+	authConfig := `{
+    "version": "v1",
+    "definition": {
+        "allowRoleEmulationBy": "admin",
+        "mode": {
+            "webhook": {
+                "url": "http://auth_hook:3060/validate-request",
+                "method": "Post"
+            }
+        }
+    }
+}`
+	authDst := filepath.Join(engineDir, "auth_config.json")
+	if err := os.MkdirAll(engineDir, 0o755); err != nil {
+		return err
+	}
+	if err := os.WriteFile(authDst, []byte(authConfig), 0o644); err != nil {
 		return fmt.Errorf("staging auth_config.json: %w", err)
 	}
 	return nil
@@ -175,6 +207,67 @@ func findBuiltMetadata(buildOut string) (string, error) {
 		return found, nil
 	}
 	return "", fmt.Errorf("could not locate built metadata.json under %s", buildOut)
+}
+
+// engineKnownKinds is the set of metadata object kinds that v3-engine:latest
+// accepts. Kinds produced by ddn supergraph build but absent here (e.g.
+// AuthConfig, CompatibilityConfig) are stripped before staging the metadata.
+var engineKnownKinds = map[string]bool{
+	"DataConnectorLink":                true,
+	"GraphqlConfig":                    true,
+	"ObjectType":                       true,
+	"ScalarType":                       true,
+	"ObjectBooleanExpressionType":      true,
+	"BooleanExpressionType":            true,
+	"OrderByExpression":                true,
+	"DataConnectorScalarRepresentation": true,
+	"AggregateExpression":              true,
+	"Model":                            true,
+	"Command":                          true,
+	"Relationship":                     true,
+	"TypePermissions":                  true,
+	"ModelPermissions":                 true,
+	"CommandPermissions":               true,
+	"LifecyclePluginHook":              true,
+	"View":                             true,
+	"ViewPermissions":                  true,
+}
+
+// stripUnknownKindsFromMetadata removes metadata objects whose kind is not
+// recognised by v3-engine:latest. ddn supergraph build embeds kinds like
+// AuthConfig and CompatibilityConfig that the engine reads from separate
+// config files (AUTHN_CONFIG_PATH) or ignores entirely.
+func stripUnknownKindsFromMetadata(path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var meta map[string]interface{}
+	if err := json.Unmarshal(data, &meta); err != nil {
+		return err
+	}
+	subgraphs, _ := meta["subgraphs"].([]interface{})
+	for _, sg := range subgraphs {
+		sgMap, ok := sg.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		objects, _ := sgMap["objects"].([]interface{})
+		filtered := make([]interface{}, 0, len(objects))
+		for _, obj := range objects {
+			objMap, ok := obj.(map[string]interface{})
+			if ok && !engineKnownKinds[objMap["kind"].(string)] {
+				continue
+			}
+			filtered = append(filtered, obj)
+		}
+		sgMap["objects"] = filtered
+	}
+	out, err := json.MarshalIndent(meta, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, out, 0o644)
 }
 
 func copyFile(src, dst string) error {

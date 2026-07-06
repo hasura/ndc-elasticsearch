@@ -170,7 +170,9 @@ func (c *ESClient) GetMapping(ctx context.Context, index string) (map[string]int
 }
 
 // Search issues POST /<index>/_search with the given DSL body and returns the
-// raw response body.
+// normalized response body. Non-deterministic fields are stripped so goldens
+// are stable across runs: `took` (query latency) and `_index` per hit (for
+// data-stream backing indices the name embeds the roll-over date).
 func (c *ESClient) Search(ctx context.Context, index string, dsl []byte) ([]byte, error) {
 	code, body, err := c.do(ctx, http.MethodPost, "/"+index+"/_search", "application/json", dsl)
 	if err != nil {
@@ -179,7 +181,34 @@ func (c *ESClient) Search(ctx context.Context, index string, dsl []byte) ([]byte
 	if code >= 300 {
 		return body, fmt.Errorf("POST /%s/_search => %d: %s", index, code, tail(string(body), 800))
 	}
-	return body, nil
+	return normalizeESResponse(body)
+}
+
+// normalizeESResponse strips volatile fields from an ES _search response so
+// the result is deterministic across identical query runs. Stripped fields:
+//   - "took": query latency varies per run
+//   - "_index" per hit: data-stream backing indices embed a rollover date
+//   - "_id" per hit: Kibana sample data uses auto-generated IDs that differ each load
+//   - "sort" per hit: contains epoch-ms timestamps when sorted by @timestamp, which shift
+//     each time Kibana reloads its sample data
+func normalizeESResponse(body []byte) ([]byte, error) {
+	var resp map[string]interface{}
+	if err := json.Unmarshal(body, &resp); err != nil {
+		return body, nil // not JSON — return as-is
+	}
+	delete(resp, "took")
+	if hits, ok := resp["hits"].(map[string]interface{}); ok {
+		if items, ok := hits["hits"].([]interface{}); ok {
+			for _, item := range items {
+				if m, ok := item.(map[string]interface{}); ok {
+					delete(m, "_index")
+					delete(m, "_id")
+					delete(m, "sort")
+				}
+			}
+		}
+	}
+	return json.MarshalIndent(resp, "", "  ")
 }
 
 // SetKibanaSystemPassword sets the kibana_system built-in user's password so

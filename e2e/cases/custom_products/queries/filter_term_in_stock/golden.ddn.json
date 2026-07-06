@@ -1,20 +1,20 @@
 {
   "products": [
     {
-      "sku": "PRD-001",
-      "in_stock": true
+      "inStock": true,
+      "sku": "PRD-001"
     },
     {
-      "sku": "PRD-002",
-      "in_stock": true
+      "inStock": true,
+      "sku": "PRD-002"
     },
     {
-      "sku": "PRD-004",
-      "in_stock": true
+      "inStock": true,
+      "sku": "PRD-004"
     },
     {
-      "sku": "PRD-005",
-      "in_stock": true
+      "inStock": true,
+      "sku": "PRD-005"
     }
   ]
 }
