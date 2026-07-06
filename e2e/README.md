@@ -55,7 +55,8 @@ Per case, the harness ([`harness/`](harness/)) runs these stages:
    **never hand-edited**, so every index automatically becomes a GraphQL model.
 7. **Engine up** — start the DDN v3-engine + dev auth webhook on the built metadata.
 8. **L4 assertions** — for each query: POST GraphQL to the engine and the
-   equivalent DSL to ES, then LLM-compare (see [below](#assertions-in-detail)).
+   equivalent DSL to ES, then compare both results against their committed golden
+   files (see [below](#assertions-in-detail)).
 
 Everything is gated behind the `e2e` build tag **and** `E2E=1`, so the existing
 fast unit CI (`make unit-test`) is completely unaffected.
@@ -69,12 +70,12 @@ e2e/
   harness/                    the ONLY code — never edited to add a case
     e2e_test.go               discovery + per-case orchestration + L3/L4 + report
     config.go  discover.go  stack.go  seed.go  es.go  ddn.go
-    schema_assert.go  typemap.go  graphql.go  llm.go  report.go  exec.go
+    schema_assert.go  typemap.go  graphql.go  report.go  exec.go  doc.go
   cases/
     kibana_sample_logs/       reference case using the elastic.co "logs" sample dataset
     custom_products/          fully-custom example (indices/ + data/ + init/ + queries/)
   ci/
-    e2e.yaml.txt              CI workflow — a maintainer must move it to .github/workflows/
+    e2e.yaml.txt              reference copy of the CI workflow (live at .github/workflows/e2e.yaml)
   report/                     e2e-report.json + e2e-report.md (generated each run)
 ```
 
@@ -124,21 +125,18 @@ CI runs on **every PR**, in a **separate** workflow (`.github/workflows/e2e.yaml
 from the unit tests so the unit CI stays fast. It sets `FAIL_FAST=1` (fail-fast
 **on** in CI) and always uploads the report as an artifact.
 
-> **The e2e run step must expose the DDN token to the harness** as
-> `HASURA_DDN_PAT: ${{ secrets.HASURA_DDN_PAT }}` (the harness then runs
-> `ddn auth login` automatically). Because the PR author's token lacks the
-> `workflow` scope and cannot push under `.github/workflows/`, the corrected
-> reference is kept at [`ci/e2e.yaml.txt`](ci/e2e.yaml.txt); a maintainer must
-> sync the `HASURA_DDN_PAT` env line into the live `.github/workflows/e2e.yaml`.
-> The `HASURA_DDN_PAT` repository secret has already been added.
+The workflow requires a `HASURA_DDN_PAT` repository secret (a Hasura DDN Personal
+Access Token). The harness uses it to run `ddn auth login` non-interactively before
+any `ddn` command. If the CLI already has a valid session when the token is present,
+the login is skipped automatically.
 
 ## The report
 
 Every run always produces (even on failure):
 
 - `e2e/report/e2e-report.json` — machine-readable, per case → query: the layer
-  (L3/L4), pass/fail, the LLM verdict + rationale + raw DDN/ES/golden payloads on
-  failure, and per-step timings.
+  (L3/L4), pass/fail, the raw DDN/ES/golden payloads on failure, and per-step
+  timings.
 - `e2e/report/e2e-report.md` — the same, human-readable, with collapsible
   payload blocks. In CI it is also written to the job summary.
 
@@ -175,8 +173,16 @@ JSON
 mkdir -p e2e/cases/my_case/queries/paid_orders
 
 # the GraphQL sent to DDN
+# Use ES-native operators: term, match, range, _and/_or/_not, etc.
+# The model name matches the index name (camelCase if multi-word).
+# order_by direction is Asc or Desc (capitalised).
 cat > e2e/cases/my_case/queries/paid_orders/query.graphql <<'GQL'
-query { orders(where: { status: { _eq: "paid" } }, order_by: { id: Asc }) { id total } }
+query PaidOrders {
+  orders(where: { status: { term: "paid" } }, order_by: { id: Asc }) {
+    id
+    total
+  }
+}
 GQL
 
 # the equivalent raw ES DSL (sent to /<index>/_search)
@@ -241,11 +247,11 @@ Per-query files:
 | `target.yaml` | ✅ | `index:` (ES index/alias for the raw search) + `description:` |
 | `variables.json` | optional | GraphQL variables |
 | `golden.ddn.json` | committed | expected DDN result (regenerate with `UPDATE_GOLDEN=1`) |
-| `golden.es.json` | committed | expected ES result (debugging + LLM reference) |
+| `golden.es.json` | committed | expected ES result (debugging reference; shown alongside DDN on failure) |
 
-A golden may be the sentinel `{"__pending__": true}`; its golden comparison is
-**skipped** (the live DDN-vs-ES check still runs) until you regenerate it. This
-is used by the Kibana reference case (its values are environment-derived).
+A golden may be the sentinel `{"__pending__": true}`; its comparison is
+**skipped** (both queries still run and their payloads are recorded in the report)
+until you regenerate it.
 
 ## Assertions in detail
 
@@ -273,11 +279,22 @@ is used by the Kibana reference case (its values are environment-derived).
 
 - POST the GraphQL to the engine `:3000/graphql` and the DSL to
   `:9200/<target.index>/_search`.
-- An **LLM** decides equivalence (no manual normalization/sorting/extraction):
-  it compares **DDN-vs-ES**, **DDN-vs-golden**, and **ES-vs-golden**, returning
-  a structured `{equivalent, rationale, diffs}` verdict, told to ignore ordering
-  (unless a sort was requested) and structural/format differences between a
-  GraphQL response and a raw ES `hits.hits[]._source` response.
+- Both results are compared against their committed golden files
+  (`golden.ddn.json` and `golden.es.json`) using JSON deep-equality after
+  normalisation (whitespace, key ordering). Array order is preserved — if a
+  query specifies `order_by`, the golden must reflect that order.
+- On the first run for a new case, generate the goldens with `UPDATE_GOLDEN=1`
+  (the harness writes the live results), inspect them, then commit them.
+
+Two structural differences between DDN and ES responses are expected and normal
+(they are not bugs):
+- **camelCase vs snake_case**: the connector normalises ES field names
+  (`in_stock` → `inStock`). The DDN golden uses camelCase, the ES golden uses
+  snake_case.
+- **Object fields as arrays**: the connector models every ES object container
+  (explicit `object`, `nested`, or implicit-object) as an array of a named NDC
+  object type. A field whose raw ES value is `{"dest":"US"}` will appear as
+  `[{"dest":"US"}]` in the DDN response. The ES golden retains the raw shape.
 
 ## Environment variables
 
@@ -290,8 +307,6 @@ is used by the Kibana reference case (its values are environment-derived).
 | `KEEP_STACK` | off | `1` = don't tear a case's stack down (debugging) |
 | `E2E_CASE` | – | restrict to one case (set by `make e2e-case CASE=`) |
 | `STACK_VERSION` | `8.13.4` | Elasticsearch/Kibana/connector stack version |
-| `E2E_LLM_MODEL` | `claude-opus-4-8` | comparison model |
-| `E2E_LLM_BASE_URL` | Anthropic messages API | override for a proxy |
 
 ## Known quirks
 
@@ -312,25 +327,12 @@ is used by the Kibana reference case (its values are environment-derived).
 
 ## First-run checklist for maintainers
 
-The **`custom_products`** case is fully deterministic and ships with real
-goldens — it should pass out of the box.
+Both included cases ship with real, committed goldens and pass out of the box:
 
-The **`kibana_sample_logs`** reference case ships with correct ES-side inputs but
-**pending** goldens (`{"__pending__": true}`) and `query.graphql` files that
-contain a `TODO(first-run)` note, because:
+- **`custom_products`** — fully-custom case with deterministic data.
+- **`kibana_sample_logs`** — Kibana sample logs dataset; 11 query families
+  (select, filter term/terms/match/range/and/or/not, sort, pagination,
+  aggregation).
 
-- Kibana sample-data values are recomputed on each load, and
-- the DDN model/field names are generated by `ddn model add "*"` from the
-  data-stream collection name, so the exact GraphQL field name isn't known until
-  the CLI runs.
-
-To finalize it:
-
-1. `make -C e2e e2e-case CASE=kibana_sample_logs` and inspect the built metadata
-   / engine schema to find the generated model field name.
-2. Replace `logs` (and adjust operator names like `_match`, `_in` if your
-   connector version differs) in each `queries/*/query.graphql`.
-3. `make -C e2e e2e-update-golden CASE=kibana_sample_logs` to capture goldens.
-4. Commit the updated queries + goldens.
-5. `git mv e2e/ci/e2e.yaml.txt .github/workflows/e2e.yaml` and add the
-   `ANTHROPIC_API_KEY` repository secret.
+The CI workflow is at `.github/workflows/e2e.yaml`. It requires a
+`HASURA_DDN_PAT` repository secret. No other secrets are needed.

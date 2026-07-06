@@ -46,6 +46,12 @@ func ensureDDNLogin(ctx context.Context, dir string) error {
 		if pat == "" {
 			return // assume already authenticated (or a subsequent step will fail clearly)
 		}
+		// If the CLI already holds a valid session, skip the login — calling
+		// auth login when a session exists (or when HASURA_DDN_PAT is already
+		// bound by the CLI to --pat) would conflict with a second auth method.
+		if r := runFullEnv(ctx, dir, nil, "ddn", "auth", "print-access-token"); r.Err == nil {
+			return
+		}
 		loginEnv := envWithout(os.Environ(),
 			"HASURA_DDN_PAT",
 			"HASURA_DDN_ACCESS_TOKEN",
