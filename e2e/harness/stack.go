@@ -211,6 +211,18 @@ func filterKibanaConfig(cfgPath, kibanaSampleKind string) error {
 	if err != nil {
 		return err
 	}
+	// configuration.json was written by the introspection container, which runs
+	// as root (user "0", required so it can read the 0640 root:root CA cert), so
+	// the file is root-owned inside the host-owned temp dir. The host test
+	// process (uid 1001 on GitHub runners) is only "other" on that file (mode
+	// 0644) and cannot truncate it — an in-place os.WriteFile would EACCES.
+	// Removing it first is permitted (unlink is governed by write permission on
+	// the PARENT directory, which the host process created and owns), and the
+	// freshly-created file is then host-owned. This works identically for the
+	// local runner regardless of who runs it.
+	if err := os.Remove(cfgPath); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("removing introspection-owned config before rewrite: %w", err)
+	}
 	return os.WriteFile(cfgPath, out, 0o644)
 }
 
