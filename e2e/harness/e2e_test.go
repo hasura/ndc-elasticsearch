@@ -181,7 +181,9 @@ func runCase(t *testing.T, env *Env, c Case) {
 }
 
 // runQuery executes one L4 query: raw ES _search + DDN GraphQL, then either
-// (re)generates goldens or LLM-compares DDN-vs-ES and each-vs-its-golden.
+// (re)generates goldens or, in comparison mode, asserts DDN<->ES result-set
+// parity (the suite's stated purpose) and that each result matches its
+// committed golden.
 func runQuery(ctx context.Context, t *testing.T, env *Env, stack *Stack, es *ESClient, c Case, q Query) QueryReport {
 	qStart := time.Now()
 	qr := QueryReport{Name: q.Name, Layer: "L4", Target: q.Target.Index}
@@ -262,6 +264,20 @@ func runQuery(ctx context.Context, t *testing.T, env *Env, stack *Stack, es *ESC
 		t.Logf("[%s/%s] golden.es.json is pending; skipping comparison (run UPDATE_GOLDEN=1)", c.Name, q.Name)
 	case !jsonEqual(esBody, goldenES):
 		failMsgs = append(failMsgs, "ES result does not match golden.es.json")
+	}
+
+	// Core purpose of the suite: the DDN/GraphQL result set must equal the
+	// result set of the equivalent raw ES query, after normalizing the known,
+	// expected representation differences (envelope shape, field-name casing,
+	// object-as-array nesting; order-sensitive iff the query pins an ordering).
+	// This assertion runs on the live results independently of the goldens, so a
+	// real divergence baked into both goldens (they are regenerated together
+	// under UPDATE_GOLDEN=1) is still caught. Aggregation-shaped results are not
+	// amenable to row parity and are skipped.
+	if skipped, mismatch := compareDDNvsES(ddnData, esBody, queryIsOrdered(q)); skipped {
+		t.Logf("[%s/%s] DDN<->ES row-parity skipped (aggregation-shaped result)", c.Name, q.Name)
+	} else if mismatch != "" {
+		failMsgs = append(failMsgs, mismatch)
 	}
 
 	if len(failMsgs) == 0 {
