@@ -76,8 +76,6 @@ e2e/
   cases/
     kibana_sample_logs/       reference case using the elastic.co "logs" sample dataset
     custom_products/          fully-custom example (indices/ + data/ + init/ + queries/)
-  ci/
-    e2e.yaml.txt              reference copy of the CI workflow (live at .github/workflows/e2e.yaml)
   report/                     e2e-report.json + e2e-report.md (generated each run)
 ```
 
