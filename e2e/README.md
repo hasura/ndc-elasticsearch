@@ -48,13 +48,15 @@ Per case, the harness ([`harness/`](harness/)) runs these stages:
 3. **Introspect** — run the connector's real `ndc-elasticsearch update` (a
    one-shot container) to generate `configuration.json` from the live ES.
 4. **Connector up** — start the connector (`serve`) with that configuration.
-5. **L3 assertions** — schema conformance (see [below](#assertions-in-detail)).
-6. **DDN build** — drive the real `ddn` CLI:
+5. **Schema golden** — snapshot the connector's full `GET /schema` and compare it
+   against the committed `golden.schema.json` (see [below](#assertions-in-detail)).
+6. **L3 assertions** — schema conformance (see [below](#assertions-in-detail)).
+7. **DDN build** — drive the real `ddn` CLI:
    `supergraph init` → `connector-link add` → `connector-link update`
    (introspect) → `model add "*"` → `supergraph build local`. Metadata is
    **never hand-edited**, so every index automatically becomes a GraphQL model.
-7. **Engine up** — start the DDN v3-engine + dev auth webhook on the built metadata.
-8. **L4 assertions** — for each query: POST GraphQL to the engine and the
+8. **Engine up** — start the DDN v3-engine + dev auth webhook on the built metadata.
+9. **L4 assertions** — for each query: POST GraphQL to the engine and the
    equivalent DSL to ES, then compare both results against their committed golden
    files (see [below](#assertions-in-detail)).
 
@@ -70,7 +72,7 @@ e2e/
   harness/                    the ONLY code — never edited to add a case
     e2e_test.go               discovery + per-case orchestration + L3/L4 + report
     config.go  discover.go  stack.go  seed.go  es.go  ddn.go
-    schema_assert.go  typemap.go  graphql.go  report.go  exec.go  doc.go
+    schema_assert.go  schema_golden.go  typemap.go  graphql.go  report.go  exec.go  doc.go
   cases/
     kibana_sample_logs/       reference case using the elastic.co "logs" sample dataset
     custom_products/          fully-custom example (indices/ + data/ + init/ + queries/)
@@ -253,7 +255,25 @@ A golden may be the sentinel `{"__pending__": true}`; its comparison is
 **skipped** (both queries still run and their payloads are recorded in the report)
 until you regenerate it.
 
+Per-case files (alongside `indices/`, `queries/`, …):
+
+| File | Required | Purpose |
+|---|---|---|
+| `golden.schema.json` | committed | snapshot of the connector's full `GET /schema` for the case (regenerate with `UPDATE_GOLDEN=1`); the same `{"__pending__": true}` sentinel skips its comparison |
+
 ## Assertions in detail
+
+**Schema golden** (per case): snapshot the connector's entire `GET /schema`
+document and compare it against the committed `golden.schema.json`. Unlike L3
+(which checks *conformance* to the live ES mapping and is invariant under
+object-type renames), this is a **snapshot** of the generated NDC schema surface,
+so any change to it — an object-type rename, a new/dropped type, a changed field
+type — surfaces as a reviewable golden diff instead of passing silently. Because
+the connector emits `collections`/`functions`/`procedures` in nondeterministic
+Go-map order, the snapshot is canonicalised (those arrays sorted by name; all
+object keys are already sorted by the JSON encoder) before writing/comparing, so
+the golden is stable. Regenerate with `UPDATE_GOLDEN=1` after an intended schema
+change, then review and commit the diff.
 
 **L3 — schema conformance** (per seeded index):
 
