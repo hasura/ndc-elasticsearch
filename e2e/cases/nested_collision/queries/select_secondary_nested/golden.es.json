@@ -1,1 +1,42 @@
-{"__pending__": true}
+{
+  "_shards": {
+    "failed": 0,
+    "skipped": 0,
+    "successful": 1,
+    "total": 1
+  },
+  "hits": {
+    "hits": [
+      {
+        "_score": null,
+        "_source": {
+          "audit": {
+            "dtLastUpdated": "2024-01-05"
+          },
+          "orderId": "OS-1",
+          "subject": {
+            "type": "card"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "audit": {
+            "dtLastUpdated": "2024-02-05"
+          },
+          "orderId": "OS-2",
+          "subject": {
+            "type": "cash"
+          }
+        }
+      }
+    ],
+    "max_score": null,
+    "total": {
+      "relation": "eq",
+      "value": 2
+    }
+  },
+  "timed_out": false
+}
