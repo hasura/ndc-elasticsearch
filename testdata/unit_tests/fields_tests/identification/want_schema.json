@@ -21,22 +21,6 @@
   ],
   "functions": [],
   "object_types": {
-    "address": {
-      "fields": {
-        "city": {
-          "type": {
-            "name": "text",
-            "type": "named"
-          }
-        },
-        "zip": {
-          "type": {
-            "name": "integer",
-            "type": "named"
-          }
-        }
-      }
-    },
     "date_range_query": {
       "fields": {
         "boost": {
@@ -101,7 +85,7 @@
         "address": {
           "type": {
             "element_type": {
-              "name": "address",
+              "name": "indentification.address",
               "type": "named"
             },
             "type": "array"
@@ -116,6 +100,22 @@
         "name": {
           "type": {
             "name": "keyword",
+            "type": "named"
+          }
+        }
+      }
+    },
+    "indentification.address": {
+      "fields": {
+        "city": {
+          "type": {
+            "name": "text",
+            "type": "named"
+          }
+        },
+        "zip": {
+          "type": {
+            "name": "integer",
             "type": "named"
           }
         }

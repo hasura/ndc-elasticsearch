@@ -100,6 +100,10 @@ func TestObjectTypeNameCollision_DifferentShapes(t *testing.T) {
 	// Different structures must resolve to different object types (no clobber).
 	assert.NotEqual(t, oneSubject, twoSubject, "colliding subject types must be disambiguated")
 
+	// Names are always fully-qualified as `index.path.to.field`.
+	assert.Equal(t, "indexOne.subject", oneSubject)
+	assert.Equal(t, "indexTwo.subject", twoSubject)
+
 	oneFields := fieldNames(t, schemaMap, oneSubject)
 	assert.True(t, oneFields["alternateAccountIdentifier"], "indexOne.subject must keep alternateAccountIdentifier")
 	assert.True(t, oneFields["businessSystemCode"], "indexOne.subject must keep businessSystemCode")
@@ -133,16 +137,20 @@ func TestObjectTypeNameCollision_AuditIndexFalse(t *testing.T) {
 	schemaMap, _ := schemaAsMap(t, st.Configuration, st)
 
 	fullAudit := objectTypeName(t, schemaMap, "auditFull", "audit")
+	assert.Equal(t, "auditFull.audit", fullAudit, "nested object types are always fully-qualified")
 	full := fieldNames(t, schemaMap, fullAudit)
 	for _, f := range []string{"dtLastUpdated", "hash", "mode", "source"} {
 		assert.Truef(t, full[f], "auditFull.audit must keep index:false field %q", f)
 	}
 }
 
-// TestObjectTypeNameCollision_IdenticalCollapses verifies the minimal-churn
-// guarantee: two indices with a structurally-identical `subject` (e.g. an index
-// and its alias) keep the bare object-type name "subject" — no needless rename.
-func TestObjectTypeNameCollision_IdenticalCollapses(t *testing.T) {
+// TestObjectTypeNameCollision_IdenticalStillFullyQualified verifies that even
+// two structurally-identical `subject` objects (e.g. an index and its alias) are
+// each emitted under their own fully-qualified name — never collapsed to a bare
+// "subject". Collapsing would be unstable: it would depend on what other indices
+// happen to exist, so adding/removing an index could rename the type. Both types
+// still carry all their fields.
+func TestObjectTypeNameCollision_IdenticalStillFullyQualified(t *testing.T) {
 	const cfgJSON = `{
 	  "indices": {
 	    "indexOne": {"mappings": {"properties": {"subject": {"type": "nested", "properties": {
@@ -158,9 +166,43 @@ func TestObjectTypeNameCollision_IdenticalCollapses(t *testing.T) {
 	st := newCollisionState(t, cfgJSON)
 	schemaMap, _ := schemaAsMap(t, st.Configuration, st)
 
-	assert.Equal(t, "subject", objectTypeName(t, schemaMap, "indexOne", "subject"),
-		"identical objects must keep the bare name (backward compatible)")
-	assert.Equal(t, "subject", objectTypeName(t, schemaMap, "indexAlias", "subject"))
+	assert.Equal(t, "indexOne.subject", objectTypeName(t, schemaMap, "indexOne", "subject"),
+		"nested object types are always fully-qualified, even when structurally identical across indices")
+	assert.Equal(t, "indexAlias.subject", objectTypeName(t, schemaMap, "indexAlias", "subject"))
+
+	// The bare name must never be emitted as an object type.
+	objectTypes := schemaMap["object_types"].(map[string]interface{})
+	_, bare := objectTypes["subject"]
+	assert.False(t, bare, "bare 'subject' object type must not be emitted")
+
+	// Both fully-qualified types keep their field.
+	assert.True(t, fieldNames(t, schemaMap, "indexOne.subject")["type"])
+	assert.True(t, fieldNames(t, schemaMap, "indexAlias.subject")["type"])
+}
+
+// TestObjectTypeName_FullyQualifiedSingleIndex pins the stability property with
+// the simplest case: a single index with a nested `subject` must produce the
+// object type "products.subject" (fully-qualified), NOT bare "subject". This is
+// what guarantees that later adding another index can never rename this type.
+func TestObjectTypeName_FullyQualifiedSingleIndex(t *testing.T) {
+	const cfgJSON = `{
+	  "indices": {
+	    "products": {"mappings": {"properties": {"subject": {"type": "nested", "properties": {
+	      "type": {"type": "text"}
+	    }}}}}
+	  },
+	  "queries": {}
+	}`
+
+	st := newCollisionState(t, cfgJSON)
+	schemaMap, _ := schemaAsMap(t, st.Configuration, st)
+
+	assert.Equal(t, "products.subject", objectTypeName(t, schemaMap, "products", "subject"),
+		"a nested object type must be fully-qualified even when its bare name is unique")
+
+	objectTypes := schemaMap["object_types"].(map[string]interface{})
+	_, bare := objectTypes["subject"]
+	assert.False(t, bare, "bare 'subject' object type must not be emitted")
 }
 
 // TestObjectTypeNameCollision_Deterministic runs the generator many times and
