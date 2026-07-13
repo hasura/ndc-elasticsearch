@@ -1,0 +1,15 @@
+query SelectPrimaryNested {
+  ordersPrimary(order_by: { orderId: Asc }) {
+    orderId
+    subject {
+      type
+      alternateAccountIdentifier
+      businessSystemCode
+    }
+    audit {
+      dtLastUpdated
+      hash
+      mode
+    }
+  }
+}

@@ -1,0 +1,11 @@
+description: >
+  Nested object-type name collision across two indices (ENT-82 / Zendesk #14975).
+  Both orders_primary and orders_secondary define object fields `subject` and
+  `audit`, but with DIFFERENT shapes. Before the fix, the connector keyed NDC
+  object types by their bare name, so the two `subject` (and two `audit`)
+  definitions collided in a single global map — last-write-wins, nondeterministic
+  Go map order — silently dropping the fields that existed only in the fuller
+  definition (e.g. subject.alternateAccountIdentifier, subject.businessSystemCode,
+  and the audit index:false leaves). The always-fully-qualified fix keeps them
+  distinct (orders_primary.subject vs orders_secondary.subject), so no fields are
+  dropped and the queries below keep returning every selected field.

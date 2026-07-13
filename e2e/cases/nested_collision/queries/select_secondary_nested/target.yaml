@@ -1,0 +1,2 @@
+index: "orders_secondary"
+description: "SELECT orders_secondary — the minimal-shape twin whose subject/audit share a name with orders_primary."

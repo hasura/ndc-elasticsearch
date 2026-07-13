@@ -1,0 +1,66 @@
+{
+  "_shards": {
+    "failed": 0,
+    "skipped": 0,
+    "successful": 1,
+    "total": 1
+  },
+  "hits": {
+    "hits": [
+      {
+        "_score": null,
+        "_source": {
+          "audit": {
+            "dtLastUpdated": "2024-01-01",
+            "hash": "h1",
+            "mode": "auto"
+          },
+          "orderId": "OP-1",
+          "subject": {
+            "alternateAccountIdentifier": "ALT-1",
+            "businessSystemCode": "BSC-1",
+            "type": "wire"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "audit": {
+            "dtLastUpdated": "2024-02-01",
+            "hash": "h2",
+            "mode": "manual"
+          },
+          "orderId": "OP-2",
+          "subject": {
+            "alternateAccountIdentifier": "ALT-2",
+            "businessSystemCode": "BSC-2",
+            "type": "ach"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "audit": {
+            "dtLastUpdated": "2024-03-01",
+            "hash": "h3",
+            "mode": "auto"
+          },
+          "orderId": "OP-3",
+          "subject": {
+            "alternateAccountIdentifier": "ALT-3",
+            "businessSystemCode": "BSC-3",
+            "type": "wire"
+          }
+        }
+      }
+    ],
+    "max_score": null,
+    "total": {
+      "relation": "eq",
+      "value": 3
+    }
+  },
+  "timed_out": false
+}

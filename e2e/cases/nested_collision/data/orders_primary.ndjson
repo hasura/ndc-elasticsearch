@@ -1,0 +1,6 @@
+{"index": {"_index": "orders_primary", "_id": "OP-1"}}
+{"orderId": "OP-1", "amount": 150.0, "subject": {"type": "wire", "alternateAccountIdentifier": "ALT-1", "businessSystemCode": "BSC-1"}, "audit": {"dtLastUpdated": "2024-01-01", "hash": "h1", "mode": "auto"}}
+{"index": {"_index": "orders_primary", "_id": "OP-2"}}
+{"orderId": "OP-2", "amount": 50.0, "subject": {"type": "ach", "alternateAccountIdentifier": "ALT-2", "businessSystemCode": "BSC-2"}, "audit": {"dtLastUpdated": "2024-02-01", "hash": "h2", "mode": "manual"}}
+{"index": {"_index": "orders_primary", "_id": "OP-3"}}
+{"orderId": "OP-3", "amount": 250.0, "subject": {"type": "wire", "alternateAccountIdentifier": "ALT-3", "businessSystemCode": "BSC-3"}, "audit": {"dtLastUpdated": "2024-03-01", "hash": "h3", "mode": "auto"}}

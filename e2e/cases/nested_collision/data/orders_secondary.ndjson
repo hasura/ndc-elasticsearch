@@ -1,0 +1,4 @@
+{"index": {"_index": "orders_secondary", "_id": "OS-1"}}
+{"orderId": "OS-1", "amount": 75.0, "subject": {"type": "card"}, "audit": {"dtLastUpdated": "2024-01-05"}}
+{"index": {"_index": "orders_secondary", "_id": "OS-2"}}
+{"orderId": "OS-2", "amount": 125.0, "subject": {"type": "cash"}, "audit": {"dtLastUpdated": "2024-02-05"}}
