@@ -92,22 +92,6 @@
         }
       }
     },
-    "manufacturer": {
-      "fields": {
-        "country": {
-          "type": {
-            "name": "keyword",
-            "type": "named"
-          }
-        },
-        "name": {
-          "type": {
-            "name": "keyword",
-            "type": "named"
-          }
-        }
-      }
-    },
     "products": {
       "fields": {
         "_id": {
@@ -143,7 +127,7 @@
         "manufacturer": {
           "type": {
             "element_type": {
-              "name": "manufacturer",
+              "name": "products.manufacturer",
               "type": "named"
             },
             "type": "array"
@@ -180,6 +164,22 @@
           }
         },
         "tags": {
+          "type": {
+            "name": "keyword",
+            "type": "named"
+          }
+        }
+      }
+    },
+    "products.manufacturer": {
+      "fields": {
+        "country": {
+          "type": {
+            "name": "keyword",
+            "type": "named"
+          }
+        },
+        "name": {
           "type": {
             "name": "keyword",
             "type": "named"
@@ -222,7 +222,7 @@
         "manufacturer": {
           "type": {
             "element_type": {
-              "name": "manufacturer",
+              "name": "products_alias.manufacturer",
               "type": "named"
             },
             "type": "array"
@@ -259,6 +259,22 @@
           }
         },
         "tags": {
+          "type": {
+            "name": "keyword",
+            "type": "named"
+          }
+        }
+      }
+    },
+    "products_alias.manufacturer": {
+      "fields": {
+        "country": {
+          "type": {
+            "name": "keyword",
+            "type": "named"
+          }
+        },
+        "name": {
           "type": {
             "name": "keyword",
             "type": "named"
