@@ -1,0 +1,13 @@
+{
+  "size": 50,
+  "_source": [
+    "orderId",
+    "subject.type",
+    "audit.dtLastUpdated"
+  ],
+  "sort": [
+    {
+      "orderId": "asc"
+    }
+  ]
+}

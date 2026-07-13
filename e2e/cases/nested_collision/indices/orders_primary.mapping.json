@@ -1,0 +1,22 @@
+{
+  "mappings": {
+    "properties": {
+      "orderId": { "type": "keyword" },
+      "amount": { "type": "double" },
+      "subject": {
+        "properties": {
+          "type": { "type": "keyword" },
+          "alternateAccountIdentifier": { "type": "keyword" },
+          "businessSystemCode": { "type": "keyword" }
+        }
+      },
+      "audit": {
+        "properties": {
+          "dtLastUpdated": { "type": "date" },
+          "hash": { "type": "keyword", "index": false },
+          "mode": { "type": "keyword", "index": false }
+        }
+      }
+    }
+  }
+}

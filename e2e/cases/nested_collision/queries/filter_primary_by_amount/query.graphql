@@ -1,0 +1,10 @@
+query FilterPrimaryByAmount {
+  ordersPrimary(where: { amount: { range: { gt: 100 } } }, order_by: { orderId: Asc }) {
+    orderId
+    amount
+    subject {
+      type
+      businessSystemCode
+    }
+  }
+}

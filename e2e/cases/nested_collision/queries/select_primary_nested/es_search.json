@@ -1,0 +1,17 @@
+{
+  "size": 50,
+  "_source": [
+    "orderId",
+    "subject.type",
+    "subject.alternateAccountIdentifier",
+    "subject.businessSystemCode",
+    "audit.dtLastUpdated",
+    "audit.hash",
+    "audit.mode"
+  ],
+  "sort": [
+    {
+      "orderId": "asc"
+    }
+  ]
+}

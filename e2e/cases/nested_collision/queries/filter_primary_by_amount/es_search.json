@@ -1,0 +1,21 @@
+{
+  "size": 50,
+  "_source": [
+    "orderId",
+    "amount",
+    "subject.type",
+    "subject.businessSystemCode"
+  ],
+  "query": {
+    "range": {
+      "amount": {
+        "gt": 100
+      }
+    }
+  },
+  "sort": [
+    {
+      "orderId": "asc"
+    }
+  ]
+}

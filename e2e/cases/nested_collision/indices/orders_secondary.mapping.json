@@ -1,0 +1,18 @@
+{
+  "mappings": {
+    "properties": {
+      "orderId": { "type": "keyword" },
+      "amount": { "type": "double" },
+      "subject": {
+        "properties": {
+          "type": { "type": "keyword" }
+        }
+      },
+      "audit": {
+        "properties": {
+          "dtLastUpdated": { "type": "date" }
+        }
+      }
+    }
+  }
+}

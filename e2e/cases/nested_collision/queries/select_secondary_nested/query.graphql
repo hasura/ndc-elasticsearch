@@ -1,0 +1,11 @@
+query SelectSecondaryNested {
+  ordersSecondary(order_by: { orderId: Asc }) {
+    orderId
+    subject {
+      type
+    }
+    audit {
+      dtLastUpdated
+    }
+  }
+}

@@ -1,0 +1,2 @@
+index: "orders_primary"
+description: "SELECT orders_primary with the full subject + audit nested objects (the fields that collide-drop on main)."

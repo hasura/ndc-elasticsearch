@@ -1,0 +1,2 @@
+index: "orders_primary"
+description: "FILTER orders_primary by amount > 100, still selecting collision-affected nested subject fields."
