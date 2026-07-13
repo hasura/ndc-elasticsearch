@@ -1,0 +1,2 @@
+index: "products"
+description: "SELECT the nested manufacturer object (type renamed to products.manufacturer under the fix)."

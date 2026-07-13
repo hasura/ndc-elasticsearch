@@ -1,0 +1,2 @@
+index: "products_alias"
+description: "SELECT manufacturer via the products_alias collection (a separate products_alias.manufacturer type under the fix)."

@@ -1,0 +1,31 @@
+{
+  "products": [
+    {
+      "manufacturer": [
+        {
+          "country": "US",
+          "name": "Acme"
+        }
+      ],
+      "sku": "PRD-001"
+    },
+    {
+      "manufacturer": [
+        {
+          "country": "US",
+          "name": "Acme"
+        }
+      ],
+      "sku": "PRD-002"
+    },
+    {
+      "manufacturer": [
+        {
+          "country": "DE",
+          "name": "Globex"
+        }
+      ],
+      "sku": "PRD-003"
+    }
+  ]
+}

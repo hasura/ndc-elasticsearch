@@ -1,0 +1,14 @@
+{
+  "size": 5,
+  "_source": [
+    "bytes",
+    "event.dataset",
+    "machine.os",
+    "machine.ram"
+  ],
+  "sort": [
+    {
+      "bytes": "desc"
+    }
+  ]
+}

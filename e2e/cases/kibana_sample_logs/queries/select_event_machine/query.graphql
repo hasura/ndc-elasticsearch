@@ -1,0 +1,12 @@
+query SelectEventMachine {
+  kibanaSampleDataLogs(order_by: { bytes: Desc }, limit: 5) {
+    bytes
+    event {
+      dataset
+    }
+    machine {
+      os
+      ram
+    }
+  }
+}

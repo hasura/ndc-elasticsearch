@@ -1,0 +1,74 @@
+{
+  "kibanaSampleDataLogs": [
+    {
+      "bytes": 19986,
+      "event": [
+        {
+          "dataset": "sample_web_logs"
+        }
+      ],
+      "machine": [
+        {
+          "os": "osx",
+          "ram": 6442450944
+        }
+      ]
+    },
+    {
+      "bytes": 19956,
+      "event": [
+        {
+          "dataset": "sample_web_logs"
+        }
+      ],
+      "machine": [
+        {
+          "os": "ios",
+          "ram": 19327352832
+        }
+      ]
+    },
+    {
+      "bytes": 19929,
+      "event": [
+        {
+          "dataset": "sample_web_logs"
+        }
+      ],
+      "machine": [
+        {
+          "os": "osx",
+          "ram": 20401094656
+        }
+      ]
+    },
+    {
+      "bytes": 19919,
+      "event": [
+        {
+          "dataset": "sample_web_logs"
+        }
+      ],
+      "machine": [
+        {
+          "os": "ios",
+          "ram": 12884901888
+        }
+      ]
+    },
+    {
+      "bytes": 19904,
+      "event": [
+        {
+          "dataset": "sample_web_logs"
+        }
+      ],
+      "machine": [
+        {
+          "os": "win 7",
+          "ram": 3221225472
+        }
+      ]
+    }
+  ]
+}
