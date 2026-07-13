@@ -8,6 +8,20 @@ import (
 	"github.com/hasura/ndc-sdk-go/schema"
 )
 
+// collectionObjects holds the intermediate (pre-emission) field/object lists
+// produced for a single collection (an index or a native query definition).
+// We collect these for every collection first and then emit every nested object
+// type under a fully-qualified `index.path.to.field` name — this is what
+// prevents the object-type name-collision bug (ENT-82) where identically-named
+// objects in different collections (or inner/outer objects sharing a name)
+// overwrote each other in the single global ObjectTypes map, silently dropping
+// fields.
+type collectionObjects struct {
+	name    string                   // collection / index-level object-type name
+	fields  []map[string]interface{} // top-level fields of the collection
+	objects []map[string]interface{} // nested object types (flattened)
+}
+
 // GetSchema returns the schema by parsing the configuration.
 func (c *Connector) GetSchema(ctx context.Context, configuration *types.Configuration, state *types.State) (schema.SchemaResponseMarshaler, error) {
 	return state.Schema, nil
@@ -24,6 +38,12 @@ func ParseConfigurationToSchema(configuration *types.Configuration, state *types
 	}
 
 	indices := configuration.Indices
+
+	// Phase 1: walk every index and collect its fields/objects. Nested object
+	// types are named with a fully-qualified `index.path.to.field` name (see
+	// getScalarTypesAndObjects) so that distinct objects can never overwrite one
+	// another; they are emitted in phase 2.
+	collected := make([]collectionObjects, 0, len(indices))
 
 	for indexName, mappings := range indices {
 		state.SupportedFilterFields[indexName] = map[string]interface{}{
@@ -49,7 +69,7 @@ func ParseConfigurationToSchema(configuration *types.Configuration, state *types
 		}
 
 		fields, objects := getScalarTypesAndObjects(properties, state, indexName, "")
-		prepareNdcSchema(&ndcSchema, indexName, fields, objects)
+		collected = append(collected, collectionObjects{name: indexName, fields: fields, objects: objects})
 
 		ndcSchema.Collections = append(ndcSchema.Collections, schema.CollectionInfo{
 			Name:                  indexName,
@@ -61,15 +81,31 @@ func ParseConfigurationToSchema(configuration *types.Configuration, state *types
 	}
 
 	nativeQueries := configuration.Queries
+	parseNativeQueryToSchema(&ndcSchema, state, nativeQueries, &collected)
 
-	ndcSchema = parseNativeQueryToSchema(&ndcSchema, state, nativeQueries)
+	// Phase 2: emit the object types. Every nested object type is emitted under
+	// its fully-qualified `index.path.to.field` name (assigned in phase 1), and
+	// object field references already point at those names, so no rewrite is
+	// needed here.
+	//
+	// Nested object types are ALWAYS fully-qualified — we never collapse them to
+	// the bare field name, even when a name is unique. Collapsing would make the
+	// generated NDC/GraphQL surface unstable: adding a new index that happens to
+	// reuse a nested field name would retroactively rename an existing object
+	// type and break consumers. Always-qualified names guarantee that adding an
+	// index never renames an existing type, that no fields are ever dropped, and
+	// that the output is deterministic (every name derives from mapping paths,
+	// independent of Go map iteration order).
+	for _, c := range collected {
+		prepareNdcSchema(&ndcSchema, c.name, c.fields, c.objects)
+	}
 
 	return &ndcSchema
 }
 
 // parseNativeQueryToSchema parses the given native queries and adds them to the schema response.
 // It also handles return types of kind "defination" and updates the state accordingly.
-func parseNativeQueryToSchema(schemaResponse *schema.SchemaResponse, state *types.State, nativeQueries map[string]types.NativeQuery) schema.SchemaResponse {
+func parseNativeQueryToSchema(schemaResponse *schema.SchemaResponse, state *types.State, nativeQueries map[string]types.NativeQuery, collected *[]collectionObjects) {
 	for queryName, queryConfig := range nativeQueries {
 		indexName := queryConfig.Index
 
@@ -94,8 +130,11 @@ func parseNativeQueryToSchema(schemaResponse *schema.SchemaResponse, state *type
 			state.NestedFields[indexName] = make(map[string]string)
 			state.SupportedAggregateFields[indexName] = make(map[string]string)
 			state.SupportedSortFields[indexName] = make(map[string]string)
+			// Defer object-type emission to phase 2 (see ParseConfigurationToSchema)
+			// so native-query object types are emitted with the same fully-qualified
+			// names as index-derived ones.
 			fields, objects := getScalarTypesAndObjects(properties, state, indexName, "")
-			prepareNdcSchema(schemaResponse, indexName, fields, objects)
+			*collected = append(*collected, collectionObjects{name: indexName, fields: fields, objects: objects})
 		}
 
 		// Get arguments for the collection info
@@ -118,8 +157,6 @@ func parseNativeQueryToSchema(schemaResponse *schema.SchemaResponse, state *type
 
 		schemaResponse.Collections = append(schemaResponse.Collections, collectionInfo)
 	}
-
-	return *schemaResponse
 }
 
 // getNdcArguments converts the query parameters to NDC ArgumentInfo objects.
@@ -169,15 +206,24 @@ func getScalarTypesAndObjects(properties map[string]interface{}, state *types.St
 			if fieldType == "nested" {
 				state.NestedFields[indexName].(map[string]string)[fieldWithParent] = fieldType
 			}
+
+			flds, objs := getScalarTypesAndObjects(nestedObject, state, indexName, fieldWithParent)
+
+			// Each object type is identified by a fully-qualified, globally-unique
+			// name (`index.path.to.field`) and is always emitted under that name.
+			// This keeps type names stable: an object in one index can never
+			// overwrite — nor be renamed by the later addition of — an
+			// identically-named object elsewhere.
+			qualifiedName := indexName + "." + fieldWithParent
+
 			fields = append(fields, map[string]interface{}{
 				"name": fieldName,
-				"type": fieldName,
+				"type": qualifiedName,
 				"obj":  true,
 			})
 
-			flds, objs := getScalarTypesAndObjects(nestedObject, state, indexName, fieldWithParent)
 			objects = append(objects, map[string]interface{}{
-				"name":   fieldName,
+				"name":   qualifiedName,
 				"fields": flds,
 			})
 			objects = append(objects, objs...)

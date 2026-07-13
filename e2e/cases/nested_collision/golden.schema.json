@@ -39,28 +39,6 @@
   ],
   "functions": [],
   "object_types": {
-    "audit": {
-      "fields": {
-        "dtLastUpdated": {
-          "type": {
-            "name": "date",
-            "type": "named"
-          }
-        },
-        "hash": {
-          "type": {
-            "name": "keyword",
-            "type": "named"
-          }
-        },
-        "mode": {
-          "type": {
-            "name": "keyword",
-            "type": "named"
-          }
-        }
-      }
-    },
     "date_range_query": {
       "fields": {
         "boost": {
@@ -131,7 +109,7 @@
         "audit": {
           "type": {
             "element_type": {
-              "name": "audit",
+              "name": "orders_primary.audit",
               "type": "named"
             },
             "type": "array"
@@ -146,10 +124,54 @@
         "subject": {
           "type": {
             "element_type": {
-              "name": "subject",
+              "name": "orders_primary.subject",
               "type": "named"
             },
             "type": "array"
+          }
+        }
+      }
+    },
+    "orders_primary.audit": {
+      "fields": {
+        "dtLastUpdated": {
+          "type": {
+            "name": "date",
+            "type": "named"
+          }
+        },
+        "hash": {
+          "type": {
+            "name": "keyword",
+            "type": "named"
+          }
+        },
+        "mode": {
+          "type": {
+            "name": "keyword",
+            "type": "named"
+          }
+        }
+      }
+    },
+    "orders_primary.subject": {
+      "fields": {
+        "alternateAccountIdentifier": {
+          "type": {
+            "name": "keyword",
+            "type": "named"
+          }
+        },
+        "businessSystemCode": {
+          "type": {
+            "name": "keyword",
+            "type": "named"
+          }
+        },
+        "type": {
+          "type": {
+            "name": "keyword",
+            "type": "named"
           }
         }
       }
@@ -171,7 +193,7 @@
         "audit": {
           "type": {
             "element_type": {
-              "name": "audit",
+              "name": "orders_secondary.audit",
               "type": "named"
             },
             "type": "array"
@@ -186,10 +208,30 @@
         "subject": {
           "type": {
             "element_type": {
-              "name": "subject",
+              "name": "orders_secondary.subject",
               "type": "named"
             },
             "type": "array"
+          }
+        }
+      }
+    },
+    "orders_secondary.audit": {
+      "fields": {
+        "dtLastUpdated": {
+          "type": {
+            "name": "date",
+            "type": "named"
+          }
+        }
+      }
+    },
+    "orders_secondary.subject": {
+      "fields": {
+        "type": {
+          "type": {
+            "name": "keyword",
+            "type": "named"
           }
         }
       }
@@ -296,28 +338,6 @@
         "min_length": {
           "type": {
             "name": "integer",
-            "type": "named"
-          }
-        }
-      }
-    },
-    "subject": {
-      "fields": {
-        "alternateAccountIdentifier": {
-          "type": {
-            "name": "keyword",
-            "type": "named"
-          }
-        },
-        "businessSystemCode": {
-          "type": {
-            "name": "keyword",
-            "type": "named"
-          }
-        },
-        "type": {
-          "type": {
-            "name": "keyword",
             "type": "named"
           }
         }

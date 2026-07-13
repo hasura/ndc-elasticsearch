@@ -74,44 +74,6 @@
         }
       }
     },
-    "event": {
-      "fields": {
-        "dataset": {
-          "type": {
-            "name": "keyword",
-            "type": "named"
-          }
-        }
-      }
-    },
-    "geo": {
-      "fields": {
-        "coordinates": {
-          "type": {
-            "name": "geo_point",
-            "type": "named"
-          }
-        },
-        "dest": {
-          "type": {
-            "name": "keyword",
-            "type": "named"
-          }
-        },
-        "src": {
-          "type": {
-            "name": "keyword",
-            "type": "named"
-          }
-        },
-        "srcdest": {
-          "type": {
-            "name": "keyword",
-            "type": "named"
-          }
-        }
-      }
-    },
     "kibana_sample_data_logs": {
       "fields": {
         "@timestamp": {
@@ -159,7 +121,7 @@
         "event": {
           "type": {
             "element_type": {
-              "name": "event",
+              "name": "kibana_sample_data_logs.event",
               "type": "named"
             },
             "type": "array"
@@ -174,7 +136,7 @@
         "geo": {
           "type": {
             "element_type": {
-              "name": "geo",
+              "name": "kibana_sample_data_logs.geo",
               "type": "named"
             },
             "type": "array"
@@ -207,7 +169,7 @@
         "machine": {
           "type": {
             "element_type": {
-              "name": "machine",
+              "name": "kibana_sample_data_logs.machine",
               "type": "named"
             },
             "type": "array"
@@ -281,7 +243,45 @@
         }
       }
     },
-    "machine": {
+    "kibana_sample_data_logs.event": {
+      "fields": {
+        "dataset": {
+          "type": {
+            "name": "keyword",
+            "type": "named"
+          }
+        }
+      }
+    },
+    "kibana_sample_data_logs.geo": {
+      "fields": {
+        "coordinates": {
+          "type": {
+            "name": "geo_point",
+            "type": "named"
+          }
+        },
+        "dest": {
+          "type": {
+            "name": "keyword",
+            "type": "named"
+          }
+        },
+        "src": {
+          "type": {
+            "name": "keyword",
+            "type": "named"
+          }
+        },
+        "srcdest": {
+          "type": {
+            "name": "keyword",
+            "type": "named"
+          }
+        }
+      }
+    },
+    "kibana_sample_data_logs.machine": {
       "fields": {
         "os": {
           "type": {
