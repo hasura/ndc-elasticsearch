@@ -135,6 +135,28 @@ func runCase(t *testing.T, env *Env, c Case) {
 		return
 	}
 
+	// ---- schema golden: full connector /schema snapshot ----
+	t.Run("schema-golden", func(t *testing.T) {
+		res, err := AssertSchemaGolden(ctx, env, stack, c)
+		cr.SchemaGoldenStatus = res.Status
+		cr.SchemaGoldenMessage = res.Message
+		if err != nil {
+			cr.SchemaGoldenStatus = StatusFail
+			cr.SchemaGoldenMessage = "assertion error: " + err.Error()
+			cr.Status = StatusFail
+			t.Fatalf("[%s] schema golden error: %v", c.Name, err)
+		}
+		switch res.Status {
+		case StatusFail:
+			cr.SchemaGoldenActual = res.Actual
+			cr.SchemaGoldenExpected = res.Expected
+			cr.Status = StatusFail
+			t.Errorf("[%s] schema golden: %s", c.Name, res.Message)
+		case StatusSkip:
+			t.Skipf("[%s] %s", c.Name, res.Message)
+		}
+	})
+
 	// ---- L3: schema conformance ----
 	t.Run("L3-schema", func(t *testing.T) {
 		problems, err := AssertSchemaConformance(ctx, stack, es)
@@ -317,17 +339,6 @@ func requireCmd(t *testing.T, name string) {
 	if !commandExists(name) {
 		t.Fatalf("required command %q not found on PATH", name)
 	}
-}
-
-// isPendingGolden reports whether a golden file is the pending-regeneration
-// sentinel {"__pending__": true}.
-func isPendingGolden(b []byte) bool {
-	var m map[string]interface{}
-	if err := json.Unmarshal(b, &m); err != nil {
-		return false
-	}
-	v, ok := m["__pending__"].(bool)
-	return ok && v
 }
 
 func pretty(b []byte) string {
