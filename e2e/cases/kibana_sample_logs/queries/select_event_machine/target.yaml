@@ -1,0 +1,2 @@
+index: "kibana_sample_data_logs"
+description: "SELECT the nested event + machine objects (types renamed to kibana_sample_data_logs.event / .machine under the fix)."

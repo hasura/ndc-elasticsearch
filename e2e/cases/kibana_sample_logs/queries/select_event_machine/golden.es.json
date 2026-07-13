@@ -1,0 +1,83 @@
+{
+  "_shards": {
+    "failed": 0,
+    "skipped": 0,
+    "successful": 1,
+    "total": 1
+  },
+  "hits": {
+    "hits": [
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19986,
+          "event": {
+            "dataset": "sample_web_logs"
+          },
+          "machine": {
+            "os": "osx",
+            "ram": 6442450944
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19956,
+          "event": {
+            "dataset": "sample_web_logs"
+          },
+          "machine": {
+            "os": "ios",
+            "ram": 19327352832
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19929,
+          "event": {
+            "dataset": "sample_web_logs"
+          },
+          "machine": {
+            "os": "osx",
+            "ram": 20401094656
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19919,
+          "event": {
+            "dataset": "sample_web_logs"
+          },
+          "machine": {
+            "os": "ios",
+            "ram": 12884901888
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19904,
+          "event": {
+            "dataset": "sample_web_logs"
+          },
+          "machine": {
+            "os": "win 7",
+            "ram": 3221225472
+          }
+        }
+      }
+    ],
+    "max_score": null,
+    "total": {
+      "relation": "gte",
+      "value": 10000
+    }
+  },
+  "timed_out": false
+}

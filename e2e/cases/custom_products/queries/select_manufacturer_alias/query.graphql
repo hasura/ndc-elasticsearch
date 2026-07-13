@@ -1,0 +1,9 @@
+query SelectManufacturerAlias {
+  productsAlias(order_by: { sku: Asc }, limit: 3) {
+    sku
+    manufacturer {
+      name
+      country
+    }
+  }
+}

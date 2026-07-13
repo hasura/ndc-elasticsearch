@@ -1,0 +1,48 @@
+{
+  "_shards": {
+    "failed": 0,
+    "skipped": 0,
+    "successful": 1,
+    "total": 1
+  },
+  "hits": {
+    "hits": [
+      {
+        "_score": null,
+        "_source": {
+          "manufacturer": {
+            "country": "US",
+            "name": "Acme"
+          },
+          "sku": "PRD-001"
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "manufacturer": {
+            "country": "US",
+            "name": "Acme"
+          },
+          "sku": "PRD-002"
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "manufacturer": {
+            "country": "DE",
+            "name": "Globex"
+          },
+          "sku": "PRD-003"
+        }
+      }
+    ],
+    "max_score": null,
+    "total": {
+      "relation": "eq",
+      "value": 6
+    }
+  },
+  "timed_out": false
+}

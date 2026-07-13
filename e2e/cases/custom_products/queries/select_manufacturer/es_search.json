@@ -1,0 +1,13 @@
+{
+  "size": 3,
+  "_source": [
+    "sku",
+    "manufacturer.name",
+    "manufacturer.country"
+  ],
+  "sort": [
+    {
+      "sku": "asc"
+    }
+  ]
+}
