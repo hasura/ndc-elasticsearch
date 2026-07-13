@@ -42,15 +42,22 @@ type QueryReport struct {
 
 // CaseReport is the outcome for a whole case (L3 + all its L4 queries).
 type CaseReport struct {
-	Name           string        `json:"name"`
-	Status         string        `json:"status"`
-	Message        string        `json:"message,omitempty"`
-	SchemaLayer    string        `json:"schema_layer"` // "L3"
-	SchemaStatus   string        `json:"schema_status"`
-	SchemaProblems []string      `json:"schema_problems,omitempty"`
-	Queries        []QueryReport `json:"queries"`
-	Timings        []StepTiming  `json:"timings,omitempty"`
-	DurationMS     int64         `json:"duration_ms"`
+	Name           string   `json:"name"`
+	Status         string   `json:"status"`
+	Message        string   `json:"message,omitempty"`
+	SchemaLayer    string   `json:"schema_layer"` // "L3"
+	SchemaStatus   string   `json:"schema_status"`
+	SchemaProblems []string `json:"schema_problems,omitempty"`
+
+	// Schema golden: whole-schema snapshot comparison (golden.schema.json).
+	SchemaGoldenStatus   string `json:"schema_golden_status,omitempty"`
+	SchemaGoldenMessage  string `json:"schema_golden_message,omitempty"`
+	SchemaGoldenActual   string `json:"schema_golden_actual,omitempty"`   // attached on failure
+	SchemaGoldenExpected string `json:"schema_golden_expected,omitempty"` // attached on failure
+
+	Queries    []QueryReport `json:"queries"`
+	Timings    []StepTiming  `json:"timings,omitempty"`
+	DurationMS int64         `json:"duration_ms"`
 }
 
 // Report is the top-level e2e report.
@@ -150,6 +157,17 @@ func (r *Report) markdown() string {
 				b.WriteString("- " + escapeMD(p) + "\n")
 			}
 			b.WriteString("\n</details>\n\n")
+		}
+
+		if c.SchemaGoldenStatus != "" {
+			b.WriteString(fmt.Sprintf("**Schema golden:** %s %s\n\n", statusEmoji(c.SchemaGoldenStatus), c.SchemaGoldenStatus))
+			if c.SchemaGoldenStatus == StatusFail {
+				if c.SchemaGoldenMessage != "" {
+					b.WriteString("> " + escapeMD(c.SchemaGoldenMessage) + "\n\n")
+				}
+				writeDetails(&b, "connector /schema (actual)", c.SchemaGoldenActual)
+				writeDetails(&b, "golden.schema.json (expected)", c.SchemaGoldenExpected)
+			}
 		}
 
 		b.WriteString("| query | layer | target | status |\n")

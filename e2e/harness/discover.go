@@ -23,6 +23,9 @@ type Case struct {
 
 	Meta    CaseMeta // parsed case.yaml (zero value if absent)
 	Queries []Query  // discovered under queries/
+
+	// GoldenSchemaPath is the committed golden.schema.json snapshot of /schema.
+	GoldenSchemaPath string
 }
 
 // CaseMeta is the parsed case.yaml.
@@ -92,7 +95,11 @@ func DiscoverCases(env *Env) ([]Case, error) {
 }
 
 func loadCase(dir string) (*Case, error) {
-	c := &Case{Name: filepath.Base(dir), Dir: dir}
+	c := &Case{
+		Name:             filepath.Base(dir),
+		Dir:              dir,
+		GoldenSchemaPath: filepath.Join(dir, "golden.schema.json"),
+	}
 
 	var err error
 	if c.IndexMappings, err = globSorted(dir, "indices", "*.mapping.json"); err != nil {
