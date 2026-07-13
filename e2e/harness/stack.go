@@ -158,8 +158,10 @@ func (s *Stack) KibanaBaseURL() string {
 func (s *Stack) Introspect(ctx context.Context) error {
 	t := s.startTimer("stack:introspect")
 	defer t.done()
+	// --build so we never run a stale cached image. Introspect uses the same
+	// image the connector serves from, so it must rebuild too.
 	_, err := mustRun(ctx, s.env.E2EDir, s.composeEnv(), "docker",
-		s.compose("--profile", "tools", "run", "--rm", "introspect")...)
+		s.compose("--profile", "tools", "run", "--rm", "--build", "introspect")...)
 	if err != nil {
 		return fmt.Errorf("connector introspection (update) failed: %w", err)
 	}
@@ -230,8 +232,9 @@ func filterKibanaConfig(cfgPath, kibanaSampleKind string) error {
 func (s *Stack) StartConnector(ctx context.Context) error {
 	t := s.startTimer("stack:connector-up")
 	defer t.done()
+	// --build to match Introspect; near no-op via layer cache if source unchanged.
 	if _, err := mustRun(ctx, s.env.E2EDir, s.composeEnv(), "docker",
-		s.compose("up", "-d", "--wait", "ndc-elasticsearch")...); err != nil {
+		s.compose("up", "-d", "--wait", "--build", "ndc-elasticsearch")...); err != nil {
 		return fmt.Errorf("bringing up connector: %w", err)
 	}
 	return waitHTTP(ctx, fmt.Sprintf("http://localhost:%d/health", s.Ports["connector"]), 90*time.Second)
