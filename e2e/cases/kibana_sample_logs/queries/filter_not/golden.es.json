@@ -1,0 +1,108 @@
+{
+  "_shards": {
+    "failed": 0,
+    "skipped": 0,
+    "successful": 1,
+    "total": 1
+  },
+  "hits": {
+    "hits": [
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19986,
+          "geo": {
+            "dest": "MM"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19956,
+          "geo": {
+            "dest": "PY"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19929,
+          "geo": {
+            "dest": "TH"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19904,
+          "geo": {
+            "dest": "BD"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19897,
+          "geo": {
+            "dest": "BD"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19897,
+          "geo": {
+            "dest": "ID"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19856,
+          "geo": {
+            "dest": "BD"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19840,
+          "geo": {
+            "dest": "IN"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19837,
+          "geo": {
+            "dest": "CN"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19819,
+          "geo": {
+            "dest": "KR"
+          }
+        }
+      }
+    ],
+    "max_score": null,
+    "total": {
+      "relation": "gte",
+      "value": 10000
+    }
+  },
+  "timed_out": false
+}

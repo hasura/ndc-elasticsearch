@@ -1,0 +1,63 @@
+{
+  "_shards": {
+    "failed": 0,
+    "skipped": 0,
+    "successful": 1,
+    "total": 1
+  },
+  "hits": {
+    "hits": [
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19986,
+          "geo": {
+            "dest": "MM"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19956,
+          "geo": {
+            "dest": "PY"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19929,
+          "geo": {
+            "dest": "TH"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19919,
+          "geo": {
+            "dest": "US"
+          }
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 19904,
+          "geo": {
+            "dest": "BD"
+          }
+        }
+      }
+    ],
+    "max_score": null,
+    "total": {
+      "relation": "gte",
+      "value": 10000
+    }
+  },
+  "timed_out": false
+}

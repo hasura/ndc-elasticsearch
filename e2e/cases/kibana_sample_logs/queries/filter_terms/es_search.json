@@ -1,0 +1,21 @@
+{
+  "size": 10,
+  "_source": [
+    "bytes",
+    "geo.dest"
+  ],
+  "query": {
+    "terms": {
+      "geo.dest": [
+        "US",
+        "IN",
+        "CN"
+      ]
+    }
+  },
+  "sort": [
+    {
+      "bytes": "desc"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "size": 3,
+  "_source": [
+    "sku",
+    "name",
+    "price"
+  ],
+  "sort": [
+    {
+      "sku": "asc"
+    }
+  ]
+}

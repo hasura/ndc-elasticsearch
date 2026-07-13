@@ -1,0 +1,6 @@
+query FilterNot {
+  kibanaSampleDataLogs(where: { _not: { geo: { dest: { term: "US" } } } }, order_by: [{ bytes: Desc }, { timestamp: Asc }], limit: 10) {
+    bytes
+    geo { dest }
+  }
+}

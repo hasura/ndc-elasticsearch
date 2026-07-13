@@ -1,0 +1,18 @@
+{
+  "size": 10,
+  "_source": [
+    "bytes"
+  ],
+  "query": {
+    "range": {
+      "bytes": {
+        "gte": 5000
+      }
+    }
+  },
+  "sort": [
+    {
+      "bytes": "asc"
+    }
+  ]
+}

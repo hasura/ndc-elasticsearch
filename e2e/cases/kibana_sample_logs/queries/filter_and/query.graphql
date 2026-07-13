@@ -1,0 +1,10 @@
+query FilterAnd {
+  kibanaSampleDataLogs(
+    where: { _and: [{ geo: { dest: { term: "US" } } }, { bytes: { range: { gt: 1000 } } }] }
+    order_by: { bytes: Desc }
+    limit: 10
+  ) {
+    bytes
+    geo { dest }
+  }
+}

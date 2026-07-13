@@ -1,0 +1,6 @@
+query FilterTerms {
+  products(where: { tags: { terms: ["metal", "rubber"] } }, order_by: { sku: Asc }) {
+    sku
+    tags
+  }
+}

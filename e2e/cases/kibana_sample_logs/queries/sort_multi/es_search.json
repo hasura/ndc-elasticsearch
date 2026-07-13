@@ -1,0 +1,15 @@
+{
+  "size": 5,
+  "_source": [
+    "geo.dest",
+    "bytes"
+  ],
+  "sort": [
+    {
+      "bytes": "desc"
+    },
+    {
+      "@timestamp": "asc"
+    }
+  ]
+}

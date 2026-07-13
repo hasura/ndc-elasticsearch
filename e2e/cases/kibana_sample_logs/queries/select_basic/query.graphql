@@ -1,0 +1,7 @@
+query SelectBasic {
+  kibanaSampleDataLogs(order_by: { bytes: Desc }, limit: 5) {
+    bytes
+    extension
+    geo { dest }
+  }
+}

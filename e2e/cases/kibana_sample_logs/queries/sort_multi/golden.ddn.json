@@ -1,0 +1,44 @@
+{
+  "kibanaSampleDataLogs": [
+    {
+      "bytes": 19986,
+      "geo": [
+        {
+          "dest": "MM"
+        }
+      ]
+    },
+    {
+      "bytes": 19956,
+      "geo": [
+        {
+          "dest": "PY"
+        }
+      ]
+    },
+    {
+      "bytes": 19929,
+      "geo": [
+        {
+          "dest": "TH"
+        }
+      ]
+    },
+    {
+      "bytes": 19919,
+      "geo": [
+        {
+          "dest": "US"
+        }
+      ]
+    },
+    {
+      "bytes": 19904,
+      "geo": [
+        {
+          "dest": "BD"
+        }
+      ]
+    }
+  ]
+}

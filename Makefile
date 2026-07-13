@@ -9,6 +9,15 @@ unit-test:
 .PHONY: test
 test: unit-test
 
+# End-to-end suite (gated behind the `e2e` build tag + E2E=1; unaffected by the
+# fast unit CI above). See e2e/README.md. These just delegate to e2e/Makefile.
+.PHONY: e2e e2e-case
+e2e:
+	$(MAKE) -C e2e e2e
+
+e2e-case:
+	$(MAKE) -C e2e e2e-case CASE=$(CASE)
+
 # Install golangci-lint tool to run lint locally
 # https://golangci-lint.run/usage/install
 .PHONY: lint

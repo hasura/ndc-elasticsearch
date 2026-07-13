@@ -1,0 +1,6 @@
+query FilterTerm {
+  products(where: { inStock: { term: true } }, order_by: { sku: Asc }) {
+    sku
+    inStock
+  }
+}

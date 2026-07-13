@@ -1,0 +1,9 @@
+query FilterAnd {
+  products(
+    where: { _and: [{ inStock: { term: true } }, { price: { range: { gt: 5 } } }] }
+    order_by: { sku: Asc }
+  ) {
+    sku
+    price
+  }
+}

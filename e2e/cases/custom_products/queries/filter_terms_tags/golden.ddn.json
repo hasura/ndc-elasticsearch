@@ -1,0 +1,32 @@
+{
+  "products": [
+    {
+      "sku": "PRD-001",
+      "tags": [
+        "hardware",
+        "metal"
+      ]
+    },
+    {
+      "sku": "PRD-003",
+      "tags": [
+        "electrical",
+        "metal"
+      ]
+    },
+    {
+      "sku": "PRD-005",
+      "tags": [
+        "rubber",
+        "seal"
+      ]
+    },
+    {
+      "sku": "PRD-006",
+      "tags": [
+        "hardware",
+        "metal"
+      ]
+    }
+  ]
+}

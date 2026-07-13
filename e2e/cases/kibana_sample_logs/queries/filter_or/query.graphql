@@ -1,0 +1,10 @@
+query FilterOr {
+  kibanaSampleDataLogs(
+    where: { _or: [{ geo: { dest: { term: "US" } } }, { geo: { dest: { term: "CN" } } }] }
+    order_by: { bytes: Desc }
+    limit: 10
+  ) {
+    bytes
+    geo { dest }
+  }
+}

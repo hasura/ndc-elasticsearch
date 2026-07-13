@@ -1,0 +1,214 @@
+# Per-case e2e stack template.
+#
+# The harness (e2e/harness) brings this up ONCE PER CASE with a unique compose
+# project name (`-p e2e-<case>`) so every case is fully isolated: its own
+# Elasticsearch, its own connector, its own DDN engine, seeded only from that
+# case's files, asserted, then torn down.
+#
+# It is intentionally driven entirely by environment variables so the harness
+# can pick free host ports and point the connector/engine at per-case working
+# files. The harness starts services in stages (see stack.go):
+#
+#   1) setup + es01 (+ kibana, when a case requests kibana sample data)
+#   2) seed Elasticsearch (mappings / data / init) over HTTPS
+#   3) `introspect` one-shot -> writes ${CASE_WORKDIR}/connector/configuration.json
+#   4) ndc-elasticsearch (serve) with that configuration
+#   5) DDN build on the host -> ${CASE_WORKDIR}/engine/metadata.json
+#   6) engine + auth_hook
+#
+# Versions are pinned via STACK_VERSION (default 8.13.4), matching the repo's
+# top-level docker-compose.yaml.
+
+services:
+  # ---- certificate bootstrap (identical approach to the repo compose) -------
+  setup:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION:-8.13.4}
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+    user: "0"
+    command: >
+      bash -c '
+        if [ ! -f config/certs/ca.zip ]; then
+          echo "Creating CA";
+          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+          unzip config/certs/ca.zip -d config/certs;
+        fi;
+        if [ ! -f config/certs/certs.zip ]; then
+          echo "Creating certs";
+          echo -ne \
+          "instances:\n"\
+          "  - name: es01\n"\
+          "    dns:\n"\
+          "      - es01\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          > config/certs/instances.yml;
+          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+          unzip config/certs/certs.zip -d config/certs;
+        fi;
+        echo "Setting file permissions";
+        chown -R root:root config/certs;
+        find . -type d -exec chmod 750 \{\} \;;
+        find . -type f -exec chmod 640 \{\} \;;
+        echo "All done!";
+      '
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f config/certs/es01/es01.crt ]"]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+
+  es01:
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION:-8.13.4}
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "${ES_PORT:-9200}:9200"
+    environment:
+      - node.name=es01
+      - cluster.name=e2e-cluster
+      - cluster.initial_master_nodes=es01
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-default}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/es01/es01.key
+      - xpack.security.http.ssl.certificate=certs/es01/es01.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/es01/es01.key
+      - xpack.security.transport.ssl.certificate=certs/es01/es01.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=basic
+    mem_limit: ${MEM_LIMIT:-1073741824}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 120
+
+  # kibana is only started for cases that request elastic.co sample data
+  # (case.yaml: kibana_sample: <logs|ecommerce|flights>). Enable with the
+  # `kibana` compose profile.
+  kibana:
+    profiles: ["kibana"]
+    depends_on:
+      es01:
+        condition: service_healthy
+    image: docker.elastic.co/kibana/kibana:${STACK_VERSION:-8.13.4}
+    volumes:
+      - certs:/usr/share/kibana/config/certs
+      - kibanadata:/usr/share/kibana/data
+    ports:
+      - "${KIBANA_PORT:-5601}:5601"
+    environment:
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_HOSTS=https://es01:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD:-kibanaPass123}
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+    mem_limit: ${MEM_LIMIT:-1073741824}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 120
+
+  # one-shot connector introspection: writes configuration.json from live ES.
+  # Run via `docker compose run --rm introspect`.
+  introspect:
+    profiles: ["tools"]
+    build:
+      context: ..
+    image: ndc-elasticsearch-e2e:${STACK_VERSION:-8.13.4}
+    user: "0"
+    volumes:
+      - certs:/certs:ro
+      - ${CASE_WORKDIR}/connector:/etc/connector
+    environment:
+      HASURA_CONFIGURATION_DIRECTORY: /etc/connector
+      HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH: /etc/connector
+      ELASTICSEARCH_URL: https://es01:9200
+      ELASTICSEARCH_USERNAME: elastic
+      ELASTICSEARCH_PASSWORD: ${ELASTIC_PASSWORD:-default}
+      ELASTICSEARCH_CA_CERT_PATH: /certs/es01/es01.crt
+      HASURA_LOG_LEVEL: info
+    command: update
+
+  ndc-elasticsearch:
+    build:
+      context: ..
+    image: ndc-elasticsearch-e2e:${STACK_VERSION:-8.13.4}
+    user: "0"
+    volumes:
+      - certs:/certs:ro
+      - ${CASE_WORKDIR}/connector/configuration.json:/etc/connector/configuration.json:ro
+    ports:
+      - "${CONNECTOR_PORT:-8080}:8080"
+    environment:
+      HASURA_CONNECTOR_PORT: 8080
+      HASURA_CONFIGURATION_DIRECTORY: /etc/connector
+      ELASTICSEARCH_URL: https://es01:9200
+      ELASTICSEARCH_USERNAME: elastic
+      ELASTICSEARCH_PASSWORD: ${ELASTIC_PASSWORD:-default}
+      ELASTICSEARCH_CA_CERT_PATH: /certs/es01/es01.crt
+      HASURA_LOG_LEVEL: info
+    command: serve
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    depends_on:
+      es01:
+        condition: service_healthy
+
+  engine:
+    profiles: ["engine"]
+    image: ghcr.io/hasura/v3-engine:latest
+    platform: linux/amd64
+    environment:
+      - METADATA_PATH=/metadata/metadata.json
+      - AUTHN_CONFIG_PATH=/metadata/auth_config.json
+    ports:
+      - "${ENGINE_PORT:-3000}:3000"
+    volumes:
+      - ${CASE_WORKDIR}/engine:/metadata:ro
+    depends_on:
+      ndc-elasticsearch:
+        condition: service_started
+      auth_hook:
+        condition: service_started
+
+  auth_hook:
+    profiles: ["engine"]
+    image: ghcr.io/hasura/v3-dev-auth-webhook
+    platform: linux/amd64
+    ports:
+      - "${AUTH_PORT:-3050}:3060"
+
+volumes:
+  certs:
+    driver: local
+  esdata:
+    driver: local
+  kibanadata:
+    driver: local

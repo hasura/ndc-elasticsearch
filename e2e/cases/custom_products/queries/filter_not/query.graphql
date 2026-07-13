@@ -1,0 +1,6 @@
+query FilterNot {
+  products(where: { _not: { inStock: { term: true } } }, order_by: { sku: Asc }) {
+    sku
+    inStock
+  }
+}

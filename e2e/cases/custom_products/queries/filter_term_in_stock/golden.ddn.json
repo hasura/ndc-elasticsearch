@@ -1,0 +1,20 @@
+{
+  "products": [
+    {
+      "inStock": true,
+      "sku": "PRD-001"
+    },
+    {
+      "inStock": true,
+      "sku": "PRD-002"
+    },
+    {
+      "inStock": true,
+      "sku": "PRD-004"
+    },
+    {
+      "inStock": true,
+      "sku": "PRD-005"
+    }
+  ]
+}

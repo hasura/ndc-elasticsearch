@@ -1,0 +1,2 @@
+index: "kibana_sample_data_logs"
+description: "FILTER/or: geo.dest == US OR geo.dest == CN."

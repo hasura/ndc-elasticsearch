@@ -1,0 +1,12 @@
+{
+  "products": [
+    {
+      "price": 15,
+      "sku": "PRD-003"
+    },
+    {
+      "price": 25,
+      "sku": "PRD-006"
+    }
+  ]
+}

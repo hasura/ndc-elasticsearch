@@ -1,0 +1,5 @@
+query FilterMatch {
+  kibanaSampleDataLogs(where: { extension: { match: "gz" } }, limit: 10) {
+    extension
+  }
+}

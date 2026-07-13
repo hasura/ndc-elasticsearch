@@ -1,0 +1,6 @@
+query FilterTerm {
+  kibanaSampleDataLogs(where: { geo: { dest: { term: "US" } } }, order_by: { bytes: Desc }, limit: 10) {
+    bytes
+    geo { dest }
+  }
+}

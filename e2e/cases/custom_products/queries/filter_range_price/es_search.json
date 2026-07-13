@@ -1,0 +1,19 @@
+{
+  "size": 50,
+  "_source": [
+    "sku",
+    "price"
+  ],
+  "query": {
+    "range": {
+      "price": {
+        "gt": 10
+      }
+    }
+  },
+  "sort": [
+    {
+      "sku": "asc"
+    }
+  ]
+}

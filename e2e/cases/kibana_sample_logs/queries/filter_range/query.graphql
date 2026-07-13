@@ -1,0 +1,5 @@
+query FilterRange {
+  kibanaSampleDataLogs(where: { bytes: { range: { gte: 5000 } } }, order_by: { bytes: Asc }, limit: 10) {
+    bytes
+  }
+}

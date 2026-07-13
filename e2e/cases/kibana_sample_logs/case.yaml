@@ -1,0 +1,2 @@
+description: Reference case using the elastic.co 'logs' sample dataset (loaded via Kibana).
+kibana_sample: logs

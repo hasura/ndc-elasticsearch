@@ -1,0 +1,2 @@
+index: "kibana_sample_data_logs"
+description: "FILTER/term: geo.dest == US."

@@ -1,0 +1,6 @@
+query Pagination {
+  kibanaSampleDataLogs(order_by: { bytes: Desc }, offset: 10, limit: 5) {
+    bytes
+    geo { dest }
+  }
+}

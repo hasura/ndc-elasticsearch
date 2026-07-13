@@ -1,0 +1,30 @@
+{
+  "size": 50,
+  "_source": [
+    "sku",
+    "price"
+  ],
+  "query": {
+    "bool": {
+      "filter": [
+        {
+          "term": {
+            "in_stock": true
+          }
+        },
+        {
+          "range": {
+            "price": {
+              "gt": 5
+            }
+          }
+        }
+      ]
+    }
+  },
+  "sort": [
+    {
+      "sku": "asc"
+    }
+  ]
+}

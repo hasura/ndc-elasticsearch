@@ -1,0 +1,58 @@
+{
+  "_shards": {
+    "failed": 0,
+    "skipped": 0,
+    "successful": 1,
+    "total": 1
+  },
+  "hits": {
+    "hits": [
+      {
+        "_score": null,
+        "_source": {
+          "sku": "PRD-001",
+          "tags": [
+            "hardware",
+            "metal"
+          ]
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "sku": "PRD-003",
+          "tags": [
+            "electrical",
+            "metal"
+          ]
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "sku": "PRD-005",
+          "tags": [
+            "rubber",
+            "seal"
+          ]
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "sku": "PRD-006",
+          "tags": [
+            "hardware",
+            "metal"
+          ]
+        }
+      }
+    ],
+    "max_score": null,
+    "total": {
+      "relation": "eq",
+      "value": 4
+    }
+  },
+  "timed_out": false
+}

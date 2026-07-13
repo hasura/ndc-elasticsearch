@@ -1,0 +1,29 @@
+{
+  "size": 10,
+  "_source": [
+    "bytes",
+    "geo.dest"
+  ],
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "term": {
+            "geo.dest": "US"
+          }
+        },
+        {
+          "term": {
+            "geo.dest": "CN"
+          }
+        }
+      ],
+      "minimum_should_match": 1
+    }
+  },
+  "sort": [
+    {
+      "bytes": "desc"
+    }
+  ]
+}

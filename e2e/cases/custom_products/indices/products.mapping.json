@@ -1,0 +1,52 @@
+{
+  "mappings": {
+    "properties": {
+      "name": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "sku": {
+        "type": "keyword"
+      },
+      "description": {
+        "type": "text"
+      },
+      "price": {
+        "type": "double"
+      },
+      "quantity": {
+        "type": "integer"
+      },
+      "in_stock": {
+        "type": "boolean"
+      },
+      "created_at": {
+        "type": "date"
+      },
+      "tags": {
+        "type": "keyword"
+      },
+      "rating": {
+        "type": "float"
+      },
+      "location": {
+        "type": "geo_point"
+      },
+      "manufacturer": {
+        "properties": {
+          "name": {
+            "type": "keyword"
+          },
+          "country": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}

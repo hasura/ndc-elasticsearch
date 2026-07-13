@@ -1,0 +1,2 @@
+index: "kibana_sample_data_logs"
+description: "AGGREGATION: average of bytes across all documents."

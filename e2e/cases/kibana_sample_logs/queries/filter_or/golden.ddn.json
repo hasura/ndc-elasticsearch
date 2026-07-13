@@ -1,0 +1,84 @@
+{
+  "kibanaSampleDataLogs": [
+    {
+      "bytes": 19919,
+      "geo": [
+        {
+          "dest": "US"
+        }
+      ]
+    },
+    {
+      "bytes": 19837,
+      "geo": [
+        {
+          "dest": "CN"
+        }
+      ]
+    },
+    {
+      "bytes": 19803,
+      "geo": [
+        {
+          "dest": "CN"
+        }
+      ]
+    },
+    {
+      "bytes": 19757,
+      "geo": [
+        {
+          "dest": "CN"
+        }
+      ]
+    },
+    {
+      "bytes": 19732,
+      "geo": [
+        {
+          "dest": "CN"
+        }
+      ]
+    },
+    {
+      "bytes": 19711,
+      "geo": [
+        {
+          "dest": "CN"
+        }
+      ]
+    },
+    {
+      "bytes": 19628,
+      "geo": [
+        {
+          "dest": "CN"
+        }
+      ]
+    },
+    {
+      "bytes": 19561,
+      "geo": [
+        {
+          "dest": "CN"
+        }
+      ]
+    },
+    {
+      "bytes": 19539,
+      "geo": [
+        {
+          "dest": "CN"
+        }
+      ]
+    },
+    {
+      "bytes": 19386,
+      "geo": [
+        {
+          "dest": "US"
+        }
+      ]
+    }
+  ]
+}

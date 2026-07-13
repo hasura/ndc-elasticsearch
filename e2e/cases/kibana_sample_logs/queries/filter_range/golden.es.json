@@ -1,0 +1,78 @@
+{
+  "_shards": {
+    "failed": 0,
+    "skipped": 0,
+    "successful": 1,
+    "total": 1
+  },
+  "hits": {
+    "hits": [
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 5000
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 5001
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 5002
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 5006
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 5008
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 5009
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 5010
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 5010
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 5011
+        }
+      },
+      {
+        "_score": null,
+        "_source": {
+          "bytes": 5012
+        }
+      }
+    ],
+    "max_score": null,
+    "total": {
+      "relation": "eq",
+      "value": 7697
+    }
+  },
+  "timed_out": false
+}

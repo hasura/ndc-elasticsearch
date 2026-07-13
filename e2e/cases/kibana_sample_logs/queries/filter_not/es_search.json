@@ -1,0 +1,26 @@
+{
+  "size": 10,
+  "_source": [
+    "bytes",
+    "geo.dest"
+  ],
+  "query": {
+    "bool": {
+      "must_not": [
+        {
+          "term": {
+            "geo.dest": "US"
+          }
+        }
+      ]
+    }
+  },
+  "sort": [
+    {
+      "bytes": "desc"
+    },
+    {
+      "@timestamp": "asc"
+    }
+  ]
+}

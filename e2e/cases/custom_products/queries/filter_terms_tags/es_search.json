@@ -1,0 +1,20 @@
+{
+  "size": 50,
+  "_source": [
+    "sku",
+    "tags"
+  ],
+  "query": {
+    "terms": {
+      "tags": [
+        "metal",
+        "rubber"
+      ]
+    }
+  },
+  "sort": [
+    {
+      "sku": "asc"
+    }
+  ]
+}
