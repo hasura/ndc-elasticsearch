@@ -225,8 +225,8 @@ func TestObjectTypeNameCollision_Deterministic(t *testing.T) {
 
 	// Compare the object/scalar type content (what this fix governs). Map JSON
 	// marshaling sorts keys, so identical content yields byte-identical output.
-	// (The Collections *slice* order is appended during map iteration and is a
-	// separate, pre-existing nondeterminism that does not affect field content.)
+	// (The Collections *slice* order is a separate concern, now made
+	// deterministic by sorting; see TestSchemaCollectionsOrderingDeterministic.)
 	var first string
 	for i := 0; i < 50; i++ {
 		st := newCollisionState(t, cfgJSON)
