@@ -1,5 +1,6 @@
 # Stage 1: Build the Go binary
-FROM golang:1.26 AS builder
+FROM golang:1.26.10 AS builder
+ENV GOTOOLCHAIN=go1.26.10
 
 WORKDIR /app
 COPY go.mod go.sum ./
@@ -15,7 +16,7 @@ FROM alpine:3
 # Install necessary certificates for the application to run
 RUN apk update && \
     apk upgrade && \
-    apk --no-cache add ca-certificates
+    apk --no-cache add "ca-certificates>=20261020-r0"
 
 # Create a safe working directory
 WORKDIR /app
