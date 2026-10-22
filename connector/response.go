@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/hasura/ndc-elasticsearch/types"
-	"github.com/hasura/ndc-sdk-go/schema"
+	"github.com/hasura/ndc-sdk-go/v2/schema"
 )
 
 // prepareResponseWithVariables prepares a row set for query with variables based on the elastic search response data.

@@ -49,7 +49,7 @@ var esScalarRepr = map[string]string{
 	"byte":          reprInt8,
 	"short":         reprInt16,
 	"integer":       reprInt32,
-	"token_count":   reprInt32, // NewTypeRepresentationInteger() -> int32-family "integer"
+	"token_count":   reprInt32,
 	"long":          reprInt64,
 	"unsigned_long": reprBigInteger,
 

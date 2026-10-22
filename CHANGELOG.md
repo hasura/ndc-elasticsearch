@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Migrate to NDC Go SDK v2 (`github.com/hasura/ndc-sdk-go/v2` v2.3.2) and NDC spec v0.2: capabilities report `schema.NDCVersion`, aggregate functions are emitted as `custom` definitions, `token_count` is represented as `int32` (the `integer` representation was removed), and foreign keys moved from collections to object types. Adds `Connector.Close`.
+
 ## [2.0.0]
 
 - **BREAKING:** Fix NDC object-type name collisions that silently dropped nested fields; nested object types are now fully-qualified (e.g. `products.manufacturer`) instead of bare names. Re-introspect and re-track after upgrading. ([#123](https://github.com/hasura/ndc-elasticsearch/pull/123))

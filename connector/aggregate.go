@@ -5,7 +5,7 @@ import (
 
 	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-elasticsearch/types"
-	"github.com/hasura/ndc-sdk-go/schema"
+	"github.com/hasura/ndc-sdk-go/v2/schema"
 )
 
 // prepareAggregateQuery prepares the aggregation query based on the aggregates in the query request.

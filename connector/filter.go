@@ -6,7 +6,7 @@ import (
 
 	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-elasticsearch/types"
-	"github.com/hasura/ndc-sdk-go/schema"
+	"github.com/hasura/ndc-sdk-go/v2/schema"
 )
 
 // prepareFilterQuery prepares a filter query based on the given expression.
@@ -16,13 +16,17 @@ func prepareFilterQuery(expression schema.Expression, state *types.State, collec
 
 	switch expr := predicate.Interface().(type) {
 	case *schema.ExpressionUnaryComparisonOperator:
-		fieldPath := strings.Split(columnPath, ".")
-		expr.Column.FieldPath = fieldPath
-		return handleExpressionUnaryComparisonOperator(expr, state, collection)
+		column, err := comparisonColumn(expr.Column, columnPath)
+		if err != nil {
+			return nil, err
+		}
+		return handleExpressionUnaryComparisonOperator(expr, column, state, collection)
 	case *schema.ExpressionBinaryComparisonOperator:
-		fieldPath := strings.Split(columnPath, ".")
-		expr.Column.FieldPath = fieldPath
-		return handleExpressionBinaryComparisonOperator(expr, state, collection)
+		column, err := comparisonColumn(expr.Column, columnPath)
+		if err != nil {
+			return nil, err
+		}
+		return handleExpressionBinaryComparisonOperator(expr, column, state, collection)
 	case *schema.ExpressionAnd:
 		return buildAndClauseQuery(expr.Expressions, state, collection)
 	case *schema.ExpressionOr:
@@ -122,9 +126,9 @@ func getPredicate(expression schema.Expression) (string, schema.Expression) {
 	}
 	switch expr := expression.Interface().(type) {
 	case *schema.ExpressionUnaryComparisonOperator:
-		return expr.Column.Name, expression
+		return comparisonColumnName(expr.Column), expression
 	case *schema.ExpressionBinaryComparisonOperator:
-		return expr.Column.Name, expression
+		return comparisonColumnName(expr.Column), expression
 	}
 
 	return "", expression
@@ -139,21 +143,39 @@ func requiresNestedFiltering(predicate schema.Expression) (requiresNestedFilteri
 	if err != nil {
 		return false, ""
 	}
-	if collection.Type == "nested_collection" {
-		return true, collection.ColumnName
+	return true, collection.ColumnName
+}
+
+// comparisonColumnName returns the column name of a column comparison target, or "" for other targets.
+func comparisonColumnName(target schema.ComparisonTarget) string {
+	column, err := target.AsColumn()
+	if err != nil {
+		return ""
 	}
-	return false, ""
+	return column.Name
+}
+
+// comparisonColumn resolves a column comparison target and sets its field path to the resolved column path.
+func comparisonColumn(target schema.ComparisonTarget, columnPath string) (*schema.ComparisonTargetColumn, error) {
+	column, err := target.AsColumn()
+	if err != nil {
+		return nil, schema.UnprocessableContentError("unsupported comparison target", map[string]any{
+			"error": err.Error(),
+		})
+	}
+	column.FieldPath = strings.Split(columnPath, ".")
+	return column, nil
 }
 
 // handleExpressionUnaryComparisonOperator processes the unary comparison operator expression.
-func handleExpressionUnaryComparisonOperator(expr *schema.ExpressionUnaryComparisonOperator, state *types.State, collection string) (map[string]interface{}, error) {
+func handleExpressionUnaryComparisonOperator(expr *schema.ExpressionUnaryComparisonOperator, column *schema.ComparisonTargetColumn, state *types.State, collection string) (map[string]interface{}, error) {
 	if expr.Operator == "is_null" {
-		if len(expr.Column.FieldPath) == 0 || expr.Column.FieldPath[len(expr.Column.FieldPath)-1] != expr.Column.Name {
+		if len(column.FieldPath) == 0 || column.FieldPath[len(column.FieldPath)-1] != column.Name {
 			// if the column name is not the last element in fieldPath, we'll add it so that the fieldpath is complete
-			expr.Column.FieldPath = append(expr.Column.FieldPath, expr.Column.Name)
+			column.FieldPath = append(column.FieldPath, column.Name)
 		}
 
-		fieldName := strings.Join(expr.Column.FieldPath, ".")
+		fieldName := strings.Join(column.FieldPath, ".")
 		value := map[string]interface{}{
 			"field": fieldName,
 		}
@@ -173,15 +195,16 @@ func handleExpressionUnaryComparisonOperator(expr *schema.ExpressionUnaryCompari
 // handleExpressionBinaryComparisonOperator processes the binary comparison operator expression.
 func handleExpressionBinaryComparisonOperator(
 	expr *schema.ExpressionBinaryComparisonOperator,
+	column *schema.ComparisonTargetColumn,
 	state *types.State,
 	collection string,
 ) (map[string]interface{}, error) {
-	if len(expr.Column.FieldPath) == 0 || expr.Column.FieldPath[len(expr.Column.FieldPath)-1] != expr.Column.Name {
+	if len(column.FieldPath) == 0 || column.FieldPath[len(column.FieldPath)-1] != column.Name {
 		// if the column name is not the last element in fieldPath, we'll add it so that the fieldpath is complete
-		expr.Column.FieldPath = append(expr.Column.FieldPath, expr.Column.Name)
+		column.FieldPath = append(column.FieldPath, column.Name)
 	}
 
-	fieldPath := strings.Join(expr.Column.FieldPath, ".")
+	fieldPath := strings.Join(column.FieldPath, ".")
 	fieldType, fieldSubTypes, _, err := state.Configuration.GetFieldProperties(collection, fieldPath)
 	if err != nil {
 		return nil, schema.UnprocessableContentError("unable to get field types", map[string]any{

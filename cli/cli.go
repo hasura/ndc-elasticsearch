@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hasura/ndc-sdk-go/connector"
+	"github.com/hasura/ndc-sdk-go/v2/connector"
 )
 
 type Arguments struct {

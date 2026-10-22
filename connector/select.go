@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/hasura/ndc-elasticsearch/types"
-	"github.com/hasura/ndc-sdk-go/schema"
+	"github.com/hasura/ndc-sdk-go/v2/schema"
 )
 
 // prepareSelectFields prepares the fields to be selected from the
