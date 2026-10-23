@@ -2,7 +2,8 @@ package connector
 
 import (
 	"context"
-	"sort"
+	"slices"
+	"strings"
 
 	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-elasticsearch/types"
@@ -108,14 +109,14 @@ func ParseConfigurationToSchema(configuration *types.Configuration, state *types
 	// name so the emitted schema is byte-for-byte deterministic. (ObjectTypes
 	// and ScalarTypes are maps, which encoding/json already emits in sorted-key
 	// order.)
-	sort.Slice(ndcSchema.Collections, func(i, j int) bool {
-		return ndcSchema.Collections[i].Name < ndcSchema.Collections[j].Name
+	slices.SortFunc(ndcSchema.Collections, func(i, j schema.CollectionInfo) int {
+		return strings.Compare(i.Name, j.Name)
 	})
-	sort.Slice(ndcSchema.Functions, func(i, j int) bool {
-		return ndcSchema.Functions[i].Name < ndcSchema.Functions[j].Name
+	slices.SortFunc(ndcSchema.Functions, func(i, j schema.FunctionInfo) int {
+		return strings.Compare(i.Name, j.Name)
 	})
-	sort.Slice(ndcSchema.Procedures, func(i, j int) bool {
-		return ndcSchema.Procedures[i].Name < ndcSchema.Procedures[j].Name
+	slices.SortFunc(ndcSchema.Procedures, func(i, j schema.ProcedureInfo) int {
+		return strings.Compare(i.Name, j.Name)
 	})
 
 	return &ndcSchema
