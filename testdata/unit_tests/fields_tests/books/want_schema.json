@@ -13,7 +13,6 @@
           }
         }
       },
-      "foreign_keys": {},
       "name": "my_book_index",
       "type": "my_book_index",
       "uniqueness_constraints": {}
@@ -22,6 +21,7 @@
   "functions": [],
   "object_types": {
     "date_range_query": {
+      "description": null,
       "fields": {
         "boost": {
           "description": "(Optional, float) Floating point number used to decrease or increase the relevance scores of a query. Defaults to 1.0.",
@@ -72,9 +72,11 @@
             "type": "named"
           }
         }
-      }
+      },
+      "foreign_keys": {}
     },
     "my_book_index": {
+      "description": null,
       "fields": {
         "_id": {
           "type": {
@@ -124,9 +126,11 @@
             "type": "named"
           }
         }
-      }
+      },
+      "foreign_keys": {}
     },
     "range": {
+      "description": null,
       "fields": {
         "boost": {
           "description": "(Optional, float) Floating point number used to decrease or increase the relevance scores of a query. Defaults to 1.0.",
@@ -163,9 +167,11 @@
             "type": "named"
           }
         }
-      }
+      },
+      "foreign_keys": {}
     },
     "stats": {
+      "description": null,
       "fields": {
         "avg": {
           "type": {
@@ -197,9 +203,11 @@
             "type": "named"
           }
         }
-      }
+      },
+      "foreign_keys": {}
     },
     "string_stats": {
+      "description": null,
       "fields": {
         "avg_length": {
           "type": {
@@ -231,7 +239,8 @@
             "type": "named"
           }
         }
-      }
+      },
+      "foreign_keys": {}
     }
   },
   "procedures": [],
@@ -277,43 +286,50 @@
           "result_type": {
             "name": "long",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "cardinality": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "max": {
           "result_type": {
             "name": "long",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "min": {
           "result_type": {
             "name": "long",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "stats": {
           "result_type": {
             "name": "stats",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "sum": {
           "result_type": {
             "name": "long",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "value_count": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         }
       },
       "comparison_operators": {
@@ -362,43 +378,50 @@
           "result_type": {
             "name": "double",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "cardinality": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "max": {
           "result_type": {
             "name": "double",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "min": {
           "result_type": {
             "name": "double",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "stats": {
           "result_type": {
             "name": "stats",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "sum": {
           "result_type": {
             "name": "double",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "value_count": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         }
       },
       "comparison_operators": {
@@ -447,43 +470,50 @@
           "result_type": {
             "name": "float",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "cardinality": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "max": {
           "result_type": {
             "name": "float",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "min": {
           "result_type": {
             "name": "float",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "stats": {
           "result_type": {
             "name": "stats",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "sum": {
           "result_type": {
             "name": "float",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "value_count": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         }
       },
       "comparison_operators": {
@@ -532,43 +562,50 @@
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "cardinality": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "max": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "min": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "stats": {
           "result_type": {
             "name": "stats",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "sum": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "value_count": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         }
       },
       "comparison_operators": {
@@ -624,19 +661,22 @@
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "string_stats": {
           "result_type": {
             "name": "string_stats",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "value_count": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         }
       },
       "comparison_operators": {
@@ -713,43 +753,50 @@
           "result_type": {
             "name": "long",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "cardinality": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "max": {
           "result_type": {
             "name": "long",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "min": {
           "result_type": {
             "name": "long",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "stats": {
           "result_type": {
             "name": "stats",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "sum": {
           "result_type": {
             "name": "long",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "value_count": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         }
       },
       "comparison_operators": {
@@ -875,19 +922,22 @@
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "string_stats": {
           "result_type": {
             "name": "string_stats",
             "type": "named"
-          }
+          },
+          "type": "custom"
         },
         "value_count": {
           "result_type": {
             "name": "integer",
             "type": "named"
-          }
+          },
+          "type": "custom"
         }
       },
       "comparison_operators": {

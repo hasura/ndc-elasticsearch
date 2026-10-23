@@ -2,7 +2,7 @@ package connector
 
 import (
 	"github.com/hasura/ndc-elasticsearch/types"
-	"github.com/hasura/ndc-sdk-go/schema"
+	"github.com/hasura/ndc-sdk-go/v2/schema"
 )
 
 // executeQueryWithVariables prepares a dsl query for query with variables.

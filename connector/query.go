@@ -7,8 +7,8 @@ import (
 
 	"github.com/hasura/ndc-elasticsearch/elasticsearch"
 	"github.com/hasura/ndc-elasticsearch/types"
-	"github.com/hasura/ndc-sdk-go/connector"
-	"github.com/hasura/ndc-sdk-go/schema"
+	"github.com/hasura/ndc-sdk-go/v2/connector"
+	"github.com/hasura/ndc-sdk-go/v2/schema"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -227,7 +227,11 @@ func handleCollectionArguments(arguments map[string]schema.Argument) map[string]
 
 	// Handle search_after
 	if arg, ok := arguments["search_after"]; ok {
-		query["search_after"] = arg.Value
+		var value any
+		if literal, err := arg.AsLiteral(); err == nil {
+			value = literal.Value
+		}
+		query["search_after"] = value
 
 		// TODO: disable track_total_hits speeds up the query
 		// https://www.elastic.co/guide/en/elasticsearch/reference/current/paginate-search-results.html

@@ -6,8 +6,8 @@ import (
 
 	"github.com/hasura/ndc-elasticsearch/elasticsearch"
 	"github.com/hasura/ndc-elasticsearch/internal"
-	"github.com/hasura/ndc-sdk-go/connector"
-	"github.com/hasura/ndc-sdk-go/schema"
+	"github.com/hasura/ndc-sdk-go/v2/connector"
+	"github.com/hasura/ndc-sdk-go/v2/schema"
 )
 
 // State is the global state which is shared for every connector request.

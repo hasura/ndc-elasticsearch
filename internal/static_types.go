@@ -3,8 +3,8 @@ package internal
 import (
 	"slices"
 
-	"github.com/hasura/ndc-sdk-go/schema"
-	"github.com/hasura/ndc-sdk-go/utils"
+	"github.com/hasura/ndc-sdk-go/v2/schema"
+	"github.com/hasura/ndc-sdk-go/v2/utils"
 )
 
 var NumericFields = []string{"integer", "long", "short", "byte", "halft_float", "unsigned_long", "float", "double", "scaled_float"}
@@ -139,7 +139,7 @@ var ScalarTypeMap = map[string]schema.ScalarType{
 	"token_count": {
 		AggregateFunctions:  getAggregationFunctions([]string{"max", "min", "sum", "avg", "value_count", "cardinality", "stats"}, "integer"),
 		ComparisonOperators: getComparisonOperatorDefinition("token_count"),
-		Representation:      schema.NewTypeRepresentationInteger().Encode(),
+		Representation:      schema.NewTypeRepresentationInt32().Encode(),
 	},
 	"json": {
 		AggregateFunctions:  schema.ScalarTypeAggregateFunctions{},
@@ -446,9 +446,9 @@ func getAggregationFunctions(functions []string, typeName string) schema.ScalarT
 		}
 
 		// Generate the function definition and add it to the map
-		aggregationFunctions[function] = schema.AggregateFunctionDefinition{
-			ResultType: schema.NewNamedType(typeName).Encode(),
-		}
+		aggregationFunctions[function] = schema.NewAggregateFunctionDefinitionCustom(
+			schema.NewNamedType(typeName),
+		).Encode()
 	}
 
 	return aggregationFunctions

@@ -6,7 +6,7 @@ import (
 
 	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-elasticsearch/types"
-	"github.com/hasura/ndc-sdk-go/schema"
+	"github.com/hasura/ndc-sdk-go/v2/schema"
 )
 
 // handleNativeQuery is a function that processes a native query by reading and parsing it from a file,
