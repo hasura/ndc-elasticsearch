@@ -13,7 +13,7 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/hasura/ndc-elasticsearch/internal"
-	"github.com/hasura/ndc-sdk-go/credentials"
+	"github.com/hasura/ndc-sdk-go/v2/credentials"
 )
 
 const esMaxResultSize = 10000

@@ -5,8 +5,8 @@ import (
 
 	"github.com/hasura/ndc-elasticsearch/elasticsearch"
 	"github.com/hasura/ndc-elasticsearch/types"
-	"github.com/hasura/ndc-sdk-go/connector"
-	"github.com/hasura/ndc-sdk-go/schema"
+	"github.com/hasura/ndc-sdk-go/v2/connector"
+	"github.com/hasura/ndc-sdk-go/v2/schema"
 	"go.opentelemetry.io/otel/codes"
 )
 
@@ -61,19 +61,19 @@ func (c *Connector) HealthCheck(ctx context.Context, configuration *types.Config
 // GetCapabilities get the connector's capabilities.
 func (c *Connector) GetCapabilities(configuration *types.Configuration) schema.CapabilitiesResponseMarshaler {
 	return &schema.CapabilitiesResponse{
-		Version: "0.1.6",
+		Version: schema.NDCVersion,
 		Capabilities: schema.Capabilities{
 			Query: schema.QueryCapabilities{
-				Variables:  schema.LeafCapability{},
-				Aggregates: schema.LeafCapability{},
-				Explain:  schema.LeafCapability{},
+				Variables:  &schema.LeafCapability{},
+				Aggregates: &schema.AggregateCapabilities{},
+				Explain:    &schema.LeafCapability{},
 				NestedFields: schema.NestedFieldCapabilities{
-					OrderBy:    schema.LeafCapability{},
-					FilterBy:   schema.LeafCapability{},
-					Aggregates: schema.LeafCapability{},
+					OrderBy:    &schema.LeafCapability{},
+					FilterBy:   &schema.NestedFieldFilterByCapabilities{},
+					Aggregates: &schema.LeafCapability{},
 				},
 				Exists: schema.ExistsCapabilities{
-					NestedCollections: schema.LeafCapability{},
+					NestedCollections: &schema.LeafCapability{},
 				},
 			},
 		},
@@ -88,4 +88,9 @@ func (c *Connector) MutationExplain(ctx context.Context, configuration *types.Co
 // Mutation executes a mutation request.
 func (c *Connector) Mutation(ctx context.Context, configuration *types.Configuration, state *types.State, request *schema.MutationRequest) (*schema.MutationResponse, error) {
 	return nil, schema.NotSupportedError("mutation has not been supported yet", nil)
+}
+
+// Close handles the graceful shutdown of the connector.
+func (c *Connector) Close(state *types.State) error {
+	return nil
 }

@@ -4,20 +4,33 @@ import (
 	"fmt"
 
 	"github.com/hasura/ndc-elasticsearch/types"
-	"github.com/hasura/ndc-sdk-go/schema"
+	"github.com/hasura/ndc-sdk-go/v2/schema"
 )
 
 // evalArgument evaluates the argument and returns its value.
 func evalArgument(argument *schema.Argument) (any, error) {
-	switch argument.Type {
+	argumentType, err := argument.Type()
+	if err != nil {
+		return nil, schema.UnprocessableContentError(fmt.Sprintf("invalid argument: %s", err), nil)
+	}
+
+	switch argumentType {
 	case schema.ArgumentTypeVariable:
 		// If the type is a variable, create a types.Variable object with the
 		// argument name and return it.
-		return types.Variable(argument.Name), nil
+		variable, err := argument.AsVariable()
+		if err != nil {
+			return nil, schema.UnprocessableContentError(fmt.Sprintf("invalid variable argument: %s", err), nil)
+		}
+		return types.Variable(variable.Name), nil
 	case schema.ArgumentTypeLiteral:
-		return argument.Value, nil
+		literal, err := argument.AsLiteral()
+		if err != nil {
+			return nil, schema.UnprocessableContentError(fmt.Sprintf("invalid literal argument: %s", err), nil)
+		}
+		return literal.Value, nil
 	default:
-		return nil, schema.UnprocessableContentError(fmt.Sprintf("invalid argument type: %s", argument.Type), nil)
+		return nil, schema.UnprocessableContentError(fmt.Sprintf("invalid argument type: %s", argumentType), nil)
 	}
 }
 

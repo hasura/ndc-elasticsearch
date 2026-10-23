@@ -5,7 +5,7 @@ import (
 
 	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-elasticsearch/types"
-	"github.com/hasura/ndc-sdk-go/schema"
+	"github.com/hasura/ndc-sdk-go/v2/schema"
 )
 
 // collectionObjects holds the intermediate (pre-emission) field/object lists
@@ -76,7 +76,6 @@ func ParseConfigurationToSchema(configuration *types.Configuration, state *types
 			Arguments:             internal.CollectionArgumentsMap,
 			Type:                  indexName,
 			UniquenessConstraints: schema.CollectionInfoUniquenessConstraints{},
-			ForeignKeys:           schema.CollectionInfoForeignKeys{},
 		})
 	}
 
@@ -152,7 +151,6 @@ func parseNativeQueryToSchema(schemaResponse *schema.SchemaResponse, state *type
 					UniqueColumns: []string{"_id"},
 				},
 			},
-			ForeignKeys: schema.CollectionInfoForeignKeys{},
 		}
 
 		schemaResponse.Collections = append(schemaResponse.Collections, collectionInfo)
