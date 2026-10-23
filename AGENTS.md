@@ -10,18 +10,18 @@ Flow: an NDC `QueryRequest` is translated to Elasticsearch DSL, sent to `_search
 
 ## Layout
 
-| Path | Purpose |
-|---|---|
-| [main.go](main.go) | Entry point: `connector.StartCustom[types.Configuration, types.State]` |
-| [cli/](cli/) | Extra CLI subcommands: `initialize`, `update` (introspects ES and writes `configuration.json`), `validate`, `upgrade`, `version`. `serve` comes from the SDK. |
-| [connector/](connector/) | NDC implementation. `connector.go` handles state init and capabilities, `schema.go` turns the config into an NDC schema, `query.go` is the query pipeline, and `filter.go`, `sort.go`, `select.go`, `aggregate.go`, `variables.go`, `native_query.go` and `response.go` each build or parse one part of the DSL |
-| [elasticsearch/](elasticsearch/) | ES client wrapper: env/credentials-provider auth, TLS/CA, reauth and retry on 401, search, mappings and aliases |
-| [internal/](internal/) | Static scalar/object type tables (`static_types.go`), field-type helpers, misc utils |
-| [types/](types/) | `Configuration`, `State`, `NativeQuery`, `PostProcessor` |
-| [testdata/](testdata/), [connector/testdata/](connector/testdata/) | Unit test fixtures |
-| [e2e/](e2e/) | Real ES + connector + DDN end-to-end suite (build tag `e2e`) |
-| [ci/templates/](ci/templates/) | DDN connector packaging metadata. Supported env vars are declared here. |
-| [resources/](resources/), [docker-compose.yaml](docker-compose.yaml) | Local dev stack (ES, Kibana, v3-engine, Jaeger, Prometheus) and sample data |
+| Path                                                                 | Purpose                                                                                                                                                                                                                                                                                                         |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [main.go](main.go)                                                   | Entry point: `connector.StartCustom[types.Configuration, types.State]`                                                                                                                                                                                                                                          |
+| [cli/](cli/)                                                         | Extra CLI subcommands: `initialize`, `update` (introspects ES and writes `configuration.json`), `validate`, `upgrade`, `version`. `serve` comes from the SDK.                                                                                                                                                   |
+| [connector/](connector/)                                             | NDC implementation. `connector.go` handles state init and capabilities, `schema.go` turns the config into an NDC schema, `query.go` is the query pipeline, and `filter.go`, `sort.go`, `select.go`, `aggregate.go`, `variables.go`, `native_query.go` and `response.go` each build or parse one part of the DSL |
+| [elasticsearch/](elasticsearch/)                                     | ES client wrapper: env/credentials-provider auth, TLS/CA, reauth and retry on 401, search, mappings and aliases                                                                                                                                                                                                 |
+| [internal/](internal/)                                               | Static scalar/object type tables (`static_types.go`), field-type helpers, misc utils                                                                                                                                                                                                                            |
+| [types/](types/)                                                     | `Configuration`, `State`, `NativeQuery`, `PostProcessor`                                                                                                                                                                                                                                                        |
+| [testdata/](testdata/), [connector/testdata/](connector/testdata/)   | Unit test fixtures                                                                                                                                                                                                                                                                                              |
+| [e2e/](e2e/)                                                         | Real ES + connector + DDN end-to-end suite (build tag `e2e`)                                                                                                                                                                                                                                                    |
+| [ci/templates/](ci/templates/)                                       | DDN connector packaging metadata. Supported env vars are declared here.                                                                                                                                                                                                                                         |
+| [resources/](resources/), [docker-compose.yaml](docker-compose.yaml) | Local dev stack (ES, Kibana, v3-engine, Jaeger, Prometheus) and sample data                                                                                                                                                                                                                                     |
 
 ## Commands
 
@@ -77,5 +77,5 @@ Before you finish a change, run `gofmt`, `go vet ./...` and `make unit-test`. Un
 - Match the surrounding style: `map[string]interface{}` for ES documents and DSL, errors returned up the stack, and NDC errors built with `schema.UnprocessableContentError` / `schema.NotSupportedError`.
 - Tracing: create a child span per stage with `state.Tracer.Start(ctx, "<snake_case_name>")` and record failures with `span.SetStatus(codes.Error, ...)`.
 - Add user-visible changes under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md) (Keep a Changelog format; mark breaking changes with **BREAKING:**).
-- The Go version is pinned in `go.mod` and the `Dockerfile` (`golang:1.26.10`, `GOTOOLCHAIN`). Bump both together.
+- The Go version is pinned in `go.mod` and the `Dockerfile`. Bump both together.
 - Pin GitHub Actions to commit SHAs, as the existing workflows do.
