@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Migrate to NDC Go SDK v2 (`github.com/hasura/ndc-sdk-go/v2` v2.3.2) and NDC spec v0.2: capabilities report `schema.NDCVersion`, aggregate functions are emitted as `custom` definitions, `token_count` is represented as `int32` (the `integer` representation was removed), and foreign keys moved from collections to object types. Adds `Connector.Close`.
+- Sort collections, functions and procedures when loading schema.
+- Upgrade Go v1.27
 
 ## [2.0.0]
 

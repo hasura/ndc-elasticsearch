@@ -1,6 +1,5 @@
 # Stage 1: Build the Go binary
-FROM golang:1.26.10 AS builder
-ENV GOTOOLCHAIN=go1.26.10
+FROM golang:1.27.3 AS builder
 
 WORKDIR /app
 COPY go.mod go.sum ./

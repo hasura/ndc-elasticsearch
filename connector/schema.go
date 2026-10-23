@@ -2,6 +2,8 @@ package connector
 
 import (
 	"context"
+	"slices"
+	"strings"
 
 	"github.com/hasura/ndc-elasticsearch/internal"
 	"github.com/hasura/ndc-elasticsearch/types"
@@ -98,6 +100,24 @@ func ParseConfigurationToSchema(configuration *types.Configuration, state *types
 	for _, c := range collected {
 		prepareNdcSchema(&ndcSchema, c.name, c.fields, c.objects)
 	}
+
+	// Collections/Functions/Procedures are JSON arrays, so encoding/json
+	// preserves their slice order. That order was previously the order in which
+	// the `indices` / `queries` maps happened to be iterated, which Go
+	// randomizes per process — making the serialized /schema response differ
+	// across connector restarts for an identical configuration.json. Sort by
+	// name so the emitted schema is byte-for-byte deterministic. (ObjectTypes
+	// and ScalarTypes are maps, which encoding/json already emits in sorted-key
+	// order.)
+	slices.SortFunc(ndcSchema.Collections, func(i, j schema.CollectionInfo) int {
+		return strings.Compare(i.Name, j.Name)
+	})
+	slices.SortFunc(ndcSchema.Functions, func(i, j schema.FunctionInfo) int {
+		return strings.Compare(i.Name, j.Name)
+	})
+	slices.SortFunc(ndcSchema.Procedures, func(i, j schema.ProcedureInfo) int {
+		return strings.Compare(i.Name, j.Name)
+	})
 
 	return &ndcSchema
 }
