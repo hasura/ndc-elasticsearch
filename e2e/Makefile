@@ -11,7 +11,7 @@
 # never affected.
 
 REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
-GOTEST    := E2E=1 go test -tags e2e -count=1 -timeout 90m -v ./e2e/harness/...
+GOTEST    := E2E=1 go test -tags e2e -count=1 -timeout 90m -v -p 1 ./e2e/...
 
 # Add -failfast when FAIL_FAST=1.
 ifeq ($(FAIL_FAST),1)
@@ -20,7 +20,7 @@ endif
 
 .PHONY: e2e e2e-case e2e-report e2e-update-golden e2e-clean e2e-preflight help
 
-## e2e: run the full suite (all cases discovered under e2e/cases)
+## e2e: run the full suite (fixture cases and relationship checks)
 e2e: e2e-preflight
 	cd $(REPO_ROOT) && $(GOTEST)
 

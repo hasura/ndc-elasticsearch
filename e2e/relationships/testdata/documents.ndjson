@@ -1,0 +1,8 @@
+{"index":{"_index":"repro_source","_id":"1"}}
+{"x":"present","y":{"value":"populated"},"z":"present-z"}
+{"index":{"_index":"repro_source","_id":"2"}}
+{"x":"missing","z":"missing-z"}
+{"index":{"_index":"repro_target","_id":"1"}}
+{"key":"present","label":"present-target"}
+{"index":{"_index":"repro_target","_id":"2"}}
+{"key":"missing","label":"missing-target"}
