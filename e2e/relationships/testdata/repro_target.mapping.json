@@ -1,0 +1,8 @@
+{
+  "mappings": {
+    "properties": {
+      "key": { "type": "keyword" },
+      "label": { "type": "keyword" }
+    }
+  }
+}

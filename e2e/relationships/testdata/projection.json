@@ -1,0 +1,16 @@
+{
+  "collection": "repro_source",
+  "arguments": {},
+  "collection_relationships": {},
+  "query": {
+    "fields": {
+      "x": {"type": "column", "column": "x"},
+      "y": {"type": "column", "column": "y", "fields": {
+        "type": "array", "fields": {"type": "object", "fields": {
+          "value": {"type": "column", "column": "value"}
+        }}
+      }},
+      "z": {"type": "column", "column": "z"}
+    }
+  }
+}

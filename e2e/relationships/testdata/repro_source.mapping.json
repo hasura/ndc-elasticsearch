@@ -1,0 +1,9 @@
+{
+  "mappings": {
+    "properties": {
+      "x": { "type": "keyword" },
+      "y": { "type": "object", "properties": { "value": { "type": "keyword" } } },
+      "z": { "type": "keyword" }
+    }
+  }
+}

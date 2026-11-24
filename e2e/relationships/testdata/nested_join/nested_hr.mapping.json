@@ -1,0 +1,8 @@
+{
+  "mappings": {
+    "properties": {
+      "employeeId": { "type": "keyword" },
+      "display": { "type": "keyword" }
+    }
+  }
+}
