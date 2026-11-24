@@ -89,18 +89,26 @@ func replaceVariables(input interface{}, variableSet map[string]interface{}) (in
 	case []map[string]interface{}:
 		var result []map[string]interface{}
 		for _, elem := range value {
-			resultMap := make(map[string]interface{})
-			for key, value := range elem {
-				res, err := replaceVariables(value, variableSet)
-				if err != nil {
-					return nil, err
-				}
-				resultMap[key] = res
+			res, err := replaceVariables(elem, variableSet)
+			if err != nil {
+				return nil, err
+			}
+			resultMap, ok := res.(map[string]interface{})
+			if !ok {
+				return nil, schema.UnprocessableContentError("invalid filter clause", map[string]interface{}{"value": res})
 			}
 			result = append(result, resultMap)
 		}
 		return result, nil
 	case map[string]interface{}:
+		if comparesWithNullVariable(value, variableSet) {
+			// A comparison against null never matches a document. Elasticsearch
+			// rejects these leaf queries with a null value, and one rejected
+			// filter fails every variable set in the request, so replace the
+			// leaf with a query that matches nothing. The filter keeps its
+			// position, so the other variable sets still get their own rows.
+			return map[string]interface{}{"match_none": map[string]interface{}{}}, nil
+		}
 		result := make(map[string]interface{})
 		for key, value := range value {
 			res, err := replaceVariables(value, variableSet)
@@ -113,4 +121,46 @@ func replaceVariables(input interface{}, variableSet map[string]interface{}) (in
 	default:
 		return input, nil
 	}
+}
+
+// singleValueQueries are the Elasticsearch leaf queries that compare one field
+// against a value supplied by a comparison operator.
+var singleValueQueries = map[string]struct{}{
+	"term":                {},
+	"terms":               {},
+	"match":               {},
+	"match_phrase":        {},
+	"match_phrase_prefix": {},
+	"match_bool_prefix":   {},
+	"prefix":              {},
+	"wildcard":            {},
+	"regexp":              {},
+}
+
+// comparesWithNullVariable reports whether query is a leaf query such as
+// {"term": {"field": $var}} whose variable is null in variableSet.
+// A variable that is missing from the set is not treated as null, so that
+// replaceVariables still reports it as an error.
+func comparesWithNullVariable(query map[string]interface{}, variableSet map[string]interface{}) bool {
+	if len(query) != 1 {
+		return false
+	}
+	for operator, operand := range query {
+		if _, ok := singleValueQueries[operator]; !ok {
+			return false
+		}
+		fieldValue, ok := operand.(map[string]interface{})
+		if !ok || len(fieldValue) != 1 {
+			return false
+		}
+		for _, value := range fieldValue {
+			variable, ok := value.(types.Variable)
+			if !ok {
+				return false
+			}
+			replacement, found := variableSet[string(variable)]
+			return found && replacement == nil
+		}
+	}
+	return false
 }

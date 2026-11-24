@@ -91,21 +91,23 @@ func extractDocument(source map[string]interface{}, selectedFields map[string]ty
 // extractSubDocument extracts sub-documents based on the selected fields.
 func extractSubDocument(source map[string]interface{}, fieldData types.Field) interface{} {
 	if fieldData.Fields != nil {
-		sourceData, ok := source[fieldData.Name]
-		if !ok {
-			return []interface{}{extractDocument(make(map[string]interface{}), fieldData.Fields)}
-		}
-
-		if subDocument, ok := sourceData.(map[string]interface{}); ok {
-			return []interface{}{extractDocument(subDocument, fieldData.Fields)}
-		}
-
-		if subDocuments, ok := sourceData.([]interface{}); ok {
-			subDocumentsList := make([]interface{}, 0)
-			for _, subDocument := range subDocuments {
-				subDocumentsList = append(subDocumentsList, extractDocument(subDocument.(map[string]interface{}), fieldData.Fields))
+		// Object and nested fields are exposed as arrays of objects. A field
+		// that is absent, null or an empty array in the source has no objects,
+		// so it is returned as an empty array. Elasticsearch also omits the
+		// field from a filtered _source in all three cases.
+		switch sourceData := source[fieldData.Name].(type) {
+		case map[string]interface{}:
+			return []interface{}{extractDocument(sourceData, fieldData.Fields)}
+		case []interface{}:
+			subDocumentsList := make([]interface{}, 0, len(sourceData))
+			for _, element := range sourceData {
+				if subDocument, ok := element.(map[string]interface{}); ok {
+					subDocumentsList = append(subDocumentsList, extractDocument(subDocument, fieldData.Fields))
+				}
 			}
 			return subDocumentsList
+		default:
+			return []interface{}{}
 		}
 	}
 
