@@ -1,0 +1,14 @@
+{
+  "mappings": {
+    "properties": {
+      "caseId": { "type": "keyword" },
+      "officers": {
+        "type": "nested",
+        "properties": {
+          "employeeId": { "type": "keyword" },
+          "label": { "type": "keyword" }
+        }
+      }
+    }
+  }
+}

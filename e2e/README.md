@@ -362,19 +362,26 @@ The CI workflow is at `.github/workflows/e2e.yaml`. It requires a
 
 ### Missing nested object across a relationship
 
-Run the synthetic two-index test against real Elasticsearch, the connector, and
-DDN. Docker with Compose and the repository's Go toolchain are required; this
-case supplies OpenDD metadata for the relationship, so it does not need the DDN
-CLI or a DDN credential:
+The [`relationships/`](relationships/) checks run synthetic two-index fixtures
+against real Elasticsearch, the connector and DDN. Each fixture supplies its own
+OpenDD metadata for the relationship, so these checks need Docker with Compose
+and the repository's Go toolchain, but not the DDN CLI or a DDN credential:
 
 ```sh
 E2E=1 go test -tags e2e -count=1 -timeout 30m -v ./e2e/relationships
 ```
 
-`make e2e` also runs these checks. The case compares the raw Elasticsearch
-source, the connector's NDC schema and query response, and three GraphQL
-selections (without the join, with the join but without `y`, and with both).
-Both documents have a join match. The missing `y` is absent in Elasticsearch,
-but the connector emits `[{"value":null}]` despite advertising a non-nullable
-`value`. The tested DDN engine passes the null through without a GraphQL error.
-This is a characterization test, not the desired behavior for a future fix.
+`make e2e` also runs these checks.
+
+- `TestMissingObjectWithCrossIndexRelationship` compares the raw Elasticsearch
+  source, the connector's NDC schema and query response, and three GraphQL
+  selections (without the join, with the join but without `y`, and with both)
+  for a document that has the object field `y` and one that does not. A missing
+  object field is returned as an empty array.
+- `TestArrayRelationshipFromNestedObjects` joins every object in a `nested`
+  field to another index through an array relationship, in one GraphQL
+  operation. The fixture covers a nested field that is absent, null or empty, an
+  object without the join key, an unmatched key, and a document that mixes
+  matched, repeated, unmatched and keyless objects. Objects without a join key
+  are kept and get an empty relationship, and the other objects in the same
+  request still get their matches.

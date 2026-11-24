@@ -1,0 +1,18 @@
+{"index": {"_index": "nested_coverage", "_id": "missing"}}
+{"caseId": "missing"}
+{"index": {"_index": "nested_coverage", "_id": "empty"}}
+{"caseId": "empty", "officers": []}
+{"index": {"_index": "nested_coverage", "_id": "null"}}
+{"caseId": "null", "officers": null}
+{"index": {"_index": "nested_coverage", "_id": "matched"}}
+{"caseId": "matched", "officers": [{"employeeId": "id-a", "label": "matched"}]}
+{"index": {"_index": "nested_coverage", "_id": "no-match"}}
+{"caseId": "no-match", "officers": [{"employeeId": "id-miss", "label": "no-match"}]}
+{"index": {"_index": "nested_coverage", "_id": "no-id"}}
+{"caseId": "no-id", "officers": [{"label": "no-id"}]}
+{"index": {"_index": "nested_coverage", "_id": "mixed"}}
+{"caseId": "mixed", "officers": [{"employeeId": "id-a", "label": "a"}, {"label": "missing-key"}, {"employeeId": null, "label": "null-key"}, {"employeeId": "id-miss", "label": "unmatched"}, {"employeeId": "id-a", "label": "duplicate"}, {"employeeId": "id-b", "label": "b"}]}
+{"index": {"_index": "nested_hr", "_id": "a"}}
+{"employeeId": "id-a", "display": "Alpha"}
+{"index": {"_index": "nested_hr", "_id": "b"}}
+{"employeeId": "id-b", "display": "Beta"}

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Fix queries with variables when a variable is null. A comparison with a null variable, such as a relationship join key that is missing on some source rows, matches no documents for that variable set, and the other variable sets still return their rows. This stops one source row without a join key from failing the whole request with `field name is null or empty`.
+- Fix object and nested fields that are absent, null or an empty array in the document. They are returned as an empty array instead of a single object whose fields are all null.
+
 ## [2.1.0]
 
 - Migrate to NDC Go SDK v2 (`github.com/hasura/ndc-sdk-go/v2` v2.3.2) and NDC spec v0.2: capabilities report `schema.NDCVersion`, aggregate functions are emitted as `custom` definitions, `token_count` is represented as `int32` (the `integer` representation was removed), and foreign keys moved from collections to object types. Adds `Connector.Close`.

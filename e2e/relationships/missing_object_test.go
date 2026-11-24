@@ -67,10 +67,11 @@ func TestMissingObjectWithCrossIndexRelationship(t *testing.T) {
 	schema := ndcJSON(t, ctx, connectorURL+"/schema", "")
 	caps := ndcJSON(t, ctx, connectorURL+"/capabilities", "")
 
-	// Characterize the mismatch as it exists today; do not treat the null
-	// under a non-nullable leaf as the intended contract for a future fix.
-	const projected = `[{"x":"present","y":[{"value":"populated"}],"z":"present-z"},{"x":"missing","y":[{"value":null}],"z":"missing-z"}]`
-	t.Run("ndc_non_null_leaf_and_null_value", func(t *testing.T) {
+	// The object field is exposed as an array of objects. A document without
+	// the field has no objects, so the field is an empty array rather than an
+	// object whose non-nullable leaf is null.
+	const projected = `[{"x":"present","y":[{"value":"populated"}],"z":"present-z"},{"x":"missing","y":[],"z":"missing-z"}]`
+	t.Run("ndc_missing_object_is_empty_array", func(t *testing.T) {
 		var declared struct {
 			Objects map[string]struct {
 				Fields map[string]struct {
@@ -98,7 +99,7 @@ func TestMissingObjectWithCrossIndexRelationship(t *testing.T) {
 	for _, tc := range []struct{ name, query, want string }{
 		{"projection_without_join", `{ sources { x y { value } z } }`, projected},
 		{"join_without_y", `{ sources { x z target { label } } }`, `[{"x":"present","z":"present-z","target":{"label":"present-target"}},{"x":"missing","z":"missing-z","target":{"label":"missing-target"}}]`},
-		{"join_with_y", `{ sources { x y { value } z target { label } } }`, `[{"x":"present","y":[{"value":"populated"}],"z":"present-z","target":{"label":"present-target"}},{"x":"missing","y":[{"value":null}],"z":"missing-z","target":{"label":"missing-target"}}]`},
+		{"join_with_y", `{ sources { x y { value } z target { label } } }`, `[{"x":"present","y":[{"value":"populated"}],"z":"present-z","target":{"label":"present-target"}},{"x":"missing","y":[],"z":"missing-z","target":{"label":"missing-target"}}]`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			res, err := harness.RunGraphQL(ctx, stack.EngineGraphQLURL(), tc.query, nil)
